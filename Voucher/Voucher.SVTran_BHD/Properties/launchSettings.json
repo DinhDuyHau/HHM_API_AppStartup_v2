@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Voucher.SVTran_BHD": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:62479;http://localhost:62480"
+    }
+  }
+}

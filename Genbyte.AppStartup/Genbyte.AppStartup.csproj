@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<BaseOutputPath>.\..\..\RUN-API</BaseOutputPath>
+		<WebRoot>wwwroot\</WebRoot>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="12.0.1" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.28.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Controllers\" />
+		<Folder Include="wwwroot\image\" />
+		<None Include="wwwroot\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Category.Resources\**" />
+	  <Content Remove="Category.Resources\**" />
+	  <EmbeddedResource Remove="Category.Resources\**" />
+	  <None Remove="Category.Resources\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Genbyte.Base.CoreLib">
+	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
+	    <Private>True</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Base.Security">
+	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
+	    <Private>True</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Sys.AppAuth">
+	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
+	    <Private>True</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Sys.Common">
+	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Sys.Common.dll</HintPath>
+	    <Private>True</Private>
+	  </Reference>
+	</ItemGroup>
+</Project>

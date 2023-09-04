@@ -1,0 +1,30 @@
+﻿using Genbyte.Component.Voucher;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Voucher.ITTran
+{
+    public class ITDetail : DetailEntity
+    {
+        public string ma_vt { get; set; }
+        public string dvt { get; set; }
+        public string ma_kho { get; set; }
+        public string ma_khon { get; set; }
+
+        public string ma_imei { get; set; }
+
+        public decimal so_luong { get; set; }
+
+        public decimal gia_nt { get; set; }
+
+        public decimal tien_nt { get; set; }
+        public string tk_vt { get; set; }
+        public string tk_du { get; set; }
+        public string ma_nx { get; set; }
+        public bool px_gia_dd { get; set; }
+
+    }
+}

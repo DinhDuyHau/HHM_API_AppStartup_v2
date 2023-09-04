@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>.\API\RUN-API</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Genbyte.Base.CoreLib\Genbyte.Base.CoreLib.csproj" />
+    <ProjectReference Include="..\Genbyte.Component.Category\Genbyte.Component.Category.csproj" />
+    <ProjectReference Include="..\Genbyte.Component.Voucher\Genbyte.Component.Voucher.csproj" />
+    <ProjectReference Include="..\Genbyte.Sys.AppAuth\Genbyte.Sys.AppAuth.csproj" />
+    <ProjectReference Include="..\Genbyte.Sys.Common\Genbyte.Sys.Common.csproj" />
+    <ProjectReference Include="..\Imei\Imei.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<BaseOutputPath>.\..\..\..\RUN-API</BaseOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Customer">
+	    <HintPath>..\..\..\RUN-API\Debug\net6.0\Customer.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Base.CoreLib">
+	    <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Component.Voucher">
+	    <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Sys.AppAuth">
+	    <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Genbyte.Sys.Common">
+	    <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.Common.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+</Project>
