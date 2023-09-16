@@ -37,6 +37,10 @@ namespace Voucher.ISTran_PXK
         public string DetailTable { get; } = "d588$";
         private const string _DETAIL_PARA = "d588";
 
+        //Bảng lưu dữ liệu ảnh
+        public string ImageTable { get; } = "m588img$";
+
+
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d588,d588,d588";
 
@@ -673,11 +677,11 @@ SELECT is_success, message FROM @check";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
+	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.image from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join {3}' + @exp + ' c on a.so_ct = c.so_ct where a.stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, c.ten_sukien from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmsukien c on a1.ma_sukien = c.ma_sukien where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ImageTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {

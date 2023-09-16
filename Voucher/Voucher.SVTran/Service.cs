@@ -911,7 +911,7 @@ SELECT is_success, message FROM @check";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
+	SELECT @q = 'select a.*, b.image from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select d1.*, d0.ten_dv, d0.vt_ton_kho from {3}' + @exp + ' d1 inner join dmdichvu d0 on d1.ma_dv = d0.ma_dv where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select c1.*, c0.ten_ck, c0.loai_ck, c2.ten_loai from {4}' + @exp + ' c1 inner join dmck2 c0 on c1.ma_ck = c0.ma_ck inner join dmloaick c2 on c2.ma_loai = c0.loai_ck where stt_rec = @stt_rec'

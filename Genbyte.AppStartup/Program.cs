@@ -41,6 +41,7 @@ var builder = WebApplication.CreateBuilder(args);
 
     // configure strongly typed settings object
     services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+    services.Configure<Security>(builder.Configuration.GetSection("Security"));
 
     // In-Memory Caching
     builder.Services.AddMemoryCache();

@@ -98,5 +98,8 @@ namespace Voucher.SVTran_HDF
         public decimal thue_suat { get; set; }
         public string ma_imei { get; set; }
         public string ten_vt { get; set; }
+        public bool giam_gia_yn { get; set; }
+        public decimal ty_le_giam { get; set; }
+        public string ma_asm_duyet { get; set; }
     }
 }

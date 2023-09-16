@@ -28,6 +28,7 @@ namespace Category.Dmkh
         public bool cc_yn { get; set; }
 
         public bool nv_yn { get; set; }
+        public string image { get; set; }
 
     }
 }

@@ -17,6 +17,7 @@ using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
 using Voucher.CDTran_PCH.Models;
 using Customer.Model;
+using Genbyte.Base.Security;
 
 namespace Voucher.CDTran_PCH
 {
@@ -57,15 +58,16 @@ namespace Voucher.CDTran_PCH
         /// Khai báo quyền truy cập cho các xử lý CRUD
         /// </summary>
         public AccessRight VoucherRight { get; set; }
+        public Security security { get; set; }
 
-        public Service()
+        public Service(Security security)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            this.security = security;
         }
 
         #region Inserting
@@ -182,9 +184,12 @@ namespace Voucher.CDTran_PCH
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-                                    detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
-                                    detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
+                                    detail_list.ForEach(x => { 
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.ma_cuahang = vc_item.ma_cuahang;
+                                        x.ma_ca = vc_item.ma_ca;
+                                        x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, this.security.KeyAES, this.security.IVAES);
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
@@ -364,8 +369,10 @@ namespace Voucher.CDTran_PCH
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-
+                                    detail_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, this.security.KeyAES, this.security.IVAES);
+                                    });
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
                                 }
@@ -735,7 +742,7 @@ END";
                             dien_giai = d.dien_giai,
                             tien = d.tien,
                             tien_nt = d.tien_nt,
-                            stt_rec_tt = d.stt_rec_tt,
+                            stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, this.security.KeyAES, this.security.IVAES),
                             //so_hd_tt = d.so_hd_tt,
                             //ngay_hd_tt = d.ngay_hd_tt,
                             ma_ctr = d.ma_ctr,

@@ -14,6 +14,7 @@ using Genbyte.Sys.Common.Models;
 using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
+using Genbyte.Base.Security;
 
 namespace Voucher.SVTran_BHB
 {
@@ -66,6 +67,8 @@ namespace Voucher.SVTran_BHB
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        public Security security { get; set; }
+
         public Service()
         {
             VoucherRight = new AccessRight();
@@ -73,7 +76,15 @@ namespace Voucher.SVTran_BHB
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+        }
+        public Service(Security security)
+        {
+            VoucherRight = new AccessRight();
+            VoucherRight.AllowRead = true;
+            VoucherRight.AllowCreate = true;
+            VoucherRight.AllowUpdate = true;
+            VoucherRight.AllowDelete = true;
+            this.security = security;
         }
 
         #region Inserting
@@ -129,7 +140,9 @@ namespace Voucher.SVTran_BHB
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    detail_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
@@ -165,7 +178,7 @@ namespace Voucher.SVTran_BHB
                                 if (trans_list != null && trans_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    trans_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    trans_list.ForEach(x => { x.ngay_ct = vc_item.ngay_ct; x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.security.KeyAES, this.security.IVAES); });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(trans_list);
@@ -419,6 +432,7 @@ namespace Voucher.SVTran_BHB
                                 if (trans_list != null && trans_list.Count > 0)
                                 {
                                     item_detail.Data = new List<DetailEntity>();
+                                    trans_list.ForEach(x => {x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.security.KeyAES, this.security.IVAES); });
                                     item_detail.Data.AddRange(trans_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVTransModel).Name;
@@ -850,7 +864,7 @@ END";
                 IList<SVPaidModel> pr_paid = ds.Tables[2].ToList<SVPaidModel>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[3].ToList<SVWarrantyModel>();
                 IList<SVTransModel> pr_trans = ds.Tables[4].ToList<SVTransModel>();
-
+                pr_trans.ToList().ForEach(x => x.stt_rec_hd = APIService.EncryptForWebApp(x.stt_rec_hd, this.security.KeyAES, this.security.IVAES));
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();

@@ -12,7 +12,7 @@ using Upload.Models;
 
 namespace Upload
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UploadController: ControllerBase
@@ -94,6 +94,70 @@ namespace Upload
                 respose.message = ApiReponseMessage.Error_Runtime;
             }
             return respose;
+        }
+
+        [HttpPost("save_event_gift")]
+        public CommonObjectModel saveEventGift([FromForm] EventGiftUpload request)
+        {
+            CommonObjectModel respose = new CommonObjectModel();
+            respose.message = "";
+            respose.success = false;
+            Service service = new Service();
+            try
+            {
+                respose.result = service.saveEventGift(request);
+                respose.success = true;
+                respose.message = "success";
+            }
+            catch (CustomException ex)
+            {
+                respose.success = false;
+                respose.message = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                respose.success = false;
+                respose.message = ApiReponseMessage.Error_Runtime;
+            }
+            return respose;
+        }
+        [HttpDelete("delete_event_gift")]
+        public CommonObjectModel deleteEventGift([Required] string so_ct, [Required] DateTime ngay_ct)
+        {
+            CommonObjectModel respose = new CommonObjectModel();
+            respose.message = "";
+            respose.success = false;
+            Service service = new Service();
+            try
+            {
+                service.deleteEventGift(so_ct, ngay_ct);
+                respose.success = true;
+                respose.message = "success";
+            }
+            catch (CustomException ex)
+            {
+                respose.success = false;
+                respose.message = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                respose.success = false;
+                respose.message = ApiReponseMessage.Error_Runtime;
+            }
+            return respose;
+        }
+        [HttpGet("getFile")]
+        public IActionResult GetImage(string fileName)
+        {
+            FileService fileService = new FileService();
+            string filePath = fileService.getFilePath(fileName);
+            if (filePath != null)
+            {
+                FileStream fileStream = System.IO.File.OpenRead(filePath);
+                return (IActionResult)(object)((ControllerBase)this).File((Stream)fileStream, fileService.GetContentType(fileName), fileService.GetFileName(fileName), true);
+            }
+
+            return (IActionResult)(object)((ControllerBase)this).NoContent();
         }
     }
 }
