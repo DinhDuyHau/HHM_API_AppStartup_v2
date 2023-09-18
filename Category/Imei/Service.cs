@@ -238,7 +238,7 @@ namespace Imei
         /// <param name="imeiId"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, decimal rate)
+        public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, string ma_ct, decimal rate)
         {
             CommonObjectModel model = new CommonObjectModel()
             {
@@ -249,7 +249,7 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @rate";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
@@ -263,6 +263,12 @@ namespace Imei
                 SqlDbType = SqlDbType.NVarChar,
                 Value = ma_cuahang.Trim()
             },new SqlParameter()
+            {
+                ParameterName = "@ma_ct",
+                SqlDbType = SqlDbType.NVarChar,
+                Value = ma_ct.Trim()
+            }
+            ,new SqlParameter()
             {
                 ParameterName = "@rate",
                 SqlDbType = SqlDbType.Decimal,

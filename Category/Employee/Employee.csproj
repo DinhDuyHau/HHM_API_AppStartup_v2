@@ -17,9 +17,8 @@
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="Genbyte.Component.Voucher">
-			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>
-			<Private>False</Private>
+		<Reference Include="Genbyte.Base.Security">
+			<HintPath>..\..\..\..\HHM_InvShop_GEN\Genbyte.Base.Security\API\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
 		</Reference>
 		<Reference Include="Genbyte.Sys.AppAuth">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
@@ -27,10 +26,6 @@
 		</Reference>
 		<Reference Include="Genbyte.Sys.Common">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.Common.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Imei">
-			<HintPath>..\..\..\RUN-API\Debug\net6.0\Imei.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
