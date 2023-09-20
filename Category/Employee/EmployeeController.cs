@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace Employee
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class EmployeeController : ControllerBase

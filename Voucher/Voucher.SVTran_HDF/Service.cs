@@ -672,7 +672,7 @@ SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, a3.ten_nvbh as ten_asm_duyet from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt inner join dmnvbh a3 on a1.ma_asm_duyet = a3.ma_nvbh where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, a3.ten_nvbh as ten_asm_duyet from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmnvbh a3 on a1.ma_asm_duyet = a3.ma_nvbh where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";

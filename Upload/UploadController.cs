@@ -12,7 +12,7 @@ using Upload.Models;
 
 namespace Upload
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UploadController: ControllerBase
