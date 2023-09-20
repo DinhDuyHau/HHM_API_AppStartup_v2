@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Customer
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class EventGiveAwayController : ControllerBase

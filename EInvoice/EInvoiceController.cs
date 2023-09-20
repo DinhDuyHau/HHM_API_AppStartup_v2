@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Genbyte.Base.Security;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace EInvoice
 {
@@ -16,6 +19,15 @@ namespace EInvoice
     [Route("[controller]")]
     public class EInvoiceController: ControllerBase
     {
+
+        private readonly Security _security;
+        private readonly IConfiguration _configuration;
+        public EInvoiceController(IConfiguration configuration, IOptions<Security> security)
+        {
+            this._configuration = configuration;
+            _security = security.Value;
+        }
+
         /// <summary>
         /// Lấy file PDF từ hóa đơn điện tử
         /// </summary>
@@ -33,7 +45,7 @@ namespace EInvoice
                     message = "",
                     result = null
                 };
-                Service _service = new Service();
+                Service _service = new Service(this._configuration);
                 string res = _service.GetInvoicePDF(voucherInfo).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
@@ -66,7 +78,8 @@ namespace EInvoice
                     message = "",
                     result = null
                 };
-                Service _service = new Service();
+                Service _service = new Service(this._configuration);
+                stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
                 string res = _service.GetInvoicePDF(stt_rec, ma_ct).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
@@ -104,7 +117,7 @@ namespace EInvoice
                     message = "",
                     result = null
                 };
-                Service _service = new Service();
+                Service _service = new Service(this._configuration);
                 string res = _service.CreateDraft(voucherInfo).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
@@ -147,7 +160,8 @@ namespace EInvoice
                     message = "",
                     result = null
                 };
-                Service _service = new Service();
+                Service _service = new Service(this._configuration);
+                stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
                 string res = _service.CreateDraft(stt_rec, ma_ct).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
@@ -191,7 +205,7 @@ namespace EInvoice
                     message = "",
                     result = null
                 };
-                Service _service = new Service();
+                Service _service = new Service(this._configuration);
                 string res = _service.GetPublishedInv(voucherInfo).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
@@ -229,7 +243,8 @@ namespace EInvoice
                     message = "",
                     result = null
                 };
-                Service _service = new Service();
+                Service _service = new Service(this._configuration);
+                stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
                 string res = _service.GetPublishedInv(stt_rec, ma_ct).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);

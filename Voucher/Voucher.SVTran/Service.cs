@@ -48,6 +48,9 @@ namespace Voucher.SVTran
         // bảng lưu dữ liệu chi tiết của bảo hành
         public string WarrantyTable { get; } = "d581bh$";
         private const string _WARRANTY_PARA = "d581bh";
+
+        public string EInvoiceTable { get; } = "hddt$";
+        private const string _EINVOICE_INFO = "hddt";
         public string DetailKMTable { get; } = "r590_km$";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
@@ -94,7 +97,6 @@ namespace Voucher.SVTran
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
-
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
             {
                 vc_item.ma_nt = "VND";
@@ -104,6 +106,8 @@ namespace Voucher.SVTran
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
+            vc_item.ma_nk = "VIETTEL5";
+            vc_item.so_seri = "K23TGV";
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -576,6 +580,8 @@ SELECT is_success, message FROM @check";
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
                 vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
+                vc_item.ma_nk = old_voucher.ma_nk;
+                vc_item.so_seri = old_voucher.so_seri;
 
                 foreach (VoucherDetail item in vc_item.details)
                 {
@@ -917,9 +923,11 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select c1.*, c0.ten_ck, c0.loai_ck, c2.ten_loai from {4}' + @exp + ' c1 inner join dmck2 c0 on c1.ma_ck = c0.ma_ck inner join dmloaick c2 on c2.ma_loai = c0.loai_ck where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {6}' + @exp + ' b1 inner join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
+                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {7}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -938,6 +946,7 @@ END";
                 IList<SVDiscountModel> pr_discount = ds.Tables[3].ToList<SVDiscountModel>();
                 IList<SVPaidModel> pr_paid = ds.Tables[4].ToList<SVPaidModel>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
+                IList<EInvoiceInfo> einvoice = ds.Tables[6].ToList<EInvoiceInfo>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -966,6 +975,11 @@ END";
                     Id = 5,
                     Name = _WARRANTY_PARA,
                     Data = pr_warranty
+                }, new DetailItemModel()
+                {
+                    Id = 10,
+                    Name = _EINVOICE_INFO,
+                    Data = einvoice
                 }
                 });
 

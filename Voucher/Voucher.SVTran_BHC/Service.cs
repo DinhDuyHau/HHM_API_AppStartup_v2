@@ -53,6 +53,10 @@ namespace Voucher.SVTran_BHC
         public string DetailKMTable { get; } = "r590_km$";
         private const string _DETAIL_KM_PARA = "r590_km";
 
+        public string EInvoiceTable { get; } = "hddt$";
+        private const string _EINVOICE_INFO = "hddt";
+
+
 
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
@@ -1028,9 +1032,11 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {6}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {7}' + @exp + ' where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {8}' + @exp + ' where stt_rec = @stt_rec'
+ SELECT @q = @q + CHAR(13) + 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
+                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {9}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.EcommerceTable, this.DetailKMTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.EcommerceTable, this.DetailKMTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1051,6 +1057,7 @@ END";
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
                 IList<SVEcommerceModel> pr_ecommerce = ds.Tables[6].ToList<SVEcommerceModel>();
                 IList<SVPromotionModel> km_detail = ds.Tables[7].ToList<SVPromotionModel>();
+                IList<EInvoiceInfo> einvoice = ds.Tables[8].ToList<EInvoiceInfo>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -1090,6 +1097,12 @@ END";
                     Id = 7,
                     Name = _DETAIL_KM_PARA,
                     Data = km_detail
+                },
+                new DetailItemModel()
+                {
+                    Id = 10,
+                    Name = _EINVOICE_INFO,
+                    Data = einvoice
                 }
                 });
                 model.result = invoice_model;
