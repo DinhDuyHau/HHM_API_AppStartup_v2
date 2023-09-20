@@ -13,7 +13,7 @@ namespace Report.RptSalespersonCommission
     {
         public IMemoryCache MemoryCache { get; set; }
         public string controller { get; set; } = "rptSalespersonCommission";
-        // Bảng hiển thị lên báo cáo
+        // Bảng hiển thị lên báo cáo.
         public readonly int id = 1;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
