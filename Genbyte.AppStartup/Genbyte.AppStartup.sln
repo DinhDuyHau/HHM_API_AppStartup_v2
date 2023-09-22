@@ -185,6 +185,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmnvbh", "..\Categ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptSalespersonCommission", "..\Report\Report.RptSalespersonCommission\Report.RptSalespersonCommission.csproj", "{2D3464E5-4634-45F7-90FB-BC61D3FE1755}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptImeiAgeReport", "..\Report\Report.RptImeiAgeReport\Report.RptImeiAgeReport.csproj", "{69E5AF7F-D2F9-4FA6-884A-946B0F6A3715}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -543,6 +545,10 @@ Global
 		{2D3464E5-4634-45F7-90FB-BC61D3FE1755}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D3464E5-4634-45F7-90FB-BC61D3FE1755}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D3464E5-4634-45F7-90FB-BC61D3FE1755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69E5AF7F-D2F9-4FA6-884A-946B0F6A3715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69E5AF7F-D2F9-4FA6-884A-946B0F6A3715}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69E5AF7F-D2F9-4FA6-884A-946B0F6A3715}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69E5AF7F-D2F9-4FA6-884A-946B0F6A3715}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -633,6 +639,7 @@ Global
 		{D0CC94E7-ED93-487F-A205-1CC821F58564} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{A952437A-B23F-42F6-B83A-1D1F4FFE3624} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 		{2D3464E5-4634-45F7-90FB-BC61D3FE1755} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{69E5AF7F-D2F9-4FA6-884A-946B0F6A3715} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}
