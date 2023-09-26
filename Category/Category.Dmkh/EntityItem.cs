@@ -17,7 +17,7 @@ namespace Category.Dmkh
         public string ma_so_thue { get; set; }
         public string gioi_tinh { get; set; }
         public string dien_thoai { get; set; }
-        public string e_mail { get; set; }
+        public string email_cn { get; set; }
         public DateTime? ngay_sinh { get; set; }
         public string ma_tinh { get; set; }
         public string ma_quan { get; set; }
@@ -29,6 +29,10 @@ namespace Category.Dmkh
 
         public bool nv_yn { get; set; }
         public string image { get; set; }
+        public string hoadon_mst { get; set; }
+        public string hoadon_tenkh { get; set; }
+        public string hoadon_diachi { get; set; }
+        public string hoadon_email { get; set; }
 
     }
 }

@@ -106,8 +106,9 @@ namespace Voucher.SVTran
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
-            vc_item.ma_nk = "VIETTEL5";
-            vc_item.so_seri = "K23TGV";
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail

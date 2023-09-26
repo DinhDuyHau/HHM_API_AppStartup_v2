@@ -116,6 +116,11 @@ namespace Voucher.SVTran_BHC
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
+
+
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -664,6 +669,8 @@ SELECT is_success, message FROM @check";
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
                 vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
+                vc_item.ma_nk = old_voucher.ma_nk;
+                vc_item.so_seri = old_voucher.so_seri;
 
                 foreach (VoucherDetail item in vc_item.details)
                 {
