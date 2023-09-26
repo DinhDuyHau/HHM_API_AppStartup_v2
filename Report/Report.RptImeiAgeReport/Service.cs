@@ -7,12 +7,12 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Reflection.Metadata;
 
-namespace Report.RptSalespersonCommission
+namespace Report.RptImeiAgeReport
 {
     public class Service : IComponentService
     {
         public IMemoryCache MemoryCache { get; set; }
-        public string controller { get; set; } = "rptSalespersonCommission";
+        public string controller { get; set; } = "rptImeiAgeReport";
         // Bảng hiển thị lên báo cáo.
         public readonly int id = 1;
 
@@ -39,12 +39,16 @@ namespace Report.RptSalespersonCommission
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             sql = @"
-                declare @CustomerName nvarchar(1024)
-                select @CustomerName = ten_kh from dmkh where ma_kh = @ma_kh
-                select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_kh ma_kh, @CustomerName as ten_kh
-                exec rs_rptSalespersonCommission @tu_ngay, @den_ngay, @ma_kh, @language, @userID, @admin
+                select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_cuahang ma_cuahang
+                exec rs_rptImeiAgeReport @ma_imei, @tu_ngay, @den_ngay, @ma_cuahang, @language, @userID, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_imei",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_imei
+            });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@tu_ngay",
@@ -56,12 +60,12 @@ namespace Report.RptSalespersonCommission
                 ParameterName = "@den_ngay",
                 SqlDbType = SqlDbType.DateTime,
                 SqlValue = obj_param.den_ngay
-            });         
+            });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_kh",
+                ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_kh == null ? Startup.Shop : obj_param.ma_kh
+                SqlValue = obj_param.ma_cuahang == null ? Startup.Shop : obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
