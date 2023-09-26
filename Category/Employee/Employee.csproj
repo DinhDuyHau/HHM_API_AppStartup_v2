@@ -18,7 +18,8 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Base.Security">
-			<HintPath>..\..\..\..\HHM_InvShop_GEN\Genbyte.Base.Security\API\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
+		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
+		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Sys.AppAuth">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>

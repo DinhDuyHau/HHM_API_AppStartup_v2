@@ -41,7 +41,7 @@ namespace Employee
                 Value = user_lst
             });
 
-            List<EmployeeModel> raw_data = base.ExecSql2List<EmployeeModel>(sql2, paras);
+            List<EmployeeModel> raw_data = base.ExecSql2List<EmployeeModel>(sql2, paras, ConnectType.Accounting);
             entity = DataUtils.PagingProcess<EmployeeModel>(raw_data, page_index, page_size);
             return entity;
         }
