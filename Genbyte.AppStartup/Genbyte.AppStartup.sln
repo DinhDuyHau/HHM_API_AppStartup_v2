@@ -73,8 +73,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmvt", "..\Categor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Menu_api", "..\Category\Category.Menu_api\Category.Menu_api.csproj", "{28B5FCA3-AF54-460B-8729-7DD17DD751AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.EvenGiveAway", "..\Category\Category.EvenGiveAway\Category.EvenGiveAway.csproj", "{E2D97293-658B-4A8D-98E2-12298E36628B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Vdmctmoban", "..\Category\Category.Vdmctmoban\Category.Vdmctmoban.csproj", "{1FE6D88F-DDF3-449A-AB0A-59134F0D9617}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Resources", "..\Category\Category.Resources\Category.Resources.csproj", "{9D277E73-E676-4163-B2CA-325D58C2AC06}"
