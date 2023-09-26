@@ -208,7 +208,7 @@ namespace Voucher.SVTran_HDF
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei, giam_gia_yn, ty_le_giam, ma_asm_duyet) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei, giam_gia_yn, ty_le_giam, ma_asm_duyet from @{_DETAIL_PARA}";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _BILL_PARA))
             {
@@ -239,13 +239,11 @@ namespace Voucher.SVTran_HDF
                     continue;
                 vc_detail.Data.ForEach(x => x.stt_rec = stt_rec);
             }
-
             //update các trường null
-            if (string.IsNullOrEmpty(prime_table))
-                query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if (string.IsNullOrEmpty(detail_table))
+            query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
+            if (!string.IsNullOrEmpty(detail_table))
                 query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if (string.IsNullOrEmpty(bill_table))
+            if (!string.IsNullOrEmpty(bill_table))
                 query += $"exec fs_UpdateNullToTable '{bill_table}', '{bill_table}', 'stt_rec = ''{stt_rec}''' \n";
 
             service.ExecuteNonQuery(query);
@@ -519,8 +517,8 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei) ";
-                query += $"select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei, giam_gia_yn, ty_le_giam, ma_asm_duyet) ";
+                query += $"select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_cuahang, ma_ca, line_nbr, ma_vt, km_yn, ma_sp, ma_bp, so_lsx, dvt, he_so, ma_kho, ma_vi_tri, ma_lo, ma_vv, tk_vt, so_luong, gia_nt, gia, gia_nt2, gia2, tien_nt, tien, thue, thue_nt, tt, tt_nt, xstatus, xaction, tien2, tien_nt2, cp_bh, cp_bh_nt, cp_vc, cp_vc_nt, cp_khac, cp_khac_nt, cp, cp_nt, stt_rec_ct, stt_rec0ct, gia_ban0, gia_ban_nt0, gia_ban, gia_ban_nt, gia_ck, gia_ck_nt, ck, ck_nt, sl_dh, sl_xuat, sl_giao, stt_rec_dh, stt_rec0dh, stt_rec_px, stt_rec0px, px_so, px_ln, stt_rec_gh, stt_rec0gh, stt_rec_hd, stt_rec0hd, hd_so, hd_ln, tk_gv, tk_dt, tk_ck, tk_cpbh, pn_gia_tb, ma_nvbh_i, ma_hd, ma_ku, ma_phi, so_dh_i, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, s4, s5, s6, s7, s8, s9, tl_ck, ma_thue, thue_suat, ma_imei, giam_gia_yn, ty_le_giam, ma_asm_duyet from @{_DETAIL_PARA}";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _BILL_PARA))
             {
@@ -557,11 +555,11 @@ SELECT is_success, message FROM @check";
             }
 
             //update các trường null
-            if (string.IsNullOrEmpty(prime_table))
+            if (!string.IsNullOrEmpty(prime_table))
                 query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if (string.IsNullOrEmpty(detail_table))
+            if (!string.IsNullOrEmpty(detail_table))
                 query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if (string.IsNullOrEmpty(bill_table))
+            if (!string.IsNullOrEmpty(bill_table))
                 query += $"exec fs_UpdateNullToTable '{bill_table}', '{bill_table}', 'stt_rec = ''{stt_rec}''' \n";
 
             service.ExecuteNonQuery(query);
@@ -674,7 +672,7 @@ SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, a3.ten_nvbh as ten_asm_duyet from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmnvbh a3 on a1.ma_asm_duyet = a3.ma_nvbh where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";

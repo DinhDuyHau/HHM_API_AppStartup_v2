@@ -75,11 +75,11 @@ namespace Upload
             }
             return contentType;
         }
-        public string SaveFile(string folder, IFormFile file)
+        public string SaveFile(string folder, IFormFile file, string? fileName = null)
         {
             if (file != null)
             {
-                string path = folder + "/" + file.FileName;
+                string path = folder + "/" + (fileName != null? fileName : file.FileName);
                 if (file.Length > 0)
                 {
                     if (!Directory.Exists(rootPath + folder))
@@ -101,22 +101,24 @@ namespace Upload
             }
             return null;
         }
-        public void ResizeImage(IFormFile sourceImageFile, string folder, int newWidth, int newHeight)
+        public void ResizeImage(IFormFile sourceImageFile, string folder, int newWidth, int newHeight, string? fileName = null)
         {
-            string filePath = rootPath + folder + "/" + sourceImageFile.FileName;
+            fileName = (fileName != null ? fileName : sourceImageFile.FileName);
+            string filePath = rootPath + folder + "/" + fileName;
             if (sourceImageFile.Length > 0)
             {
                 if (!Directory.Exists(rootPath + folder))
                 {
                     Directory.CreateDirectory(rootPath + folder);
                 }
-                bool fileExists = System.IO.File.Exists(rootPath + folder + "/" + sourceImageFile.FileName);
+                bool fileExists = System.IO.File.Exists(rootPath + folder + "/" + fileName);
                 if (fileExists)
                 {
                     return;
                 }
             }
-            using (var image = Image.Load(sourceImageFile.OpenReadStream()))
+            using (var imageStream = sourceImageFile.OpenReadStream())
+            using (var image = Image.Load(imageStream))
             {
                 image.Mutate(x => x.Resize(newWidth, newHeight));
                 image.Save(filePath);
@@ -173,6 +175,22 @@ namespace Upload
         public string getRootPath()
         {
             return rootPath;
+        }
+        public string getExtension(IFormFile file)
+        {
+            string extension = Path.GetExtension(file.FileName);
+            if (extension == "")
+            {
+                try
+                {
+                    extension = "." + file.ContentType.Split('/')[1];
+                }
+                catch (Exception ex)
+                {
+                    extension = ".png";
+                }
+            }
+            return extension;
         }
     }
 }

@@ -14,6 +14,7 @@ using Genbyte.Sys.Common.Models;
 using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
+using Genbyte.Base.Security;
 
 namespace Voucher.SVTran_BHB
 {
@@ -44,6 +45,10 @@ namespace Voucher.SVTran_BHB
         public string TransTable { get; } = "m592ext$";
         private const string _TRANS_PARA = "m592ext";
 
+        public string EInvoiceTable { get; } = "hddt$";
+        private const string _EINVOICE_INFO = "hddt";
+
+
         //Bảng lưu dữ liệu ảnh
         public string ImageTable { get; } = "m592img$";
 
@@ -66,6 +71,8 @@ namespace Voucher.SVTran_BHB
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        public Security security { get; set; }
+
         public Service()
         {
             VoucherRight = new AccessRight();
@@ -73,7 +80,15 @@ namespace Voucher.SVTran_BHB
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+        }
+        public Service(Security security)
+        {
+            VoucherRight = new AccessRight();
+            VoucherRight.AllowRead = true;
+            VoucherRight.AllowCreate = true;
+            VoucherRight.AllowUpdate = true;
+            VoucherRight.AllowDelete = true;
+            this.security = security;
         }
 
         #region Inserting
@@ -129,7 +144,9 @@ namespace Voucher.SVTran_BHB
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    detail_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
@@ -165,7 +182,7 @@ namespace Voucher.SVTran_BHB
                                 if (trans_list != null && trans_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    trans_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    trans_list.ForEach(x => { x.ngay_ct = vc_item.ngay_ct; x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.security.KeyAES, this.security.IVAES); });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(trans_list);
@@ -419,6 +436,7 @@ namespace Voucher.SVTran_BHB
                                 if (trans_list != null && trans_list.Count > 0)
                                 {
                                     item_detail.Data = new List<DetailEntity>();
+                                    trans_list.ForEach(x => {x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.security.KeyAES, this.security.IVAES); });
                                     item_detail.Data.AddRange(trans_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVTransModel).Name;
@@ -830,9 +848,12 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
     SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec '
     SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {4}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec '
     SELECT @q = @q + CHAR(13) + 'select b.cq_file as file_cq, b.co_file as file_co, a.* from {5}' + @exp + ' a left join {6}' + @exp + ' b on a.so_ct = b.so_ct where a.stt_rec = @stt_rec '
-	EXEC sp_executesql @q, N'@stt_rec CHAR(13), @so_ct CHAR(12)', @stt_rec = @stt_rec, @so_ct = @so_ct
+    SELECT @q = @q + CHAR(13) + 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
+                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {7}' + @exp + ' where stt_rec = @stt_rec'
+									
+EXEC sp_executesql @q, N'@stt_rec CHAR(13), @so_ct CHAR(12)', @stt_rec = @stt_rec, @so_ct = @so_ct
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable, this.WarrantyTable, this.TransTable, this.ImageTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable, this.WarrantyTable, this.TransTable, this.ImageTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -850,7 +871,8 @@ END";
                 IList<SVPaidModel> pr_paid = ds.Tables[2].ToList<SVPaidModel>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[3].ToList<SVWarrantyModel>();
                 IList<SVTransModel> pr_trans = ds.Tables[4].ToList<SVTransModel>();
-
+                IList<EInvoiceInfo> einvoice = ds.Tables[5].ToList<EInvoiceInfo>();
+                pr_trans.ToList().ForEach(x => x.stt_rec_hd = APIService.EncryptForWebApp(x.stt_rec_hd, this.security.KeyAES, this.security.IVAES));
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();
@@ -874,6 +896,11 @@ END";
                     Id = 4,
                     Name = _TRANS_PARA,
                     Data = pr_trans
+                }, new DetailItemModel()
+                {
+                    Id = 10,
+                    Name = _EINVOICE_INFO,
+                    Data = einvoice
                 }
                 });
 

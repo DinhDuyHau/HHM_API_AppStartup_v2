@@ -706,6 +706,21 @@ END";
             return model;
         }
 
+        public CommonObjectModel GetByPaging(object entities, string order_by = "", int page_index = 1, int page_size = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public CommonObjectModel GetOtherData(string so_ct, string ma_cuahang)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<ImeiState> GetImeis(CommonObjectModel model)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

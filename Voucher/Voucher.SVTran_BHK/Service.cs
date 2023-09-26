@@ -59,6 +59,8 @@ namespace Voucher.SVTran_BHK
         //Bảng lưu dữ liệu chi tiết của hàng thu cũ
         public string DetailHtcTable { get; } = "d589htc$";
         private const string _DETAIL_HTC_PARA = "d589htc";
+        public string EInvoiceTable { get; } = "hddt$";
+        private const string _EINVOICE_INFO = "hddt";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d589,d589,d589";
@@ -1102,10 +1104,12 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {6}' + @exp + ' b1 inner join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select x1.*, x2.ten_vt from {7}' + @exp + ' x1 inner join dmvt x2 on x1.ma_vt = x2.ma_vt where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
+                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {8}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.DetailDVTable,
-                this.DetailCkTable, this.DetailTtTable, this.DetailbhTable, this.DetailHtcTable);
+                this.DetailCkTable, this.DetailTtTable, this.DetailbhTable, this.DetailHtcTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1125,6 +1129,7 @@ END";
                 IList<TTDetail> tt_detail = ds.Tables[4].ToList<TTDetail>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<HtcDetail> htc_detail = ds.Tables[6].ToList<HtcDetail>();
+                IList<EInvoiceInfo> einvoice = ds.Tables[7].ToList<EInvoiceInfo>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -1168,7 +1173,12 @@ END";
                     Name = _DETAIL_HTC_PARA,
                     Data = htc_detail
                 });
-
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 10,
+                    Name = _EINVOICE_INFO,
+                    Data = einvoice
+                });
                 model.result = invoice_model;
             }
 

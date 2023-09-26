@@ -257,7 +257,7 @@ namespace Imei
         #endregion
         [HttpGet("soldinfo/")]
         #region GetImeiSoldInfo
-        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang)
+        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null)
         {
             try
             {
@@ -266,9 +266,9 @@ namespace Imei
                 //check injection
                 if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-
+  
                 //lấy trạng thái & thông tin imei
-                CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang);
+                CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1);
                 if (model.result != null)
                     model.success = true;
 

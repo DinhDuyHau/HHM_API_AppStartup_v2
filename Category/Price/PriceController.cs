@@ -31,7 +31,7 @@ namespace Price
         /// <returns></returns>
         [HttpGet("getserviceprice")]
         #region GetImeiInStore
-        public IActionResult GetServicePrice(string ma_dichvu, string ma_cuahang)
+        public IActionResult GetServicePrice(string ma_dichvu, string ma_cuahang, decimal gia_ban)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace Price
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy giá dịch vụ
-                ServicePriceModel price_item = _service.GetPriceOfServiceItem(ma_dichvu, ma_cuahang);
+                ServicePriceModel price_item = _service.GetPriceOfServiceItem(ma_dichvu, ma_cuahang, gia_ban);
                 if (price_item != null)
                 {
                     model.success = true;

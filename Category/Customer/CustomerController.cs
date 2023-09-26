@@ -1,9 +1,11 @@
 ﻿using Customer.Model;
 using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +19,10 @@ namespace Customer
     [Route("[controller]")]
     public class CustomerController : ControllerBase
     {
-        public CustomerController()
+        private readonly Security _security;
+        public CustomerController(IOptions<Security> security)
         {
+            this._security = security.Value;
         }
 
         /// <summary>
@@ -48,7 +52,7 @@ namespace Customer
 
                 //lấy công nợ
                 List<PaymentDebtModel> paymentDebts = _service.GetPaymentDebit(ma_kh, ma_dvcs, ngay_ct).Where(x => x.cl_nt > 0).OrderBy(x=>x.ngay_ct).ToList();
-
+                paymentDebts.ForEach(item => item.stt_rec = APIService.EncryptForWebApp(item.stt_rec, this._security.KeyAES, this._security.IVAES));
                 if (paymentDebts != null)
                 {
                     model.success = true;
@@ -167,7 +171,7 @@ namespace Customer
                 //lấy công nợ
                 List<PaymentDepositModel> paymentDeposit = 
                     _service.GetPaymentDeposit(ma_kh, ma_dvcs, ma_ctr == null ? "" : ma_ctr, ten_ctr == null ? "" : ten_ctr, ma_vt == null ? "" : ma_vt, ten_vt == null ? "" : ten_vt, ngay_ct).ToList();
-
+                paymentDeposit.ForEach(item => item.stt_rec = APIService.EncryptForWebApp(item.stt_rec, this._security.KeyAES, this._security.IVAES));
                 if (paymentDeposit != null)
                 {
                     EntityCollection<PaymentDepositModel> entity = new EntityCollection<PaymentDepositModel>

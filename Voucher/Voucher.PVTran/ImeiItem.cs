@@ -14,6 +14,7 @@ namespace Voucher.PVTran
         public string ma_kho { get; set; }
         public string ghi_chu { get; set; }
         public decimal gia_nt0 { get; set; }
-
+        public string ma_td1 { get; set; }
+        public bool budslive { get; set; }
     }
 }

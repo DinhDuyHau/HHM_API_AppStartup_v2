@@ -10,12 +10,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Genbyte.Sys.Common;
+using Microsoft.Extensions.Configuration;
 
 namespace EInvoice
 {
     public class Service: CoreService
     {
-        private string baseUrl = "http://hhm-kt.genbyte.net/AppService/MokaOnline.EInvoiceHHM.asmx/";
+        private string baseUrl { get; set; } = "http://hhm-kt.genbyte.net/AppService/MokaOnline.EInvoiceHHM.asmx";
+        public Service(IConfiguration configuration) {
+            this.baseUrl = configuration["EInvoice:EInvoiceService"];
+        }
+
         public async Task<object> CreateDraft(VoucherEntity voucher)
         {
             ResponseInfo responseInfo = new ResponseInfo();
@@ -23,7 +28,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "CreateDraft";
+                    string url = baseUrl + "/" + "CreateDraft";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
@@ -74,7 +79,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "CreateDraft";
+                    string url = baseUrl + "/" + "CreateDraft";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
@@ -111,7 +116,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "UpdateDraft";
+                    string url = baseUrl + "/" + "UpdateDraft";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
@@ -147,7 +152,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "GetInvoicePDF";
+                    string url = baseUrl + "/" + "GetInvoicePDF";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
@@ -200,7 +205,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "GetInvoicePDF";
+                    string url = baseUrl + "/" + "GetInvoicePDF";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
@@ -237,7 +242,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "GetPublishedInv";
+                    string url = baseUrl + "/" + "GetPublishedInv";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
@@ -289,7 +294,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "GetPublishedInv";
+                    string url = baseUrl + "/" + "GetPublishedInv";
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);

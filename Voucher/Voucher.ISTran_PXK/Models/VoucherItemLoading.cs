@@ -10,5 +10,6 @@ namespace Voucher.ISTran_PXK.Models
     {
         public string ten_kh { get; set; }
         public string dia_chi { get; set; }
+        public string image { get; set; }
     }
 }

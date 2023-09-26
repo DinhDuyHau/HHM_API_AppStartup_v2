@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 using Voucher.DRTran.Models;
 using Customer.Model;
 using System.Diagnostics.Metrics;
+using Genbyte.Base.Security;
 
 namespace Voucher.DRTran
 {
@@ -60,14 +61,16 @@ namespace Voucher.DRTran
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
-        public Service()
+        public Security security { get; set; }
+
+        public Service(Security security)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            this.security = security;
         }
 
         #region Inserting
@@ -171,9 +174,12 @@ namespace Voucher.DRTran
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-                        detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
-                        detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.ma_cuahang = vc_item.ma_cuahang;
+                            x.ma_ca = vc_item.ma_ca;
+                            x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, this.security.KeyAES, this.security.IVAES);
+                        });
 
 
                         item_detail.Data = new List<DetailEntity>();
@@ -337,6 +343,10 @@ namespace Voucher.DRTran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, this.security.KeyAES, this.security.IVAES);
+                        });
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -682,7 +692,9 @@ END";
                     (d, e) => new ORDetailFinding 
                     { 
                         stt_rec = d.stt_rec, stt_rec0 = d.stt_rec0, ma_ct = d.ma_ct, ngay_ct = d.ngay_ct, so_ct = d.so_ct, dien_giai = d.dien_giai,
-                        tien = d.tien, tien_nt = d.tien_nt, stt_rec_tt = d.stt_rec_tt, so_hd_tt = d.so_hd_tt, ngay_hd_tt = d.ngay_hd_tt, tt = d.tt,
+                        tien = d.tien, tien_nt = d.tien_nt,
+                        stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, this.security.KeyAES, this.security.IVAES), 
+                        so_hd_tt = d.so_hd_tt, ngay_hd_tt = d.ngay_hd_tt, tt = d.tt,
                         tt_nt = d.tt_nt, line_nbr = d.line_nbr, ma_ca = d.ma_ca, ma_cuahang = d.ma_cuahang, tien_hd = e.t_tt_nt, da_tt = e.da_tt_nt, 
                         tien_cl = e.cl_nt, con_lai = 0
                     }).ToList();
