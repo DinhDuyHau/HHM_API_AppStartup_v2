@@ -17,5 +17,7 @@ namespace Voucher.SVTran_BHF
         public string job_id { get; set; }
         public string ma_nvvc { get; set; }
         public string ten_vv { get; set; }
+        public string ma_nk { get; set; }
+        public string so_seri { get; set; }
     }
 }

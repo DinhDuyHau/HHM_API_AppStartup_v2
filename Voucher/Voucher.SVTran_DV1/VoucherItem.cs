@@ -13,5 +13,7 @@ namespace Voucher.SVTran_DV1
         public decimal t_ck_nt { get; set; }
         public decimal t_da_tra { get; set; }
         public decimal t_con_no { get; set; }
+        public string ma_nk { get; set; }
+        public string so_seri { get; set; }
     }
 }

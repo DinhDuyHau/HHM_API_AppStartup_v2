@@ -14,9 +14,12 @@ using Genbyte.Sys.Common.Models;
 
 namespace Category.Dmbp
 {
-    public class Service : IComponentService
+    public class Service : IComponentService, IComponentServiceExtend
     {
         public AccessRight CateRight { get; set; }
+        public ConnectType ConnectType { get; set; }
+        public bool isUseCache { get; set; }
+        public List<FieldModel> FilterInit { get; set; }
 
         public Service()
         {
@@ -25,9 +28,9 @@ namespace Category.Dmbp
             CateRight.AllowCreate = false;
             CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
-
-            //sử dụng data từ db accounting
-            CateRight.ConnectionType = ConnectType.Accounting;
+            ConnectType = ConnectType.Accounting;
+            FilterInit = new List<FieldModel>();
+            isUseCache = true;
         }
 
         #region CREATE

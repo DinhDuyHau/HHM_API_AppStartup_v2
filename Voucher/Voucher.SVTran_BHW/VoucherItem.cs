@@ -15,5 +15,7 @@ namespace Voucher.SVTran_BHW
         public decimal t_con_no { get; set; }
         public decimal tien_dat_coc { get; set; }
         public string ma_nvvc { get; set; }
+        public string ma_nk { get; set; }
+        public string so_seri { get; set; }
     }
 }
