@@ -26,6 +26,8 @@ namespace Category.Dmtinhthanh
             CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
 
+            //sử dụng data từ db accounting
+            CateRight.ConnectionType = ConnectType.Accounting;
         }
 
         #region CREATE

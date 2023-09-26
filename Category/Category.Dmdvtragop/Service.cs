@@ -22,9 +22,12 @@ namespace Category.Dmdvtragop
         {
             CateRight = new AccessRight();
             CateRight.AllowRead = true;
-            CateRight.AllowCreate = true;
-            CateRight.AllowUpdate = true;
+            CateRight.AllowCreate = false;
+            CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
+
+            //sử dụng data từ db accounting
+            CateRight.ConnectionType = ConnectType.Accounting;
 
         }
 
