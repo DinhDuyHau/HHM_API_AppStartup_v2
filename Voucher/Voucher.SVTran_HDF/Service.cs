@@ -247,7 +247,10 @@ namespace Voucher.SVTran_HDF
                 query += $"exec fs_UpdateNullToTable '{bill_table}', '{bill_table}', 'stt_rec = ''{stt_rec}''' \n";
 
             service.ExecuteNonQuery(query);
-
+            if (vc_item.status == "2")
+            {
+                service.ExecuteNonQuery(this.postConversionPoint(vc_item));
+            }
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
@@ -438,6 +441,7 @@ SELECT is_success, message FROM @check";
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
                 vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
+                vc_item.ngay_lct = old_voucher.ngay_lct;
 
                 foreach (VoucherDetail item in vc_item.details)
                 {
@@ -563,7 +567,10 @@ SELECT is_success, message FROM @check";
                 query += $"exec fs_UpdateNullToTable '{bill_table}', '{bill_table}', 'stt_rec = ''{stt_rec}''' \n";
 
             service.ExecuteNonQuery(query);
-
+            if (vc_item.status == "2")
+            {
+                service.ExecuteNonQuery(this.postConversionPoint(vc_item));
+            }
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"delete from {inquiry_table} where stt_rec = '{stt_rec}' \n";
@@ -797,5 +804,12 @@ END";
             return new List<ImeiState>();
         }
         #endregion
+
+        public string postConversionPoint(VoucherItem master)
+        {
+            string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
+            sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', null, {master.diem_qd}, {master.t_tt_nt}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
+            return sql;
+        }
     }
 }

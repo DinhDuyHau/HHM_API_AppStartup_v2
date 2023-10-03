@@ -27,7 +27,7 @@ namespace Option
         /// </summary>
         /// <returns></returns>
         [HttpGet("get_point_rate_exchange")]
-        #region get_payment_debit
+        #region get_point_rate_exchange
         public IActionResult GetPointConversionFactor()
         {
             try
@@ -58,6 +58,43 @@ namespace Option
             }
         }
         #endregion
+        /// <summary>
+        /// Lấy hệ số quy đổi từ điểm sang tiền
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("get_rate_exchange_reverse")]
+        #region m_exchange_reverse
+        public IActionResult GetPointConversionFactorReverse()
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+                //lấy option
+                OptionModel option = _service.GetOptionByName("m_exchange_reverse");
+
+                if (option != null)
+                {
+                    option.val = int.Parse(option.val.ToString());
+                    model.success = true;
+                    model.result = option;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- OptionController/GetPointConversionFactor/m_point_rate_exchange", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        
         /// <summary>
         /// Lấy hệ số quy đổi điểm
         /// </summary>

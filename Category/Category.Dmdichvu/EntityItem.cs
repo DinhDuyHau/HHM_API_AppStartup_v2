@@ -21,6 +21,7 @@ namespace Category.Dmdichvu
         public string ma_kho { get; set; }
 
         public string status { get; set; }
+        public bool ad_key { get; set; }
 
     }
 }

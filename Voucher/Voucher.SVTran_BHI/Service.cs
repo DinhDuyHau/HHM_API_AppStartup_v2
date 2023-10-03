@@ -387,6 +387,7 @@ SELECT is_success, message FROM @check";
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
                 vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
+                vc_item.ngay_lct = old_voucher.ngay_lct;
                 vc_item.ma_nk = old_voucher.ma_nk;
                 vc_item.so_seri = old_voucher.so_seri;
 

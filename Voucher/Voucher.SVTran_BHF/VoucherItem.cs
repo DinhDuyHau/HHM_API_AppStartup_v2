@@ -19,5 +19,6 @@ namespace Voucher.SVTran_BHF
         public string ten_vv { get; set; }
         public string ma_nk { get; set; }
         public string so_seri { get; set; }
+        public string email_nhan_key { get; set; }
     }
 }

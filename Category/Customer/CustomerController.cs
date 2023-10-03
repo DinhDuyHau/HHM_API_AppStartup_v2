@@ -5,6 +5,7 @@ using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -20,9 +21,11 @@ namespace Customer
     public class CustomerController : ControllerBase
     {
         private readonly Security _security;
-        public CustomerController(IOptions<Security> security)
+        private readonly IConfiguration _configuration;
+        public CustomerController(IOptions<Security> security, IConfiguration configuration)
         {
             this._security = security.Value;
+            this._configuration = configuration;
         }
 
         /// <summary>
@@ -191,6 +194,92 @@ namespace Customer
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- CustomerController/GetPaymentDeposit?ma_kh={ma_kh}&ma_dvcs={ma_dvcs}&ma_ctr={ma_ctr}&ma_vt={ma_vt}&ngay_ct={ngay_ct}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy tổng số điểm quy đổi hiện có của khách hàng dựa theo ngày chứng từ
+        /// </summary>
+        [HttpGet("get_conversion_point")]
+        #region get_payment_debit
+        public IActionResult GetConversionPoint(string ma_kh, DateTime ngay_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_kh))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy điểm
+                decimal diem_qd = _service.GetConversionPoint(ma_kh, ngay_ct);
+                if (diem_qd != null)
+                {
+                    model.success = true;
+                    model.result = diem_qd;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- CustomerController/GetConversionPoint?ma_kh={ma_kh}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        /// <summary>
+        /// Lấy thông tin khách hàng theo mã số thuế
+        /// </summary>
+        [HttpGet("get_infomation_by_tax")]
+        #region get_payment_debit
+        public IActionResult GetCustomerInfoByTax(string ma_so_thue)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_so_thue))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                string serviceTax = _configuration["Customer:TaxService"];
+
+                CustomerInfoByTax customer_info = _service.GetCustomerInfoByTax(serviceTax, ma_so_thue);
+                
+                if (customer_info != null)
+                {
+                    if (customer_info.error)
+                    {
+                        model.success = false;
+                        model.message = "not_found_customer_by_tax";
+                    }
+                    else
+                    {
+                        model.success = true;
+                        model.result = customer_info;
+                    }
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- CustomerController/GetCustomerInfoByTax?tax={ma_so_thue}", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

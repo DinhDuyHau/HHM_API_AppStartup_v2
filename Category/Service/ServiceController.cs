@@ -1,0 +1,128 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Genbyte.Sys.AppAuth;
+using Genbyte.Sys.Common;
+using Genbyte.Sys.Common.Models;
+using Genbyte.Base.CoreLib;
+using System.Data;
+using Service.Model;
+using Mail.Model;
+using Mail;
+using Microsoft.Extensions.Options;
+using Genbyte.Base.Security;
+
+namespace Servive
+{
+    [Authorize]
+    [ApiController]
+    [Route("[controller]")]
+    public class ServiceController : ControllerBase
+    {
+        private readonly SmtpConfig _smtpConfig;
+        private readonly Security _security;
+        public ServiceController(IOptions<SmtpConfig> smtpConfig, IOptions<Security> security)
+        {
+            _smtpConfig = smtpConfig.Value;
+            _security = security.Value;
+        }
+
+        /// <summary>
+        /// Lấy giá bán của dịch vụ
+        /// </summary>
+        /// <param name="ma_dichvu">mã dịch vụ cần lấy thông tin</param>
+        /// <param name="ma_dichvu">số lượng</param>
+        /// <param name="ma_cuahang">mã cửa hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_key_service")]
+        #region GetKeyService
+        public IActionResult GetKeyService(string ma_dichvu, decimal so_luong)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if(!_service.IsSQLInjectionValid(ma_dichvu))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                List<KeyServiceModel> price_item = _service.GetKeyService(ma_dichvu, so_luong);
+                if (price_item != null)
+                {
+                    model.success = true;
+                    model.result = price_item.Count == so_luong;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetServicePrice?ma_imei={ma_dichvu}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        /// <summary>
+        /// Gửi email
+        /// </summary>
+        [HttpPost("send_email")]
+        #region send_email
+        public IActionResult SendEmail(string stt_rec)
+        {
+            CommonObjectModel model = new CommonObjectModel
+            {
+                message = "send_email_error",
+                result = null,
+                success = false,
+            };
+            stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
+            Service _service = new Service();
+
+            //check injection
+            if (!_service.IsSQLInjectionValid(stt_rec))
+                return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+            List<KeyToSendEmail> keyToSends = _service.GetKeyToSendEmail(stt_rec);
+            if(keyToSends == null || keyToSends.Count == 0)
+            {
+                model.message = "";
+                return Ok(model);
+            }
+            string title = "Hoàng Hà Mobile";
+            string body = _service.GenerateHTML(keyToSends);
+
+            MailRequest request = new MailRequest
+            {
+                title = title,
+                body = body,
+                send_to = keyToSends[0].email0
+            };
+            MailService mailService = new MailService();
+            try
+            {
+                mailService.Send(request, _smtpConfig);
+            }
+            catch (Exception ex)
+            {
+                return Ok(model);
+            }
+            model.success = true;
+            model.message = "send_email_success";
+            return Ok(model);
+        }
+        #endregion
+
+
+    }
+}

@@ -1,6 +1,6 @@
 ﻿using Genbyte.Sys.Common;
 
-namespace Category.Dmkh
+namespace Category.Vdmkh
 {
     public class EntityItem
     {
@@ -34,6 +34,9 @@ namespace Category.Dmkh
         public string hoadon_diachi { get; set; }
         public string hoadon_email { get; set; }
         public decimal do_tuoi { get; set; }
+        public string ten_tinh { get; set; }
+        public string ten_quan { get; set; }
+        public string ten_phuong { get; set; }
 
     }
 }

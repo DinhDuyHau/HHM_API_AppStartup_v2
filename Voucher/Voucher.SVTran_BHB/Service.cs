@@ -344,7 +344,19 @@ namespace Voucher.SVTran_BHB
             if (!string.IsNullOrEmpty(trans_table))
                 query += $"exec fs_UpdateNullToTable '{trans_table}', '{trans_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
-
+            if (!string.IsNullOrEmpty(paid_table) && vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
+                List<SVPaidModel>? detail_list = new List<SVPaidModel>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is SVPaidModel sVPaid)
+                    {
+                        detail_list.Add(sVPaid);
+                    }
+                }
+                service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
+            }
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
@@ -554,6 +566,7 @@ SELECT is_success, message FROM @check";
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
                 vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
+                vc_item.ngay_lct = old_voucher.ngay_lct;
                 vc_item.ma_nk = old_voucher.ma_nk;
                 vc_item.so_seri = old_voucher.so_seri;
 
@@ -738,7 +751,19 @@ SELECT is_success, message FROM @check";
             if (!string.IsNullOrEmpty(trans_table))
                 query += $"exec fs_UpdateNullToTable '{trans_table}', '{trans_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
-
+            if (!string.IsNullOrEmpty(paid_table) && vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
+                List<SVPaidModel>? detail_list = new List<SVPaidModel>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is SVPaidModel sVPaid)
+                    {
+                        detail_list.Add(sVPaid);
+                    }
+                }
+                service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
+            }
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"delete from {inquiry_table} where stt_rec = '{stt_rec}' \n";
@@ -1035,5 +1060,19 @@ END";
             return new List<ImeiState>();
         }
         #endregion
+        public string postConversionPoint(SVPaidModel model, VoucherItem master)
+        {
+
+            string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
+            if (model != null)
+            {
+                sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', {master.diem_qd}, {model.diem_qd}, {model.tien}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
+            }
+            else
+            {
+                sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', {master.diem_qd}, null, null, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
+            }
+            return sql;
+        }
     }
 }

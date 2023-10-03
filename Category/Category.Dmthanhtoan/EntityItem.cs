@@ -14,5 +14,7 @@ namespace Category.Dmthanhtoan
         //[IgnoreDbUpdate(true)]
         public string status { get; set; }
         public bool isHide { get; set; }
+        public bool isHidePaymentInvoce { get; set; }
+        public bool isDefaultPaymentInvoce { get; set; }
     }
 }
