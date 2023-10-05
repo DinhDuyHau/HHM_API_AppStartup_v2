@@ -105,7 +105,11 @@ namespace Voucher.SVTran_BHD
 
             // cập nhật ma_gd = 2
             vc_item.ma_gd = VoucherUtils.MA_GD;
+
             List<ServiceDetailBase> serviceModels = new List<ServiceDetailBase>();
+            List<PaidDetailBase> paidDetails = new List<PaidDetailBase>();
+            List<string> list_vt = new List<string>();
+
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
@@ -141,6 +145,7 @@ namespace Voucher.SVTran_BHD
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
+                                    list_vt.AddRange(detail_list.Select(x => x.ma_vt));
                                 }
                                 item_detail.Detail_Type = typeof(SVDetail).Name;
                                 break;
@@ -178,6 +183,7 @@ namespace Voucher.SVTran_BHD
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
+                                    paidDetails = paid_list.Cast<PaidDetailBase>().ToList();
                                 }
                                 item_detail.Detail_Type = typeof(SVPaidModel).Name;
                                 break;
@@ -215,16 +221,23 @@ namespace Voucher.SVTran_BHD
             }
             if (vc_item.status == "2")
             {
+                CommonObjectModel checkModel = new CommonObjectModel();
                 if (serviceModels != null && serviceModels.Count > 0)
                 {
-                    CommonObjectModel check_service_result = CommonService.checkServiceValid(serviceModels);
-
-                    if (!check_service_result.success)
+                    checkModel = CommonService.checkServiceValid(serviceModels);
+                }
+                if (paidDetails != null)
+                {
+                    if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
                     {
-                        result_model.success = false;
-                        result_model.message = check_service_result.message;
-                        return result_model;
+                        checkModel = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"), list_vt);
                     }
+                }
+                if (!checkModel.success)
+                {
+                    result_model.success = false;
+                    result_model.message = checkModel.message;
+                    return result_model;
                 }
             }
             result_model.result = vc_item;
@@ -412,7 +425,16 @@ namespace Voucher.SVTran_BHD
                             detail_list.Add(sVPaid);
                         }
                     }
-                    service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
+                    // Điểm quy đổi
+                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
+                    {
+                        service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
+                    }
+                    // Active mã giảm giá
+                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                    {
+                        CommonService.updateDiscountCode(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
+                    }
                 }
                 if (!string.IsNullOrEmpty(services_table) && vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA) != null)
                 {
@@ -483,7 +505,8 @@ namespace Voucher.SVTran_BHD
             vc_item.ma_gd = VoucherUtils.MA_GD;
 
             List<ServiceDetailBase> serviceModels = new List<ServiceDetailBase>();
-
+            List<PaidDetailBase> paidDetails = new List<PaidDetailBase>();
+            List<string> list_vt = new List<string>();
             if (!string.IsNullOrEmpty(vc_item.status) && vc_item.status.Trim() == "2" && vc_item.lap_dh_lk == 0)
             {
                 throw new Exception(ApiReponseMessage.Error_InputData);
@@ -516,6 +539,7 @@ namespace Voucher.SVTran_BHD
                                     });
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
+                                    list_vt.AddRange(detail_list.Select(x => x.ma_vt));
                                 }
                                 item_detail.Detail_Type = typeof(SVDetail).Name;
                                 break;
@@ -544,6 +568,7 @@ namespace Voucher.SVTran_BHD
                                 {
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
+                                    paidDetails = paid_list.Cast<PaidDetailBase>().ToList();
                                 }
                                 item_detail.Detail_Type = typeof(SVPaidModel).Name;
                                 break;
@@ -644,16 +669,23 @@ SELECT is_success, message FROM @check";
                     return result_model;
                 }
 
+                CommonObjectModel checkModel = new CommonObjectModel();
                 if (serviceModels != null && serviceModels.Count > 0)
                 {
-                    CommonObjectModel check_service_result = CommonService.checkServiceValid(serviceModels);
-
-                    if (!check_service_result.success)
+                    checkModel = CommonService.checkServiceValid(serviceModels);
+                }
+                if (paidDetails != null)
+                {
+                    if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
                     {
-                        result_model.success = false;
-                        result_model.message = check_service_result.message;
-                        return result_model;
+                        checkModel = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"), list_vt);
                     }
+                }
+                if (!checkModel.success)
+                {
+                    result_model.success = false;
+                    result_model.message = checkModel.message;
+                    return result_model;
                 }
             }
 
@@ -918,7 +950,16 @@ SELECT is_success, message FROM @check";
                             detail_list.Add(sVPaid);
                         }
                     }
-                    service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
+                    // Điểm quy đổi
+                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
+                    {
+                        service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
+                    }
+                    // Active mã giảm giá
+                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                    {
+                        CommonService.updateDiscountCode(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
+                    }
                 }
                 if (!string.IsNullOrEmpty(service_table) && vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA) != null)
                 {

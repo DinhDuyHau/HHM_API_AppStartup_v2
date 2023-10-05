@@ -111,7 +111,6 @@ namespace Voucher.SVTran_BHC
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
             }
-
             // cập nhật ma_gd = 2
             vc_item.ma_gd = VoucherUtils.MA_GD;
 
@@ -236,16 +235,16 @@ namespace Voucher.SVTran_BHC
             }
             if (vc_item.status == "2")
             {
+                CommonObjectModel checkModel = new CommonObjectModel(); 
                 if (serviceModels != null && serviceModels.Count > 0)
                 {
-                    CommonObjectModel check_service_result = CommonService.checkServiceValid(serviceModels);
-
-                    if (!check_service_result.success)
-                    {
-                        result_model.success = false;
-                        result_model.message = check_service_result.message;
-                        return result_model;
-                    }
+                    checkModel = CommonService.checkServiceValid(serviceModels);
+                }
+                if (!checkModel.success)
+                {
+                    result_model.success = false;
+                    result_model.message = checkModel.message;
+                    return result_model;
                 }
             }
             result_model.result = vc_item;
@@ -455,19 +454,6 @@ namespace Voucher.SVTran_BHC
 
             if (vc_item.status == "2")
             {
-                if (!string.IsNullOrEmpty(paid_table) && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
-                    List<SVPaidModel>? detail_list = new List<SVPaidModel>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is SVPaidModel sVPaid)
-                        {
-                            detail_list.Add(sVPaid);
-                        }
-                    }
-                    service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
-                }
                 if (!string.IsNullOrEmpty(services_table) && vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA) != null)
                 {
                     VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA);
@@ -699,16 +685,16 @@ SELECT is_success, message FROM @check";
                     result_model.message = "imei_not_exists";
                     return result_model;
                 }
+                CommonObjectModel checkModel = new CommonObjectModel();
                 if (serviceModels != null && serviceModels.Count > 0)
                 {
-                    CommonObjectModel check_service_result = CommonService.checkServiceValid(serviceModels);
-
-                    if (!check_service_result.success)
-                    {
-                        result_model.success = false;
-                        result_model.message = check_service_result.message;
-                        return result_model;
-                    }
+                    checkModel = CommonService.checkServiceValid(serviceModels);
+                }
+                if (!checkModel.success)
+                {
+                    result_model.success = false;
+                    result_model.message = checkModel.message;
+                    return result_model;
                 }
             }
 
@@ -992,19 +978,6 @@ SELECT is_success, message FROM @check";
             service.ExecuteNonQuery(query);
             if (vc_item.status == "2")
             {
-                if (!string.IsNullOrEmpty(paid_table) && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
-                    List<SVPaidModel>? detail_list = new List<SVPaidModel>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is SVPaidModel sVPaid)
-                        {
-                            detail_list.Add(sVPaid);
-                        }
-                    }
-                    service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
-                }
                 if (!string.IsNullOrEmpty(service_table) && vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA) != null)
                 {
                     VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA);
@@ -1352,19 +1325,5 @@ END";
             return new List<ImeiState>();
         }
         #endregion
-        public string postConversionPoint(SVPaidModel model, VoucherItem master)
-        {
-
-            string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
-            if (model != null)
-            {
-                sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', {master.diem_qd}, {model.diem_qd}, {model.tien}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
-            }
-            else
-            {
-                sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', {master.diem_qd}, null, null, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
-            }
-            return sql;
-        }
     }
 }
