@@ -20,6 +20,8 @@ namespace Voucher.PTHTran
         public decimal t_tien_hoa_hong_nt { get; set; }
         public decimal t_tt { get; set; }
         public decimal t_tt_nt { get; set; }
+        public decimal t_con_no { get; set; }
+        public decimal t_da_tra { get; set; }
         public DateTime? ngay_lct { get; set; }
     }
 }

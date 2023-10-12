@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
+using Price.Model;
 
 namespace Price
 {
@@ -35,6 +36,76 @@ namespace Price
                 Value = gia_ban
             });
             List<ServicePriceModel> entities = base.ExecSql2List<ServicePriceModel>(sql, paras);
+            return entities.FirstOrDefault();
+        }
+
+        public List<RenewPriceModel> GetRenewPrice(string ma_vt, string ma_cuahang)
+        {
+            string sql = "exec Genbyte$Item$GetRenewPrice @ma_vt, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_vt",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cuahang
+            });
+            List<RenewPriceModel> entities = base.ExecSql2List<RenewPriceModel>(sql, paras);
+            return entities;
+        }
+
+        public ReturnPriceModel GetReturnPrice(string ma_vt, string ma_imei, string ma_cuahang, DateTime ngay_ct, decimal gia_nt, decimal rate, decimal tien_giam)
+        {
+            string sql = "exec Genbyte$Item$GetReturnPrice @ma_vt, @ma_imei, @ma_cuahang, @ngay_ct, @gia_nt, @rate, @tien_giam";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_vt",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_imei",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_imei
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cuahang
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@gia_nt",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_nt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@rate",
+                SqlDbType = SqlDbType.Decimal,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@tien_giam",
+                SqlDbType = SqlDbType.Decimal,
+                Value = ngay_ct
+            });
+            List<ReturnPriceModel> entities = base.ExecSql2List<ReturnPriceModel>(sql, paras);
             return entities.FirstOrDefault();
         }
     }

@@ -37,6 +37,8 @@ namespace Category.Vdmkh
         public string ten_tinh { get; set; }
         public string ten_quan { get; set; }
         public string ten_phuong { get; set; }
+        public string tk_nh { get; set; }
+        public string ngan_hang { get; set; }
 
     }
 }

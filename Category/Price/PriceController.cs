@@ -11,6 +11,8 @@ using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 using Genbyte.Base.CoreLib;
 using System.Data;
+using Price.Model;
+using System.Runtime.InteropServices;
 
 namespace Price
 {
@@ -65,7 +67,89 @@ namespace Price
         }
         #endregion
 
-        
 
+        /// <summary>
+        /// Lấy giá bán của hàng thu cũ 
+        /// </summary>
+        /// <param name="ma_vt">mã hàng cần lấy thông tin</param>
+        /// <param name="ma_cuahang">mã cửa hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_renew_price")]
+        #region GetRenewPrice
+        public IActionResult GetRenewPrice(string ma_vt, string ma_cuahang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_vt) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy giá dịch vụ
+                List<RenewPriceModel> price_item = _service.GetRenewPrice(ma_vt, ma_cuahang);
+                if (price_item != null)
+                {
+                    model.success = true;
+                    model.result = price_item;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetRenewPrice?ma_imei={ma_vt}&ma_cuahang={ma_cuahang}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy giá bán của hàng bán trả lại
+        /// </summary>
+        /// <param name="ma_vt">mã hàng cần lấy thông tin</param>
+        /// <param name="ma_cuahang">mã cửa hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_return_price")]
+        #region GetReturnPrice
+        public IActionResult GetReturnPrice(string ma_vt, string ma_imei, string ma_cuahang, DateTime ngay_ct, decimal gia_nt, decimal? rate = null, decimal? tien_giam = 0)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_vt) || !_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy giá dịch vụ
+                ReturnPriceModel price_item = _service.GetReturnPrice(ma_vt, ma_imei, ma_cuahang, ngay_ct, gia_nt, rate ?? -1, tien_giam ?? 0);
+                if (price_item != null)
+                {
+                    model.success = true;
+                    model.result = price_item;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetReturnPrice?ma_imei={ma_vt}&ma_cuahang={ma_cuahang}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }

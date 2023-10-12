@@ -35,5 +35,8 @@ namespace Category.Dmkh
         public string hoadon_email { get; set; }
         public decimal do_tuoi { get; set; }
 
+        public string tk_nh { get; set; }
+        public string ngan_hang { get; set; }
+
     }
 }

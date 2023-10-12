@@ -206,6 +206,7 @@ namespace Voucher.SVTran_BHB
                 index_value++;
             }
             CommonObjectModel checkModel = new CommonObjectModel();
+            checkModel.success = true;
             if (vc_item.status == "2")
             {
                 if (paidDetails != null)
@@ -568,6 +569,7 @@ SELECT is_success, message FROM @check";
                     return result_model;
                 }
                 CommonObjectModel checkModel = new CommonObjectModel();
+                checkModel.success = true;
                 if (paidDetails != null)
                 {
                     if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)

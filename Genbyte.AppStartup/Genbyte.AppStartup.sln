@@ -211,7 +211,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "..\Category\Serv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmhddt_httt", "..\Category\Category.Dmhddt_httt\Category.Dmhddt_httt.csproj", "{8D716609-AEEF-42A4-9814-4412AC5C69E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscountCode", "..\Category\DiscountCode\DiscountCode.csproj", "{BB3FFEA3-1F81-4422-A5FC-BA8D9DFBD4CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscountCode", "..\Category\DiscountCode\DiscountCode.csproj", "{BB3FFEA3-1F81-4422-A5FC-BA8D9DFBD4CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Category.Dmtd2", "..\Category\Category.Dmtd2\Category.Dmtd2.csproj", "{C952CB20-84EC-43B9-B92C-4004CBB61ED0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -627,6 +629,10 @@ Global
 		{BB3FFEA3-1F81-4422-A5FC-BA8D9DFBD4CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB3FFEA3-1F81-4422-A5FC-BA8D9DFBD4CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB3FFEA3-1F81-4422-A5FC-BA8D9DFBD4CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C952CB20-84EC-43B9-B92C-4004CBB61ED0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C952CB20-84EC-43B9-B92C-4004CBB61ED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C952CB20-84EC-43B9-B92C-4004CBB61ED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C952CB20-84EC-43B9-B92C-4004CBB61ED0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -716,6 +722,7 @@ Global
 		{D0CC94E7-ED93-487F-A205-1CC821F58564} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{A952437A-B23F-42F6-B83A-1D1F4FFE3624} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 		{BB3FFEA3-1F81-4422-A5FC-BA8D9DFBD4CD} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
+		{C952CB20-84EC-43B9-B92C-4004CBB61ED0} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}

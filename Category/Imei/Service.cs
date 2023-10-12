@@ -2,6 +2,7 @@
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
+using Imei.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Data;
@@ -72,6 +73,30 @@ namespace Imei
                 Value = imei_list
             });
             return base.ExecSql2List<ImeiState>(sql, paras);
+        }
+        /// <summary>
+        /// Lấy thông tin tình trạng của danh sách imei
+        /// </summary>
+        /// <param name="imei"></param>
+        /// <returns></returns>
+        public List<ImeiInfo> GetStateAndItemOfImeis(List<string> imeis)
+        {
+            string imei_list = string.Join(",", imeis);
+            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@shop_id",
+                SqlDbType = SqlDbType.Char,
+                Value = Startup.Shop == null ? string.Empty : Startup.Shop
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@imeis",
+                SqlDbType = SqlDbType.Char,
+                Value = imei_list
+            });
+            return base.ExecSql2List<ImeiInfo>(sql, paras);
         }
 
         /// <summary>
@@ -238,7 +263,7 @@ namespace Imei
         /// <param name="imeiId"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, string ma_ct, decimal rate)
+        public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam)
         {
             CommonObjectModel model = new CommonObjectModel()
             {
@@ -249,7 +274,7 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
@@ -273,6 +298,12 @@ namespace Imei
                 ParameterName = "@rate",
                 SqlDbType = SqlDbType.Decimal,
                 Value = rate
+            }
+            ,new SqlParameter()
+            {
+                ParameterName = "@tien_giam",
+                SqlDbType = SqlDbType.Decimal,
+                Value = tien_giam
             }});
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
 

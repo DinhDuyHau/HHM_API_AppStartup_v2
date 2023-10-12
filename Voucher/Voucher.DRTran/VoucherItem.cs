@@ -21,6 +21,8 @@ namespace Voucher.DRTran
         public decimal t_tt_nt { get; set; }
         public decimal s4 { get; set; }
         public decimal s5 { get; set; }
+        public decimal t_con_no { get; set; }
+        public decimal t_da_tra { get; set; }
         public DateTime? ngay_lct { get; set; }
     }
 }

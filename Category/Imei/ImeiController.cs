@@ -140,6 +140,44 @@ namespace Imei
         #endregion
 
         /// <summary>
+        /// Lấy thông tin về tình trạng của imei và vật tư
+        /// </summary>
+        /// <param name="imeis">danh sách imei cần truy vấn</param>
+        /// <returns></returns>
+        [HttpPost("get_state_and_item")]
+        #region GetImeiStateAndItem
+        public IActionResult GetImeiStateAndItem([FromBody] List<string> imeis)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(imeis.ToArray()))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy trạng thái & thông tin imei
+                model.result = _service.GetStateAndItemOfImeis(imeis);
+                if (model.result != null)
+                    model.success = true;
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/GetImeiStateAndItem", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
         /// Lấy danh sách imei có tồn kho theo mã vật tư tại cửa hàng (mã cửa hàng hiện thời lấy từ thông tin đăng nhập)
         /// </summary>
         /// <param name="ma_ct">Mã chứng từ</param>
@@ -257,7 +295,7 @@ namespace Imei
         #endregion
         [HttpGet("soldinfo/")]
         #region GetImeiSoldInfo
-        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null)
+        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0)
         {
             try
             {
@@ -268,7 +306,7 @@ namespace Imei
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
   
                 //lấy trạng thái & thông tin imei
-                CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1);
+                CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0);
                 if (model.result != null)
                     model.success = true;
 

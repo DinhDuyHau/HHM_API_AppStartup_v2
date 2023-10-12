@@ -103,5 +103,6 @@
         public bool hang_km { get; set; }
         public decimal tien_kmqd { get; set; }
         public string imei_mua { get; set; }
+        public decimal gia_tra_lai { get; set; }
     }
 }

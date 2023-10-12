@@ -207,6 +207,7 @@ namespace Voucher.SVTran
             if (vc_item.status == "2")
             {
                 CommonObjectModel checkModel = new CommonObjectModel();
+                checkModel.success = true;
                 if (serviceModels != null && serviceModels.Count > 0)
                 {
                     checkModel = CommonService.checkServiceValid(serviceModels);
@@ -637,6 +638,7 @@ SELECT is_success, message FROM @check";
                 }
 
                 CommonObjectModel checkModel = new CommonObjectModel();
+                checkModel.success = true;
                 if (serviceModels != null && serviceModels.Count > 0)
                 {
                     checkModel = CommonService.checkServiceValid(serviceModels);

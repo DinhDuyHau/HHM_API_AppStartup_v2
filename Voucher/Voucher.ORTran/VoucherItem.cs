@@ -19,6 +19,8 @@ namespace Voucher.ORTran
         public decimal t_tt_nt { get; set; }
         public string tk { get; set; }
         public string ma_loaigd { get; set; }
+        public decimal t_con_no { get; set; }
+        public decimal t_da_tra { get; set; }
         public DateTime? ngay_lct { get; set; }
     }
 }
