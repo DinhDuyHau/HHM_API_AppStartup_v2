@@ -5,9 +5,11 @@ namespace Voucher.OPTran
     public class VoucherItem : VoucherEntity
     {
         public string ma_gd { get; set; }
+        public string ma_thanhtoan { get; set; }
         public string loai_ct { get; set; }
         public string ma_loaigd { get; set; }
         public string tk { get; set; }
+        public string tknh { get; set; }
 
         public string dien_giai { get; set; }
         public string ma_kh { get; set; }

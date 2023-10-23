@@ -12,7 +12,7 @@ using Genbyte.Component.Category;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 
-namespace Category.Dmloaikho
+namespace Category.Dmnhvt
 {
     public class Service : IComponentService
     {
@@ -47,17 +47,17 @@ namespace Category.Dmloaikho
                 throw new Exception(ApiReponseMessage.isNullResult);
 
             //check sql injection
-            if (!data_service.IsSQLInjectionValid(entity_item.ma_loai))
+            if (!data_service.IsSQLInjectionValid(entity_item.ma_nh))
                 throw new Exception(ApiReponseMessage.Error_InputData);
 
             //check tồn tại dữ liệu trong db theo khóa chính
-            string sql = "select 1 from dmloaikho where ma_loai = @ma_loai";
+            string sql = "select 1 from dmnhvt where ma_nh = @ma_nh";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
-                ParameterName = "@ma_loai",
+                ParameterName = "@ma_nh",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_loai
+                Value = entity_item.ma_nh
             });
             DataSet ds = data_service.ExecSql2DataSet(sql, paras);
             if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
@@ -191,13 +191,13 @@ namespace Category.Dmloaikho
                 return false;
 
             DataService db_service = new DataService();
-            string sql = "select * from dmloaikho where ma_loai = @ma_loai";
+            string sql = "select * from dmnhvt where ma_nh = @ma_nh";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
-                ParameterName = "@ma_loai",
+                ParameterName = "@ma_nh",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_loai
+                Value = entity_item.ma_nh
             });
             List<EntityItem> check_list = db_service.ExecSql2List<EntityItem>(sql, paras);
             is_valid = check_list != null && check_list.Count > 0;

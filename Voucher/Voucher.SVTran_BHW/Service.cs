@@ -1200,11 +1200,9 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {6}' + @exp + ' b1 inner join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select e1.*, e0.ten_loai from {7}' + @exp + ' e1 inner join dmloaivc_online e0 on e1.ma_loaivc = e0.ma_loai where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select * from {8}' + @exp + ' where stt_rec = @stt_rec'
-    SELECT @q = @q + CHAR(13) + 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
-                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {9}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.TransportTable, this.DetailKMTable, this.EInvoiceTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.TransportTable, this.DetailKMTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1225,7 +1223,29 @@ END";
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
                 IList<SVTransportModel> pr_transport = ds.Tables[6].ToList<SVTransportModel>();
                 IList<SVPromotionModel> km_detail = ds.Tables[7].ToList<SVPromotionModel>();
-                IList<EInvoiceInfo> einvoice = ds.Tables[8].ToList<EInvoiceInfo>();
+                sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6)
+                    SET @stt_rec = @vc_id
+	                SELECT @exp = CONVERT(CHAR(6), @ngay_ct, 112)
+                    SELECT @q = 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
+                                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {0}' + @exp + ' where ref_stt_rec = @stt_rec'
+	                EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec";
+                sql = string.Format(sql, this.EInvoiceTable);
+                List<SqlParameter> paras1 = new List<SqlParameter>();
+                paras1.Add(new SqlParameter()
+                {
+                    ParameterName = "@vc_id",
+                    SqlDbType = SqlDbType.Char,
+                    Value = voucherId.Replace("'", "''")
+                });
+                paras1.Add(new SqlParameter()
+                {
+                    ParameterName = "@ngay_ct",
+                    SqlDbType = SqlDbType.DateTime,
+                    Value = vc_item.ngay_ct
+                });
+                DataSet ds1 = core_service.ExecSql2DataSet(sql, paras1, ConnectType.Report);
+
+                IList<EInvoiceInfo> einvoice = ds1.Tables[0].ToList<EInvoiceInfo>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;

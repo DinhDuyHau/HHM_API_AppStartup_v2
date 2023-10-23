@@ -91,6 +91,8 @@ namespace Voucher.ITNTran
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
             }
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
@@ -248,6 +250,8 @@ namespace Voucher.ITNTran
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
             }
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -584,6 +588,7 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"EXEC MokaOnline$Voucher$PXNDeletePNN @vc_id\n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {

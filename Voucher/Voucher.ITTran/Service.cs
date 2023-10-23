@@ -577,6 +577,8 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+
+            sql += $"EXEC MokaOnline$Voucher$PXBDeletePNF @vc_id\n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {

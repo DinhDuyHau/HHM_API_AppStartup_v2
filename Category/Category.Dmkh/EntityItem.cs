@@ -23,11 +23,12 @@ namespace Category.Dmkh
         public string ma_quan { get; set; }
         public string ma_phuong { get; set; }
 
-        public bool kh_yn { get; set; }
+        public bool kh_yn { get; set; } = true;
 
-        public bool cc_yn { get; set; }
+        public bool cc_yn { get; set; } = true;
 
-        public bool nv_yn { get; set; }
+        public bool nv_yn { get; set; } = true;
+        public bool vdt_yn { get; set; }
         public string image { get; set; }
         public string hoadon_mst { get; set; }
         public string hoadon_tenkh { get; set; }
@@ -37,6 +38,7 @@ namespace Category.Dmkh
 
         public string tk_nh { get; set; }
         public string ngan_hang { get; set; }
+        public string status { get; set; } = "1";
 
     }
 }

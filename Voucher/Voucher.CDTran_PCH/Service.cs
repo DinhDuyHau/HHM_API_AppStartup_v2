@@ -705,7 +705,7 @@ SELECT is_success, message FROM @check";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
+	SELECT @q = 'select a.*, b.ten_kh, c.ten_nh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join dmtknh c on a.tknh = c.tknh where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_vt, c.ten_ctr from {2}' + @exp + ' a left join dmvt b on a.ma_vt = b.ma_vt left join phctrmoban c on a.ma_ctr = c.ma_ctr where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";

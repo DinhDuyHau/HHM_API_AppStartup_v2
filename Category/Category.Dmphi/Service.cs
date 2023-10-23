@@ -12,7 +12,7 @@ using Genbyte.Component.Category;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 
-namespace Category.Dmloaikho
+namespace Category.Dmphi
 {
     public class Service : IComponentService
     {
@@ -25,7 +25,7 @@ namespace Category.Dmloaikho
             CateRight.AllowCreate = false;
             CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
-            CateRight.ConnectionType = ConnectType.Accounting;
+
         }
 
         #region CREATE
@@ -47,17 +47,17 @@ namespace Category.Dmloaikho
                 throw new Exception(ApiReponseMessage.isNullResult);
 
             //check sql injection
-            if (!data_service.IsSQLInjectionValid(entity_item.ma_loai))
+            if (!data_service.IsSQLInjectionValid(entity_item.ma_phi))
                 throw new Exception(ApiReponseMessage.Error_InputData);
 
             //check tồn tại dữ liệu trong db theo khóa chính
-            string sql = "select 1 from dmloaikho where ma_loai = @ma_loai";
+            string sql = "select 1 from dmphi where ma_phi = @ma_phi";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
-                ParameterName = "@ma_loai",
+                ParameterName = "@ma_phi",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_loai
+                Value = entity_item.ma_phi
             });
             DataSet ds = data_service.ExecSql2DataSet(sql, paras);
             if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
@@ -74,9 +74,18 @@ namespace Category.Dmloaikho
         /// <returns>giá trị result là object đã được insert</returns>
         public CommonObjectModel Inserted(object entity)
         {
+            if(entity == null)
+            {
+                return new CommonObjectModel()
+                {
+                    message = "save_category_fail",
+                    success = false,
+                    result = entity
+                };
+            }
             return new CommonObjectModel()
             {
-                message = "",
+                message = "save_category_success",
                 success = true,
                 result = entity
             };
@@ -191,13 +200,13 @@ namespace Category.Dmloaikho
                 return false;
 
             DataService db_service = new DataService();
-            string sql = "select * from dmloaikho where ma_loai = @ma_loai";
+            string sql = "select * from dmphi where ma_phi = @ma_phi";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
-                ParameterName = "@ma_loai",
+                ParameterName = "@ma_phi",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_loai
+                Value = entity_item.ma_phi
             });
             List<EntityItem> check_list = db_service.ExecSql2List<EntityItem>(sql, paras);
             is_valid = check_list != null && check_list.Count > 0;
@@ -212,9 +221,18 @@ namespace Category.Dmloaikho
         /// <returns>giá trị result là object đã được update</returns>
         public CommonObjectModel Updated(object entity)
         {
+            if (entity == null)
+            {
+                return new CommonObjectModel()
+                {
+                    message = "edit_category_fail",
+                    success = false,
+                    result = entity
+                };
+            }
             return new CommonObjectModel()
             {
-                message = "",
+                message = "edit_category_success",
                 success = true,
                 result = entity
             };

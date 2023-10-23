@@ -300,7 +300,7 @@ namespace Voucher.OPTran
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"update @{_DETAIL_PARA} SET tk_no = (select tk_du from #gdtien) ";
+                query += $"update @{_DETAIL_PARA} SET  tk_no = b.tk_cp from @{_DETAIL_PARA} a left join dmphi b on a.ma_phi = b.ma_phi";
                 query += "\n\n";
                 query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_no,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt, ma_thue, tk_thue, thue_suat, loai_hd, thue, thue_nt, tt,tt_nt, ngay_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, ghi_chu, ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_no,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt, ma_thue, tk_thue, thue_suat, loai_hd, thue_nt, thue_nt, tt_nt,tt_nt, ngay_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, ghi_chu, ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9 from @{_DETAIL_PARA}";
             }
@@ -623,7 +623,7 @@ SELECT is_success, message FROM @check";
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"update @{_DETAIL_PARA} SET tk_no = (select tk_du from #gdtien) ";
+                query += $"update @{_DETAIL_PARA} SET  tk_no = b.tk_cp from @{_DETAIL_PARA} a left join dmphi b on a.ma_phi = b.ma_phi";
                 query += "\n\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
@@ -780,8 +780,8 @@ SELECT is_success, message FROM @check";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select * from {2}' + @exp + ' where stt_rec = @stt_rec'
+	SELECT @q = 'select a.*, b.ten_kh, c.ten_nh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join dmtknh c on a.tknh = c.tknh where stt_rec = @stt_rec '
+	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_phi from {2}' + @exp + ' a left join dmphi b on a.ma_phi = b.ma_phi where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
