@@ -11,6 +11,7 @@ using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 using Genbyte.Base.CoreLib;
 using System.Data;
+using System.Web;
 
 namespace Imei
 {
@@ -49,7 +50,7 @@ namespace Imei
                 if(!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang)
                     || !_service.IsSQLInjectionValid(ma_ct))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
                 DataSet ds = _service.GetImeiInStore(ma_imei, ma_cuahang, ma_ct, ma_kh);
                 if(ds != null && ds.Tables.Count >= 2)
@@ -62,8 +63,9 @@ namespace Imei
                     if(imei_state != null)
                     {
                         model.success = imei_state.exists_yn && imei_state.in_store_yn
-                                        && !imei_state.bao_hanh_yn && !imei_state.dat_hang_yn 
+                                        && !imei_state.bao_hanh_yn
                                         && !imei_state.dieu_chuyen_yn && !imei_state.xuat_yn;
+                                        //&& !imei_state.dat_hang_yn;
 
                         if (!imei_state.exists_yn)
                             model.message = "imei_not_exists";
@@ -71,8 +73,8 @@ namespace Imei
                             model.message = "imei_not_in_store";
                         else if (imei_state.bao_hanh_yn)
                             model.message = "imei_in_warranty_state";
-                        else if (imei_state.dat_hang_yn)
-                            model.message = "imei_in_sale_order_state";
+                        //else if (imei_state.dat_hang_yn)
+                        //    model.message = "imei_in_sale_order_state";
                         else if (imei_state.dieu_chuyen_yn)
                             model.message = "imei_in_transfer_state";
                         else if (imei_state.xuat_yn)
@@ -123,7 +125,11 @@ namespace Imei
                 //check injection
                 if (!_service.IsSQLInjectionValid(imeis.ToArray()))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-
+                imeis.ForEach(x => x = HttpUtility.UrlDecode(x));
+                for (int i = 0; i < imeis.Count; i++)
+                {
+                    imeis[i] = HttpUtility.UrlDecode(imeis[i]);
+                }
                 //lấy trạng thái & thông tin imei
                 model.result = _service.GetStateOfImeis(imeis);
                 if (model.result != null)
@@ -161,7 +167,11 @@ namespace Imei
                 //check injection
                 if (!_service.IsSQLInjectionValid(imeis.ToArray()))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-
+                imeis.ForEach(x => x = HttpUtility.UrlDecode(x));
+                for (int i = 0; i < imeis.Count; i++)
+                {
+                    imeis[i] = HttpUtility.UrlDecode(imeis[i]);
+                }
                 //lấy trạng thái & thông tin imei
                 model.result = _service.GetStateAndItemOfImeis(imeis);
                 if (model.result != null)
@@ -278,7 +288,10 @@ namespace Imei
                 //check injection
                 if (!_service.IsSQLInjectionValid(input.imeis.ToArray()))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-
+                for (int i = 0; i < input.imeis.Count; i++)
+                {
+                    input.imeis[i] = HttpUtility.UrlDecode(input.imeis[i]);
+                }
                 //lấy trạng thái & thông tin imei
                 model.result = _service.UpdateImeiOrderState(Startup.Shop, input.imeis, input.state, input.ma_ct, input.nxt);
                 if (model.result != null)
@@ -304,7 +317,7 @@ namespace Imei
                 //check injection
                 if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-  
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
                 CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0);
                 if (model.result != null)

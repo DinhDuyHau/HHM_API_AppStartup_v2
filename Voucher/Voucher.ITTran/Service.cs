@@ -15,6 +15,7 @@ using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Voucher.ITTran.Model;
+using Genbyte.Component.Voucher.Model;
 
 namespace Voucher.ITTran
 {
@@ -53,6 +54,9 @@ namespace Voucher.ITTran
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        // Lấy danh sách imei xóa khỏi grid
+        List<ImeiItem> list_imei_delete = new List<ImeiItem>();
+
         public Service()
         {
             VoucherRight = new AccessRight();
@@ -90,7 +94,7 @@ namespace Voucher.ITTran
             vc_item.ngay_ct = DateTime.Today;
 
             //convert dữ liệu chi tiết chứng từ
-            // id = 1 ==> type: SVDetail
+            // id = 1 ==> type: ITDetail
             int index_value = 1;
             if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
             {
@@ -112,7 +116,11 @@ namespace Voucher.ITTran
                 }
             }
 
-
+            result_model = checkImeiInsert(vc_item);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
 
             result_model.result = vc_item;
             return result_model;
@@ -244,7 +252,7 @@ namespace Voucher.ITTran
             }
 
             //convert dữ liệu chi tiết chứng từ
-            // id = 1 ==> type: SVDetail
+            // id = 1 ==> type: ITDetail
             int index_value = 1;
             // Lấy danh sách tất cả các imei
             List<string> imeis = new List<string>();
@@ -329,39 +337,41 @@ SELECT is_success, message FROM @check";
                 result_model.message = check_result.message;
                 return result_model;
             }
-            if (vc_item.status == "2")
-            {
-                var imeiService = new Imei.Service();
-                List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imeis);
-                Imei.ImeiState? exists = state_imei.FirstOrDefault(x => x.exists_yn == false);
-                if (exists != null)
-                {
-                    result_model.success = false;
-                    result_model.message = "imei_not_exists";
-                    return result_model;
-                }
-            }
+            //if (vc_item.status == "2")
+            //{
+            //    var imeiService = new Imei.Service();
+            //    List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imeis);
+            //    Imei.ImeiState? exists = state_imei.FirstOrDefault(x => x.exists_yn == false);
+            //    if (exists != null)
+            //    {
+            //        result_model.success = false;
+            //        result_model.message = "imei_not_exists";
+            //        return result_model;
+            //    }
+            //}
 
             /**
              * Lấy thông tin chứng từ cũ trước khi thực hiện update
              */
-            sql = "EXEC Genbyte$System$GetVoucherPrimeInfo @vc_id, @vc_code";
-            paras = new List<SqlParameter>();
-            #region add parameters
-            paras.Add(new SqlParameter()
-            {
-                ParameterName = "@vc_id",
-                SqlDbType = SqlDbType.Char,
-                Value = vc_item.stt_rec.Replace("'", "''")
-            });
-            paras.Add(new SqlParameter()
-            {
-                ParameterName = "@vc_code",
-                SqlDbType = SqlDbType.Char,
-                Value = this.VoucherCode
-            });
-            #endregion
-            VoucherItem? old_voucher = service.ExecSql2List<VoucherItem>(sql, paras).FirstOrDefault();
+            //sql = "EXEC Genbyte$System$GetVoucherPrimeInfo @vc_id, @vc_code";
+            //paras = new List<SqlParameter>();
+            //#region add parameters
+            //paras.Add(new SqlParameter()
+            //{
+            //    ParameterName = "@vc_id",
+            //    SqlDbType = SqlDbType.Char,
+            //    Value = vc_item.stt_rec.Replace("'", "''")
+            //});
+            //paras.Add(new SqlParameter()
+            //{
+            //    ParameterName = "@vc_code",
+            //    SqlDbType = SqlDbType.Char,
+            //    Value = this.VoucherCode
+            //});
+            //#endregion
+            BaseModel res = (BaseModel)this.GetById(vc_item.stt_rec.Replace("'", "''")).result;
+            VoucherItem old_voucher = (VoucherItem)res.masterInfo;
+            //VoucherItem? old_voucher = service.ExecSql2List<VoucherItem>(sql, paras).FirstOrDefault();
             if (old_voucher != null)
             {
                 //Gán mã ca theo thông tin đăng nhập
@@ -386,7 +396,11 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
-
+            result_model = checkImeiUpdate(vc_item, res);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
             //return voucher object
             result_model.result = vc_item;
             return result_model;
@@ -513,12 +527,20 @@ SELECT is_success, message FROM @check";
                     }
                 }
             }
-            // Nếu trạng thái = 0 thì update dat_hang_yn = 1
+            // Nếu trạng thái = 0 thì update dat_hang_yn = 1 đồng thời cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
             if (vc_item.status == "0")
             {
+                string queryIMEI = "";
+                if (list_imei_delete.Count > 0)
+                {
+                    string json_del = JsonSerializer.Serialize(list_imei_delete);
+                    queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 0, '{json_del}'";
+                    service.ExecuteNonQuery(queryIMEI);
+                }
+
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
-                string queryIMEI = $"exec Genbyte$IMEI$UpdateReserve '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
@@ -573,11 +595,11 @@ SELECT is_success, message FROM @check";
 
             //Thực hiện xóa có sử dụng transaction
             DateTime ngay_ct = Convert.ToDateTime(ds.Tables[0].Rows[0]["ngay_ct"]);
-            sql = $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
+            sql = $"exec fs_Voucher$RemoveInv$Imei '{voucherId.Replace("'", "''")}', '{this.VoucherCode}' \n";
+            sql += $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
-
             sql += $"EXEC MokaOnline$Voucher$PXBDeletePNF @vc_id\n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
@@ -756,5 +778,160 @@ END";
             return new List<ImeiState>();
         }
         #endregion
+        CommonObjectModel checkImeiInsert(VoucherItem vc_item)
+        {
+            var listImei = new List<string>();
+            var ma_cuahang = "";
+            if (vc_item.details.Any(x => x.Id == 1))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var svDetail = item as ITDetail;
+                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
+                        {
+                            listImei.Add(svDetail.ma_imei.Trim());
+                            ma_cuahang = svDetail.ma_cuahang;
+                        }
+                    }
+
+                }
+            }
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            var imeiService = new Imei.Service();
+            List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
+            List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
+            List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
+            if (exists != null && exists.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", exists)
+                });
+                result_model.success = false;
+                result_model.message = "imei_not_exists";
+                result_model.result = list_result_error;
+            }
+            if (dat_hang != null && dat_hang.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", dat_hang)
+                });
+                result_model.success = false;
+                result_model.message = "dat_hang_yn_yes";
+                result_model.result = list_result_error;
+            }
+            return result_model;
+        }
+        CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
+        {
+            var listImei = new List<string>();
+            var ma_cuahang = "";
+            if (vc_item.details.Any(x => x.Id == 1))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var svDetail = item as ITDetail;
+                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
+                        {
+                            var lst_imei = svDetail.ma_imei.Split(",").ToList();
+                            for (int i = 0; i< lst_imei.Count; i++)
+                            {
+                                lst_imei[i] = lst_imei[i].Trim();
+                            }
+                            listImei.AddRange(lst_imei);
+                            ma_cuahang = svDetail.ma_cuahang;
+                        }
+                    }
+
+                }
+            }
+
+            var listImei_old = new List<string>();
+            var ma_cuahang_old = "";
+            if (vc_item_old.details.Any(x => x.Id == 1))
+            {
+                DetailItemModel? item_detail = vc_item_old.details.FirstOrDefault(x => x.Id == 1);
+
+                if (item_detail != null)
+                {
+
+                    foreach (var item in item_detail.Data as List<ITDetail>)
+                    {
+                        var svDetail = item as ITDetail;
+                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
+                        {
+                            var lst_imei = svDetail.ma_imei.Split(",").ToList();
+                            for (int i = 0; i < lst_imei.Count; i++)
+                            {
+                                lst_imei[i] = lst_imei[i].Trim();
+                            }
+                            listImei_old.AddRange(lst_imei);
+                            ma_cuahang_old = svDetail.ma_cuahang;
+                        }
+                    }
+
+                }
+            }
+
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            var imeiService = new Imei.Service();
+            List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
+            List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
+            List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
+            if (exists != null && exists.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", exists)
+                });
+                result_model.success = false;
+                result_model.message = "imei_not_exists";
+                result_model.result = list_result_error;
+            }
+            listImei_old.Except(listImei).ToList().ForEach(x =>
+            {
+                list_imei_delete.Add(new ImeiItem { ma_imei = x });
+            });
+
+            dat_hang = dat_hang.Except(listImei_old).ToList();
+            if (dat_hang != null && dat_hang.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", dat_hang)
+                });
+                result_model.success = false;
+                result_model.message = "dat_hang_yn_yes";
+                result_model.result = list_result_error;
+            }
+            return result_model;
+        }
     }
 }
