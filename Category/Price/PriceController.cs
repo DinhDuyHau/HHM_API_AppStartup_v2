@@ -33,7 +33,7 @@ namespace Price
         /// <returns></returns>
         [HttpGet("getserviceprice")]
         #region GetImeiInStore
-        public IActionResult GetServicePrice(string ma_dichvu, string ma_cuahang, decimal gia_ban)
+        public IActionResult GetServicePrice(string ma_vt, string ma_dichvu, string ma_cuahang, decimal gia_ban)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace Price
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy giá dịch vụ
-                ServicePriceModel price_item = _service.GetPriceOfServiceItem(ma_dichvu, ma_cuahang, gia_ban);
+                ServicePriceModel price_item = _service.GetPriceOfServiceItem(ma_vt, ma_dichvu, ma_cuahang, gia_ban);
                 if (price_item != null)
                 {
                     model.success = true;
@@ -61,7 +61,7 @@ namespace Price
             }
             catch (Exception ex)
             {
-                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetServicePrice?ma_imei={ma_dichvu}&ma_cuhang={ma_cuahang}", ex);
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetServicePrice?ma_vt={ma_vt}&ma_dichvu={ma_dichvu}&ma_cuhang={ma_cuahang}", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

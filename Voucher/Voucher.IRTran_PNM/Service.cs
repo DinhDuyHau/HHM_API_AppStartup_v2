@@ -56,6 +56,9 @@ namespace Voucher.IRTran_PNM
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        // Lấy danh sách imei xóa khỏi grid
+        List<ImeiItem> list_imei_delete = new List<ImeiItem>();
+
         public Service()
         {
             VoucherRight = new AccessRight();
@@ -284,6 +287,43 @@ namespace Voucher.IRTran_PNM
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
+            List<ImeiItem> list_imei = new List<ImeiItem>();
+            // id = 1 ==> type: PVDetail
+            int index_value = 1;
+            if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+
+                if (item_detail != null)
+                {
+                    List<PNMDetail> detail_list = item_detail.Data.Cast<PNMDetail>().ToList();
+                    if (detail_list != null && detail_list.Count > 0)
+                    {
+                        foreach (var item in detail_list)
+                        {
+                            List<string> imei = item.ma_imei.Split(',').ToList();
+                            foreach (var imei_item in imei)
+                            {
+                                list_imei.Add(new ImeiItem
+                                {
+                                    ma_imei = imei_item.Trim(),
+                                    ma_vt = item.ma_vt,
+                                    ma_kho = item.ma_kho,
+                                    gia_nt0 = item.gia_nt,
+                                    ghi_chu = vc_item.dien_giai
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            if (vc_item.status == "0")
+            {
+                string json = JsonSerializer.Serialize(list_imei);
+                //create query insert IMEI
+                query = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
+                service.ExecuteNonQuery(query);
+            }
             if (vc_item.status == "2")
             {
                 query = $"EXEC Genbyte$IMEI$PNM$Update '{stt_rec}'";
@@ -574,7 +614,52 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
-            if(vc_item.status == "2")
+
+            string queryIMEI = "";
+            if (list_imei_delete.Count > 0)
+            {
+                string json_del = JsonSerializer.Serialize(list_imei_delete);
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 0, '{json_del}'";
+                service.ExecuteNonQuery(queryIMEI);
+            }
+            List<ImeiItem> list_imei = new List<ImeiItem>();
+            // id = 1 ==> type: PVDetail
+            int index_value = 1;
+            if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+
+                if (item_detail != null)
+                {
+                    List<PNMDetail> detail_list = item_detail.Data.Cast<PNMDetail>().ToList();
+                    if (detail_list != null && detail_list.Count > 0)
+                    {
+                        foreach (var item in detail_list)
+                        {
+                            List<string> imei = item.ma_imei.Split(',').ToList();
+                            foreach (var imei_item in imei)
+                            {
+                                list_imei.Add(new ImeiItem
+                                {
+                                    ma_imei = imei_item.Trim(),
+                                    ma_vt = item.ma_vt,
+                                    ma_kho = item.ma_kho,
+                                    gia_nt0 = item.gia_nt,
+                                    ghi_chu = vc_item.dien_giai
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            if (vc_item.status == "0")
+            {
+                string json = JsonSerializer.Serialize(list_imei);
+                //create query insert IMEI
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
+                service.ExecuteNonQuery(queryIMEI);
+            }
+            if (vc_item.status == "2")
             {
                 query = $"EXEC Genbyte$IMEI$PNM$Update '{stt_rec}'";
                 service.ExecuteNonQuery(query);
@@ -620,7 +705,8 @@ SELECT is_success, message FROM @check";
 
             //Thực hiện xóa có sử dụng transaction
             DateTime ngay_ct = Convert.ToDateTime(ds.Tables[0].Rows[0]["ngay_ct"]);
-            sql = $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
+            sql = $"exec fs_Voucher$RemoveInv$Imei '{voucherId.Replace("'", "''")}', '{this.VoucherCode}' \n";
+            sql += $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
@@ -928,7 +1014,12 @@ END";
                         var svDetail = item as PNMDetail;
                         if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
                         {
-                            listImei_old.Add(svDetail.ma_imei.Trim());
+                            var lst_imei = svDetail.ma_imei.Split(",").ToList();
+                            for (int i = 0; i < lst_imei.Count; i++)
+                            {
+                                lst_imei[i] = lst_imei[i].Trim();
+                            }
+                            listImei_old.AddRange(lst_imei);
                             ma_cuahang_old = svDetail.ma_cuahang;
                         }
                     }
@@ -958,6 +1049,10 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+            listImei_old.Except(listImei).ToList().ForEach(x =>
+            {
+                list_imei_delete.Add(new ImeiItem { ma_imei = x });
+            });
             dat_hang = dat_hang.Except(listImei_old).ToList();
             if (dat_hang != null && dat_hang.Count > 0)
             {

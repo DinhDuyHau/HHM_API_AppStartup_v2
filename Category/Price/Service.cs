@@ -13,10 +13,16 @@ namespace Price
 {
     public class Service : CoreService
     {
-        public ServicePriceModel GetPriceOfServiceItem(string ma_dichvu, string ma_cuahang, decimal gia_ban) 
+        public ServicePriceModel GetPriceOfServiceItem(string ma_vt, string ma_dichvu, string ma_cuahang, decimal gia_ban) 
         { 
-            string sql = "exec Genbyte$Service$GetPrice @service_id, @shop_id, @price";
+            string sql = "exec Genbyte$Service$GetPrice @item_code, @service_id, @shop_id, @price";
             List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@item_code",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt
+            });
             paras.Add(new SqlParameter()
             {
                 ParameterName = $"@service_id",

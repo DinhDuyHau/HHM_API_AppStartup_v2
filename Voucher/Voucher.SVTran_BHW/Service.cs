@@ -1,4 +1,5 @@
 ﻿using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
 using Genbyte.Component.Voucher;
 using Genbyte.Component.Voucher.Model;
 using Genbyte.Sys.AppAuth;
@@ -73,14 +74,15 @@ namespace Voucher.SVTran_BHW
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
-        public Service()
+        public Security security { get; set; }
+        public Service(Security security)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            this.security = security;
         }
 
         #region Inserting
@@ -182,7 +184,10 @@ namespace Voucher.SVTran_BHW
                                 if (paid_list != null && paid_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    paid_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    paid_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, this.security.KeyAES, this.security.IVAES);
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
@@ -614,6 +619,10 @@ namespace Voucher.SVTran_BHW
                                 List<SVPaidModel>? paid_list = JsonSerializer.Deserialize<List<SVPaidModel>>((JsonElement)item_model.Data);
                                 if (paid_list != null && paid_list.Count > 0)
                                 {
+                                    paid_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, this.security.KeyAES, this.security.IVAES);
+                                    });
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
                                     paidDetails = paid_list.Cast<PaidDetailBase>().ToList();
@@ -1208,7 +1217,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select d1.*, d0.ten_dv, d0.vt_ton_kho from {3}' + @exp + ' d1 inner join dmdichvu d0 on d1.ma_dv = d0.ma_dv where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select c1.*, c0.ten_ck, c0.loai_ck, c2.ten_loai from {4}' + @exp + ' c1 inner join dmck2 c0 on c1.ma_ck = c0.ma_ck inner join dmloaick c2 on c2.ma_loai = c0.loai_ck where stt_rec = @stt_rec'
-	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {6}' + @exp + ' b1 inner join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select e1.*, e0.ten_loai from {7}' + @exp + ' e1 inner join dmloaivc_online e0 on e1.ma_loaivc = e0.ma_loai where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select * from {8}' + @exp + ' where stt_rec = @stt_rec'
@@ -1231,10 +1240,13 @@ END";
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<SVServiceModel> pr_services = ds.Tables[2].ToList<SVServiceModel>();
                 IList<SVDiscountModel> pr_discount = ds.Tables[3].ToList<SVDiscountModel>();
-                IList<SVPaidModel> pr_paid = ds.Tables[4].ToList<SVPaidModel>();
+                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[4].ToList<PaidDetailBaseResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
                 IList<SVTransportModel> pr_transport = ds.Tables[6].ToList<SVTransportModel>();
                 IList<SVPromotionModel> km_detail = ds.Tables[7].ToList<SVPromotionModel>();
+                pr_paid.ToList().ForEach(x => {
+                    x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, security.KeyAES, security.IVAES);
+                });
                 sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6)
                     SET @stt_rec = @vc_id
 	                SELECT @exp = CONVERT(CHAR(6), @ngay_ct, 112)

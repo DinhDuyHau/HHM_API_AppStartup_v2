@@ -527,17 +527,17 @@ SELECT is_success, message FROM @check";
                     }
                 }
             }
-            // Nếu trạng thái = 0 thì update dat_hang_yn = 1 đồng thời cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
+            //Update dat_hang_yn = 1 đồng thời cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
+            string queryIMEI = "";
+            if (list_imei_delete.Count > 0)
+            {
+                string json_del = JsonSerializer.Serialize(list_imei_delete);
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 0, '{json_del}'";
+                service.ExecuteNonQuery(queryIMEI);
+            }
+
             if (vc_item.status == "0")
             {
-                string queryIMEI = "";
-                if (list_imei_delete.Count > 0)
-                {
-                    string json_del = JsonSerializer.Serialize(list_imei_delete);
-                    queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 0, '{json_del}'";
-                    service.ExecuteNonQuery(queryIMEI);
-                }
-
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
                 queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
@@ -548,7 +548,7 @@ SELECT is_success, message FROM @check";
             {
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
-                string queryIMEI = $"exec Genbyte$IMEI$PXB$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
+                queryIMEI = $"exec Genbyte$IMEI$PXB$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
                 service.ExecuteNonQuery(queryIMEI);
 
                 queryIMEI = $"EXEC MokaOnline$Voucher$PXBUpdatePNF '{stt_rec}'";

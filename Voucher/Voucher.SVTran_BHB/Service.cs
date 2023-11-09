@@ -839,7 +839,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112), @so_ct = so_ct FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec '
-    SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec '
+    SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {4}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec '
     SELECT @q = @q + CHAR(13) + 'select b.cq_file as file_cq, b.co_file as file_co, a.* from {5}' + @exp + ' a left join {6}' + @exp + ' b on a.so_ct = b.so_ct where a.stt_rec = @stt_rec '
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13), @so_ct CHAR(12)', @stt_rec = @stt_rec, @so_ct = @so_ct
@@ -859,7 +859,7 @@ END";
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault(new VoucherItem());
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
-                IList<SVPaidModel> pr_paid = ds.Tables[2].ToList<SVPaidModel>();
+                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[3].ToList<SVWarrantyModel>();
                 IList<SVTransModel> pr_trans = ds.Tables[4].ToList<SVTransModel>();
 

@@ -59,7 +59,56 @@ namespace DiscountCode
             }
             catch (Exception ex)
             {
-                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetDiscountCodeInfo?ma_gg={ma_gg}", ex);
+                Logger.Insert(Startup.Unit, $"GET -- DiscountCodeController/GetDiscountCodeInfo?ma_gg={ma_gg}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy thông tin chương trình giảm giá
+        /// </summary>
+        /// <param name="ma_dvcs">Danh sách mã vật tư</param>
+        /// <returns></returns>
+        [HttpPost("get_discount_program")]
+        #region get_payment_debit
+        public IActionResult GetDiscountProgram([FromBody] List<string> list_item)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(string.Join(",", list_item)))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //Lấy thông tin mã giảm giá --> check tồn
+                List<DiscountProgramModel> code = _service.GetDiscountProgram(list_item);
+                EntityCollection<DiscountProgramModel> entity = new EntityCollection<DiscountProgramModel>
+                {
+                    Items = code,
+                    PageCount = 1,
+                    PageIndex = 0, 
+                    PageSize = code.Count,
+                    RecordCount = code.Count
+                };
+                if (code != null)
+                {
+                    model.success = true;
+                    model.result = entity;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetDiscountProgram?list_item={list_item}", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

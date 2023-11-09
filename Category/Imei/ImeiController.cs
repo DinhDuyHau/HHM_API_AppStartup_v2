@@ -64,8 +64,9 @@ namespace Imei
                     {
                         model.success = imei_state.exists_yn && imei_state.in_store_yn
                                         && !imei_state.bao_hanh_yn
-                                        && !imei_state.dieu_chuyen_yn && !imei_state.xuat_yn;
-                                        //&& !imei_state.dat_hang_yn;
+                                        && !imei_state.dieu_chuyen_yn 
+                                        && !imei_state.xuat_yn
+                                        && !imei_state.dat_hang_yn;
 
                         if (!imei_state.exists_yn)
                             model.message = "imei_not_exists";
@@ -73,8 +74,8 @@ namespace Imei
                             model.message = "imei_not_in_store";
                         else if (imei_state.bao_hanh_yn)
                             model.message = "imei_in_warranty_state";
-                        //else if (imei_state.dat_hang_yn)
-                        //    model.message = "imei_in_sale_order_state";
+                        else if (imei_state.dat_hang_yn)
+                            model.message = "imei_in_sale_order_state";
                         else if (imei_state.dieu_chuyen_yn)
                             model.message = "imei_in_transfer_state";
                         else if (imei_state.xuat_yn)

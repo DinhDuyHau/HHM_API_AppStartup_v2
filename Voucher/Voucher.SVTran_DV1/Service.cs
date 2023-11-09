@@ -8,6 +8,7 @@ using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
+using Genbyte.Base.Security;
 
 namespace Voucher.SVTran_DV1
 {
@@ -55,14 +56,15 @@ namespace Voucher.SVTran_DV1
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
-        public Service()
+        public Security security { get; set; }
+        public Service(Security security)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            this.security = security;
         }
 
         #region Inserting
@@ -148,7 +150,10 @@ namespace Voucher.SVTran_DV1
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, this.security.KeyAES, this.security.IVAES);
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -429,7 +434,10 @@ namespace Voucher.SVTran_DV1
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, this.security.KeyAES, this.security.IVAES);
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -834,7 +842,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select d1.* , d0.ten_dv, d0.vt_ton_kho from {2}' + @exp + ' d1 inner join dmdichvu d0 on d1.ma_dv = d0.ma_dv where stt_rec = @stt_rec'
-	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+	SSELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, DetailTtTable);
@@ -852,7 +860,10 @@ END";
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
-                IList<TTDetail> tt_detail = ds.Tables[2].ToList<TTDetail>();
+                IList<PaidDetailBaseResponse> tt_detail = ds.Tables[2].ToList<PaidDetailBaseResponse>();
+                tt_detail.ToList().ForEach(x => {
+                    x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, security.KeyAES, security.IVAES);
+                });
                 sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6)
                     SET @stt_rec = @vc_id
 	                SELECT @exp = CONVERT(CHAR(6), @ngay_ct, 112)

@@ -54,6 +54,9 @@ namespace Voucher.IPNTran
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        // Lấy danh sách imei xóa khỏi grid
+        List<ImeiItem> list_imei_delete = new List<ImeiItem>();
+
         public Service()
         {
             VoucherRight = new AccessRight();
@@ -492,43 +495,58 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
 
-            //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
-            if (vc_item.status == "2")
-            {
-                List<ImeiItem> list_imei = new List<ImeiItem>();
-                // id = 1 ==> type: PVDetail
-                int index_value = 1;
-                if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
-                {
-                    VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
 
-                    if (item_detail != null)
+            //Update dat_hang_yn = 1 đồng thời cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
+            string queryIMEI = "";
+            if (list_imei_delete.Count > 0)
+            {
+                string json_del = JsonSerializer.Serialize(list_imei_delete);
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 0, '{json_del}'";
+                service.ExecuteNonQuery(queryIMEI);
+            }
+
+            List<ImeiItem> list_imei = new List<ImeiItem>();
+            // id = 1 ==> type: PVDetail
+            int index_value = 1;
+            if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+
+                if (item_detail != null)
+                {
+                    List<IPDetail> detail_list = item_detail.Data.Cast<IPDetail>().ToList();
+                    if (detail_list != null && detail_list.Count > 0)
                     {
-                        List<IPDetail> detail_list = item_detail.Data.Cast<IPDetail>().ToList();
-                        if (detail_list != null && detail_list.Count > 0)
+                        foreach (var item in detail_list)
                         {
-                            foreach (var item in detail_list)
+                            List<string> imei = item.ma_imei.Split(',').ToList();
+                            foreach (var imei_item in imei)
                             {
-                                List<string> imei = item.ma_imei.Split(',').ToList();
-                                foreach (var imei_item in imei)
+                                list_imei.Add(new ImeiItem
                                 {
-                                    list_imei.Add(new ImeiItem
-                                    {
-                                        ma_imei = imei_item.Trim(),
-                                        ma_vt = item.ma_vt,
-                                        ma_kho = vc_item.ma_kho,
-                                        gia_nt0 = item.gia_nt,
-                                        ghi_chu = vc_item.dien_giai
-                                    });
-                                }
+                                    ma_imei = imei_item.Trim(),
+                                    ma_vt = item.ma_vt,
+                                    ma_kho = vc_item.ma_kho,
+                                    gia_nt0 = item.gia_nt,
+                                    ghi_chu = vc_item.dien_giai
+                                });
                             }
                         }
                     }
                 }
-
+            }
+            if (vc_item.status == "0")
+            {
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
-                string queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
+                service.ExecuteNonQuery(queryIMEI);
+            }
+            //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
+            if (vc_item.status == "2")
+            {                string json = JsonSerializer.Serialize(list_imei);
+                //create query insert IMEI
+                queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
@@ -572,7 +590,8 @@ SELECT is_success, message FROM @check";
 
             //Thực hiện xóa có sử dụng transaction
             DateTime ngay_ct = Convert.ToDateTime(ds.Tables[0].Rows[0]["ngay_ct"]);
-            sql = $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
+            sql = $"exec fs_Voucher$RemoveInv$Imei '{voucherId.Replace("'", "''")}', '{this.VoucherCode}' \n";
+            sql += $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
@@ -848,7 +867,12 @@ END";
                         var IPDetail = item as IPDetail;
                         if (IPDetail != null && !string.IsNullOrEmpty(IPDetail.ma_imei))
                         {
-                            listImei_old.Add(IPDetail.ma_imei.Trim());
+                            var lst_imei = IPDetail.ma_imei.Split(",").ToList();
+                            for (int i = 0; i < lst_imei.Count; i++)
+                            {
+                                lst_imei[i] = lst_imei[i].Trim();
+                            }
+                            listImei_old.AddRange(lst_imei);
                             ma_cuahang_old = IPDetail.ma_cuahang;
                         }
                     }
@@ -878,6 +902,10 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+            listImei_old.Except(listImei).ToList().ForEach(x =>
+            {
+                list_imei_delete.Add(new ImeiItem { ma_imei = x });
+            });
             dat_hang = dat_hang.Except(listImei_old).ToList();
             if (dat_hang != null && dat_hang.Count > 0)
             {
