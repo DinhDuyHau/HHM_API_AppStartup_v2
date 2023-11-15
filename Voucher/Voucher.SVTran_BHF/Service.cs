@@ -79,6 +79,10 @@ namespace Voucher.SVTran_BHF
         public AccessRight VoucherRight { get; set; }
 
         public Security security { get; set; }
+
+        // Lấy danh sách imei xóa khỏi grid
+        List<string> list_imei_delete = new List<string>();
+
         public Service(Security security)
         {
             VoucherRight = new AccessRight();
@@ -267,27 +271,10 @@ namespace Voucher.SVTran_BHF
                 }
             }
 
-            if (vc_item.status == "2")
+            result_model = checkPaid(vc_item);
+            if (!result_model.success)
             {
-                CommonObjectModel checkModel = new CommonObjectModel();
-                checkModel.success = true;
-                if (serviceModels != null && serviceModels.Count > 0)
-                {
-                    checkModel = CommonService.checkServiceValid(serviceModels);
-                }
-                if (paidDetails != null)
-                {
-                    if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
-                    {
-                        checkModel = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"), list_vt);
-                    }
-                }
-                if (!checkModel.success)
-                {
-                    result_model.success = false;
-                    result_model.message = checkModel.message;
-                    return result_model;
-                }
+                return result_model;
             }
             result_model = checkImeiInsert(vc_item);
             if (!result_model.success)
@@ -489,56 +476,11 @@ namespace Voucher.SVTran_BHF
                 query += $"exec fs_UpdateNullToTable '{detail_bh_table}', '{detail_bh_table}', 'stt_rec = ''{stt_rec}''' \n";
             }
             service.ExecuteNonQuery(query);
-            if (vc_item.status == "2")
-            {
-                if (!string.IsNullOrEmpty(detail_tt_table) && vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
-                    List<TTDetail>? detail_list = new List<TTDetail>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is TTDetail sVPaid)
-                        {
-                            detail_list.Add(sVPaid);
-                        }
-                    }
-                    // Điểm quy đổi
-                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
-                    {
-                        service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
-                    }
-                    // Active mã giảm giá
-                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
-                    {
-                        CommonService.updateDiscountCode(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
-                    }
-                }
-                if (!string.IsNullOrEmpty(detail_dv_table) && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_DV_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_DV_PARA);
-                    List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is ServiceDetailBase service_base)
-                        {
-                            service_list.Add(service_base);
-                        }
-                    }
-                    // GET list key from service
-                    bool flag = true;
-                    List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
-                    if (list_key != null && list_key.Count > 0)
-                    {
-                        // Update table service detail 
-                        flag = CommonService.updateServiceDetailTable(this.DetailDVTable + expression, stt_rec, list_key);
-                        if (flag)
-                        {
-                            // UPdate active key
-                            CommonService.updateStatusKey(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key,  list_key);
-                        }
-                    }
-                }
-            }
+
+            //Update dữ liệu thanh toán và key đối với dịch vụ
+            updatePaid(vc_item);
+            updateService(vc_item);
+
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
@@ -786,37 +728,37 @@ SELECT is_success, message FROM @check";
                 result_model.message = check_result.message;
                 return result_model;
             }
-            if (vc_item.status == "2")
-            {
-                var imeiService = new Imei.Service();
-                List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imeis);
-                Imei.ImeiState? exists = state_imei.FirstOrDefault(x => x.exists_yn == false);
-                if (exists != null)
-                {
-                    result_model.success = false;
-                    result_model.message = "imei_not_exists";
-                    return result_model;
-                }
-                CommonObjectModel checkModel = new CommonObjectModel();
-                checkModel.success = true;
-                if (serviceModels != null && serviceModels.Count > 0)
-                {
-                    checkModel = CommonService.checkServiceValid(serviceModels);
-                }
-                if (paidDetails != null)
-                {
-                    if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
-                    {
-                        checkModel = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"), list_vt);
-                    }
-                }
-                if (!checkModel.success)
-                {
-                    result_model.success = false;
-                    result_model.message = checkModel.message;
-                    return result_model;
-                }
-            }
+            //if (vc_item.status == "2")
+            //{
+            //    var imeiService = new Imei.Service();
+            //    List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imeis);
+            //    Imei.ImeiState? exists = state_imei.FirstOrDefault(x => x.exists_yn == false);
+            //    if (exists != null)
+            //    {
+            //        result_model.success = false;
+            //        result_model.message = "imei_not_exists";
+            //        return result_model;
+            //    }
+            //    CommonObjectModel checkModel = new CommonObjectModel();
+            //    checkModel.success = true;
+            //    if (serviceModels != null && serviceModels.Count > 0)
+            //    {
+            //        checkModel = CommonService.checkServiceValid(serviceModels);
+            //    }
+            //    if (paidDetails != null)
+            //    {
+            //        if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
+            //        {
+            //            checkModel = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"), list_vt);
+            //        }
+            //    }
+            //    if (!checkModel.success)
+            //    {
+            //        result_model.success = false;
+            //        result_model.message = checkModel.message;
+            //        return result_model;
+            //    }
+            //}
 
             /**
              * Lấy thông tin chứng từ cũ trước khi thực hiện update
@@ -869,6 +811,11 @@ SELECT is_success, message FROM @check";
                         x.ma_ca = Startup.Shift;
                     });
                 }
+            }
+            result_model = checkPaid(vc_item);
+            if (!result_model.success)
+            {
+                return result_model;
             }
             result_model = checkImeiUpdate(vc_item, res);
             if (!result_model.success)
@@ -1085,56 +1032,10 @@ SELECT is_success, message FROM @check";
             }
             service.ExecuteNonQuery(query);
 
-            if (vc_item.status == "2")
-            {
-                if (!string.IsNullOrEmpty(detail_tt_table) && vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
-                    List<TTDetail>? detail_list = new List<TTDetail>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is TTDetail sVPaid)
-                        {
-                            detail_list.Add(sVPaid);
-                        }
-                    }
-                    // Điểm quy đổi
-                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
-                    {
-                        service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
-                    }
-                    // Active mã giảm giá
-                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
-                    {
-                        CommonService.updateDiscountCode(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
-                    }
-                }
-                if (!string.IsNullOrEmpty(detail_dv_table) && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_DV_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_DV_PARA);
-                    List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is ServiceDetailBase service_base)
-                        {
-                            service_list.Add(service_base);
-                        }
-                    }
-                    // GET list key from service
-                    bool flag = true;
-                    List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
-                    if (list_key != null && list_key.Count > 0)
-                    {
-                        // Update table service detail 
-                        flag = CommonService.updateServiceDetailTable(this.DetailDVTable + expression, stt_rec, list_key);
-                        if (flag)
-                        {
-                            // UPdate active key
-                            CommonService.updateStatusKey(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key,  list_key);
-                        }
-                    }
-                }
-            }
+            //Update dữ liệu thanh toán và key đối với dịch vụ
+            updatePaid(vc_item);
+            updateService(vc_item);
+
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"delete from {inquiry_table} where stt_rec = '{stt_rec}' \n";
@@ -1142,6 +1043,15 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
+
+            //cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
+            string queryIMEI = "";
+            if (list_imei_delete.Count > 0)
+            {
+                string imei = string.Join(", ", list_imei_delete);
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState '{vc_item.ma_cuahang}', '{imei}', '0', 0";
+                service.ExecuteNonQuery(queryIMEI);
+            }
 
             model.success = true;
             model.message = "";
@@ -1441,6 +1351,97 @@ END";
             };
             return result;
         }
+        public CommonObjectModel checkPaid(VoucherItem vc_item)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            if (vc_item.status != "2") return result_model;
+            List<PaidDetailBase> paidDetails = new List<PaidDetailBase>();
+            var ma_cuahang = "";
+            if (vc_item.details.Any(x => x.Id == 4))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 4);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var paid = item as TTDetail;
+                        if (paid != null && !string.IsNullOrEmpty(paid.ma_thanhtoan))
+                        {
+                            paidDetails.Add(paid);
+                        }
+                    }
+
+                }
+            }
+            if (paidDetails != null)
+            {
+                if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
+                {
+                    result_model = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"));
+                }
+            }
+            return result_model;
+        }
+        public void updatePaid(VoucherItem vc_item)
+        {
+            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
+                List<TTDetail>? detail_list = new List<TTDetail>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is TTDetail sVPaid)
+                    {
+                        detail_list.Add(sVPaid);
+                    }
+                }
+                // Điểm quy đổi
+                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
+                {
+                    CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
+                }
+                // Active mã giảm giá
+                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                {
+                    CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
+                }
+            }
+        }
+        public void updateService(VoucherItem vc_item)
+        {
+            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_DV_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_DV_PARA);
+                List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is ServiceDetailBase service_base)
+                    {
+                        service_list.Add(service_base);
+                    }
+                }
+                // GET list key from service
+                bool flag = true;
+                List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
+                if (list_key != null && list_key.Count > 0)
+                {
+                    string expression = vc_item.ngay_ct?.ToString("yyyyMM");
+                    // Update table service detail 
+                    flag = CommonService.updateServiceDetailTable(this.DetailDVTable + expression, vc_item.stt_rec, list_key);
+                    if (flag)
+                    {
+                        // UPdate active key
+                        CommonService.updateStatusKey(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key, list_key);
+                    }
+                }
+            }
+        }
         CommonObjectModel checkImeiInsert(VoucherItem vc_item)
         {
             var listImei = new List<string>();
@@ -1566,6 +1567,10 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+            listImei_old.Except(listImei).ToList().ForEach(x =>
+            {
+                list_imei_delete.Add(x);
+            });
             dat_hang = dat_hang.Except(listImei_old).ToList();
             if (dat_hang != null && dat_hang.Count > 0)
             {

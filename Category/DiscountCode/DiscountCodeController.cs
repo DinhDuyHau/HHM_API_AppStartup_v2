@@ -29,9 +29,9 @@ namespace DiscountCode
         /// <param name="ma_gg">Mã giảm giá</param>
         /// <param name="ma_dvcs">Danh sách mã vật tư</param>
         /// <returns></returns>
-        [HttpPost("get_discount_code_info")]
+        [HttpGet("get_discount_code_info")]
         #region get_payment_debit
-        public IActionResult GetDiscountCodeInfo(string ma_gg, [FromBody]List<string> list_item)
+        public IActionResult GetDiscountCodeInfo(string ma_gg)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace DiscountCode
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //Lấy thông tin mã giảm giá --> check tồn
-                DiscountCodeModel code = _service.GetDiscountCodeInfo(ma_gg, list_item);
+                DiscountCodeModel code = _service.GetDiscountCodeInfo(ma_gg);
                 if (code != null && code.ma_gg != "")
                 {
                     model.success = true;

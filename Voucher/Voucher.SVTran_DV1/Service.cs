@@ -161,19 +161,10 @@ namespace Voucher.SVTran_DV1
                     item_detail.Detail_Type = typeof(TTDetail).Name;
                 }
             }
-            if (vc_item.status == "2")
+            result_model = checkPaid(vc_item);
+            if (!result_model.success)
             {
-                if (serviceModels != null && serviceModels.Count > 0)
-                {
-                    CommonObjectModel check_service_result = CommonService.checkServiceValid(serviceModels);
-
-                    if (!check_service_result.success)
-                    {
-                        result_model.success = false;
-                        result_model.message = check_service_result.message;
-                        return result_model;
-                    }
-                }
+                return result_model;
             }
             result_model.result = vc_item;
             return result_model;
@@ -292,53 +283,11 @@ namespace Voucher.SVTran_DV1
                 query += $"exec fs_UpdateNullToTable '{detail_tt_table}', '{detail_tt_table}', 'stt_rec = ''{stt_rec}''' \n";
             }
             service.ExecuteNonQuery(query);
-            if (vc_item.status == "2")
-            {
-                if (!string.IsNullOrEmpty(detail_tt_table) && vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
-                    List<TTDetail>? detail_list = new List<TTDetail>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is TTDetail sVPaid)
-                        {
-                            detail_list.Add(sVPaid);
-                        }
-                    }
-                    service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
-                }
-                if (!string.IsNullOrEmpty(detail_table) && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA);
-                    List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is SVDetail service_base)
-                        {
-                            service_list.Add(new ServiceDetailBase
-                            {
-                                stt_rec = service_base.stt_rec,
-                                stt_rec0 = service_base.stt_rec0,
-                                ma_dv = service_base.ma_dv,
-                                so_luong = service_base.so_luong
-                            });
-                        }
-                    }
-                    // GET list key from service
-                    bool flag = true;
-                    List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
-                    if (list_key != null && list_key.Count > 0)
-                    {
-                        // Update table service detail 
-                        flag = CommonService.updateServiceDetailTable(this.DetailTable + expression, stt_rec, list_key);
-                        if (flag)
-                        {
-                            // UPdate active key
-                            CommonService.updateStatusKey(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key,  list_key);
-                        }
-                    }
-                }
-            }
+
+            //Update dữ liệu thanh toán và key đối với dịch vụ
+            updatePaid(vc_item);
+            updateService(vc_item);
+
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
@@ -503,19 +452,10 @@ SELECT is_success, message FROM @check";
                 result_model.message = check_result.message;
                 return result_model;
             }
-            if (vc_item.status == "2")
+            result_model = checkPaid(vc_item);
+            if (!result_model.success)
             {
-                if (serviceModels != null && serviceModels.Count > 0)
-                {
-                    CommonObjectModel check_service_result = CommonService.checkServiceValid(serviceModels);
-
-                    if (!check_service_result.success)
-                    {
-                        result_model.success = false;
-                        result_model.message = check_service_result.message;
-                        return result_model;
-                    }
-                }
+                return result_model;
             }
             /**
              * Lấy thông tin chứng từ cũ trước khi thực hiện update
@@ -683,53 +623,9 @@ SELECT is_success, message FROM @check";
             }
             service.ExecuteNonQuery(query);
 
-            if (vc_item.status == "2")
-            {
-                if (!string.IsNullOrEmpty(detail_tt_table) && vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
-                    List<TTDetail>? detail_list = new List<TTDetail>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is TTDetail sVPaid)
-                        {
-                            detail_list.Add(sVPaid);
-                        }
-                    }
-                    service.ExecuteNonQuery(this.postConversionPoint(detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"), vc_item));
-                }
-                if (!string.IsNullOrEmpty(detail_table) && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA) != null)
-                {
-                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA);
-                    List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
-                    foreach (var item in item_model.Data)
-                    {
-                        if (item is SVDetail service_base)
-                        {
-                            service_list.Add(new ServiceDetailBase
-                            {
-                                stt_rec = service_base.stt_rec,
-                                stt_rec0 = service_base.stt_rec0,
-                                ma_dv = service_base.ma_dv,
-                                so_luong = service_base.so_luong
-                            });
-                        }
-                    }
-                    // GET list key from service
-                    bool flag = true;
-                    List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
-                    if (list_key != null && list_key.Count > 0)
-                    {
-                        // Update table service detail 
-                        flag = CommonService.updateServiceDetailTable(this.DetailTable + expression, stt_rec, list_key);
-                        if (flag)
-                        {
-                            // UPdate active key
-                            CommonService.updateStatusKey(stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key,  list_key);
-                        }
-                    }
-                }
-            }
+            //Update dữ liệu thanh toán và key đối với dịch vụ
+            updatePaid(vc_item);
+            updateService(vc_item);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -1000,6 +896,97 @@ END";
         public List<ImeiState> GetImeis(CommonObjectModel model)
         {
             return new List<ImeiState>();
+        }
+        public CommonObjectModel checkPaid(VoucherItem vc_item)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            if (vc_item.status != "2") return result_model;
+            List<PaidDetailBase> paidDetails = new List<PaidDetailBase>();
+            var ma_cuahang = "";
+            if (vc_item.details.Any(x => x.Id == 4))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 4);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var paid = item as TTDetail;
+                        if (paid != null && !string.IsNullOrEmpty(paid.ma_thanhtoan))
+                        {
+                            paidDetails.Add(paid);
+                        }
+                    }
+
+                }
+            }
+            if (paidDetails != null)
+            {
+                if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
+                {
+                    result_model = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"));
+                }
+            }
+            return result_model;
+        }
+        public void updatePaid(VoucherItem vc_item)
+        {
+            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
+                List<TTDetail>? detail_list = new List<TTDetail>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is TTDetail sVPaid)
+                    {
+                        detail_list.Add(sVPaid);
+                    }
+                }
+                // Điểm quy đổi
+                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
+                {
+                    CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
+                }
+                // Active mã giảm giá
+                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                {
+                    CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
+                }
+            }
+        }
+        public void updateService(VoucherItem vc_item)
+        {
+            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA);
+                List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is ServiceDetailBase service_base)
+                    {
+                        service_list.Add(service_base);
+                    }
+                }
+                // GET list key from service
+                bool flag = true;
+                List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
+                if (list_key != null && list_key.Count > 0)
+                {
+                    string expression = vc_item.ngay_ct?.ToString("yyyyMM");
+                    // Update table service detail 
+                    flag = CommonService.updateServiceDetailTable(this.DetailTable + expression, vc_item.stt_rec, list_key);
+                    if (flag)
+                    {
+                        // UPdate active key
+                        CommonService.updateStatusKey(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key, list_key);
+                    }
+                }
+            }
         }
         #endregion
         public string postConversionPoint(TTDetail model, VoucherItem master)

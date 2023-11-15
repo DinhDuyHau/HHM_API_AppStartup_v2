@@ -54,6 +54,9 @@ namespace Voucher.SVTran_HDF
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        // Lấy danh sách imei xóa khỏi grid
+        List<string> list_imei_delete = new List<string>();
+
         public Service()
         {
             VoucherRight = new AccessRight();
@@ -155,6 +158,11 @@ namespace Voucher.SVTran_HDF
                     }
                 }
                 index_value++;
+            }
+            result_model = checkPaid(vc_item);
+            if (!result_model.success)
+            {
+                return result_model;
             }
             result_model = checkImeiInsert(vc_item);
             if (!result_model.success)
@@ -285,10 +293,10 @@ namespace Voucher.SVTran_HDF
                 query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
 
             service.ExecuteNonQuery(query);
-            if (vc_item.status == "2")
-            {
-                service.ExecuteNonQuery(this.postConversionPoint(vc_item));
-            }
+
+            //Update dữ liệu thanh toán và key đối với dịch vụ
+            updatePaid(vc_item);
+
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
@@ -510,6 +518,11 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
+            result_model = checkPaid(vc_item);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
             result_model = checkImeiUpdate(vc_item, res);
             if (!result_model.success)
             {
@@ -648,10 +661,10 @@ SELECT is_success, message FROM @check";
                 query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             }
             service.ExecuteNonQuery(query);
-            if (vc_item.status == "2")
-            {
-                service.ExecuteNonQuery(this.postConversionPoint(vc_item));
-            }
+
+            //Update dữ liệu thanh toán và key đối với dịch vụ
+            updatePaid(vc_item);
+
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"delete from {inquiry_table} where stt_rec = '{stt_rec}' \n";
@@ -659,6 +672,15 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
+
+            //cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
+            string queryIMEI = "";
+            if (list_imei_delete.Count > 0)
+            {
+                string imei = string.Join(", ", list_imei_delete);
+                queryIMEI = $"exec Genbyte$IMEI$UpdateState '{vc_item.ma_cuahang}', '{imei}', '0', 0";
+                service.ExecuteNonQuery(queryIMEI);
+            }
 
             model.success = true;
             model.message = "";
@@ -1013,6 +1035,10 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+            listImei_old.Except(listImei).ToList().ForEach(x =>
+            {
+                list_imei_delete.Add(x);
+            });
             dat_hang = dat_hang.Except(listImei_old).ToList();
             if (dat_hang != null && dat_hang.Count > 0)
             {
@@ -1033,12 +1059,67 @@ END";
             return new List<ImeiState>();
         }
         #endregion
-
-        public string postConversionPoint(VoucherItem master)
+        public CommonObjectModel checkPaid(VoucherItem vc_item)
         {
-            string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
-            sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', null, {master.diem_qd}, {master.t_tt_nt}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
-            return sql;
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            if (vc_item.status != "2") return result_model;
+            List<PaidDetailBase> paidDetails = new List<PaidDetailBase>();
+            var ma_cuahang = "";
+            if (vc_item.details.Any(x => x.Id == 4))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 4);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var paid = item as SVPaidModel;
+                        if (paid != null && !string.IsNullOrEmpty(paid.ma_thanhtoan))
+                        {
+                            paidDetails.Add(paid);
+                        }
+                    }
+
+                }
+            }
+            if (paidDetails != null)
+            {
+                if (paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG") != null)
+                {
+                    result_model = CommonService.checkDicountCode(paidDetails.Find(x => x.ma_thanhtoan.Trim() == "MAGG"));
+                }
+            }
+            return result_model;
+        }
+        public void updatePaid(VoucherItem vc_item)
+        {
+            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
+            {
+                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
+                List<SVPaidModel>? detail_list = new List<SVPaidModel>();
+                foreach (var item in item_model.Data)
+                {
+                    if (item is SVPaidModel sVPaid)
+                    {
+                        detail_list.Add(sVPaid);
+                    }
+                }
+                // Điểm quy đổi
+                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
+                {
+                    CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
+                }
+                // Active mã giảm giá
+                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                {
+                    CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
+                }
+            }
         }
     }
 }

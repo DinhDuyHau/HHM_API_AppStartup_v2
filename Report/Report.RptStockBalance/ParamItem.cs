@@ -11,6 +11,7 @@ namespace Report.RptStockBalance
         public DateTime den_ngay { get; set; }
         public string ma_cuahang { get; set; } = "";
         public string ma_kho { get; set; } = "";
+        public string ma_loai { get; set; } = "";
         public string ma_vt { get; set; } = "";
         public string ma_dvcs { get; set; } = "";
         public string loai_ky { get; set; } = "2";

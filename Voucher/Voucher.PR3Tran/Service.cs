@@ -78,10 +78,9 @@ namespace Voucher.PR3Tran
             /**
              * CONVERT DỮ LIỆU GỬI LÊN TỪ CLIENT SANG OBJECT
              */
-            VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
+            VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action, false);
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
-
 
             //Check tồn  trạng thái chứng từ thuộc danh sách trạng thái được phép thêm
             string sql = @"DECLARE @check TABLE (
@@ -146,9 +145,12 @@ namespace Voucher.PR3Tran
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
-            vc_item.ma_gd = "1";
+            vc_item.ma_gd = VoucherUtils.isTranferSite(vc_item.ma_kho, vc_item.ma_khon)? "1": "2";
             vc_item.loai_ct = "1";
             vc_item.t_tien = vc_item.t_tien_nt;
+            vc_item.t_duyet = 0;
+            vc_item.t_huy = 0;
+            vc_item.fnote3 = VoucherUtils.isASMApprove(vc_item.ngay_ct, vc_item.ma_cuahang, vc_item.ma_cuahang_n) ? "1": "0";
 
             vc_item.ma_cuahang_n = Startup.Shop;
             vc_item.ma_ca = Startup.Shift;
@@ -165,6 +167,7 @@ namespace Voucher.PR3Tran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        vc_item.t_dong = detail_list.Count;
                         detail_list.ForEach(x =>
                         {
                             x.ngay_ct = vc_item.ngay_ct;
@@ -329,6 +332,7 @@ namespace Voucher.PR3Tran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        vc_item.t_dong = detail_list.Count;
                         detail_list.ForEach(x =>
                         {
                             x.ma_cuahang = vc_item.ma_cuahang;
@@ -434,9 +438,11 @@ SELECT is_success, message FROM @check";
                 //Gán lại các thông tin từ chứng từ cũ trước khi sửa: ma_dvcs, ma_cuahang, ma_ca, ngay_ct
                 //(không cho sửa các trường này)
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
-                vc_item.ma_cuahang = old_voucher.ma_cuahang;
+                //vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
-
+                bool temp = VoucherUtils.isASMApprove(vc_item.ngay_ct, vc_item.ma_cuahang, vc_item.ma_cuahang_n);
+                vc_item.ma_gd = VoucherUtils.isTranferSite(vc_item.ma_kho, vc_item.ma_khon) ? "1" : "2";
+                vc_item.fnote3 = VoucherUtils.isASMApprove(vc_item.ngay_ct, vc_item.ma_cuahang, vc_item.ma_cuahang_n) ? "1" : "0";
                 foreach (VoucherDetail item in vc_item.details)
                 {
                     if (item.Data == null || item.Data.Count == 0)
@@ -445,7 +451,7 @@ SELECT is_success, message FROM @check";
                     {
                         x.stt_rec = vc_item.stt_rec;
                         x.ma_ct = old_voucher.ma_ct;
-                        x.ma_cuahang = old_voucher.ma_cuahang;
+                        x.ma_cuahang = vc_item.ma_cuahang;
                         x.ngay_ct = old_voucher.ngay_ct;
                         x.ma_ca = Startup.Shift;
                     });

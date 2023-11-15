@@ -11,6 +11,8 @@ namespace Category.Dmtd2
 
         public string ten_td2 { get; set; }
 
+        public bool sd_imei_yn { get; set; }
+
         //[IgnoreDbUpdate(true)]
     }
 }

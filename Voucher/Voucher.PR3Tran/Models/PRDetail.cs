@@ -53,5 +53,7 @@ namespace Voucher.PR3Tran
         public DateTime? s8 { get; set; }
         public DateTime? s9 { get; set; }
         public string ten_vt { get; set; }
+        public decimal sl_duyet { get; set; }
+        public string ghi_chu { get; set; }
     }
 }

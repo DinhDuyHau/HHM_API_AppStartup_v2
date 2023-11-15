@@ -18,5 +18,9 @@ namespace Voucher.PR3Tran
         public string ma_khon { get; set; }
         public string ma_kho { get; set; }
         public string ma_cuahang_n { get; set; }
+        public decimal t_dong { get; set; }
+        public decimal t_duyet { get; set; }
+        public decimal t_huy { get; set; }
+        public string fnote3 { get; set; }
     }
 }

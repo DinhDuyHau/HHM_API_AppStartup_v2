@@ -53,7 +53,7 @@ namespace Report.RptStockBalance
                     select @SiteName = N'', @SiteName2 = N''
     
                 select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, @SiteName as ten_kho, @SiteName2 as ten_kho2
-                exec rs_rptStockReport @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, @language, @userID, @admin
+                exec rs_rptStockReport @ngay, @ma_cuahang, @ma_kho, @ma_loai, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, @language, @userID, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -70,9 +70,15 @@ namespace Report.RptStockBalance
             });
             list_paras.Add(new SqlParameter
             {
+                ParameterName = "@ma_loai",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_loai
+            });
+            list_paras.Add(new SqlParameter
+            {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_cuahang == null ? Startup.Shop : obj_param.ma_cuahang
+                SqlValue = (obj_param.ma_cuahang == null || obj_param.ma_cuahang.Trim() == "") ? Startup.Shop : obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
