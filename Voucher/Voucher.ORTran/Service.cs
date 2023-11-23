@@ -622,7 +622,8 @@ SELECT is_success, message FROM @check";
             //update các trường null
             query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
             query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
+            if (!string.IsNullOrEmpty(paid_table))
+                query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
 
             //insert lại dữ liệu tại bảng inquiry (i)

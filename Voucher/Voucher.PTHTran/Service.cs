@@ -324,7 +324,8 @@ namespace Voucher.PTHTran
             //update các trường null
             query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
             query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
+            if(!string.IsNullOrEmpty(paid_table))
+                query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
 
             //insert bảng master (c) & inquiry (i)
@@ -623,7 +624,8 @@ SELECT is_success, message FROM @check";
             //update các trường null
             query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
             query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
+            if (!string.IsNullOrEmpty(paid_table))
+                query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
 
             //insert lại dữ liệu tại bảng inquiry (i)
@@ -736,7 +738,7 @@ SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_loai as ten_loai_thu_ho from {2}' + @exp + ' a left join dmloaithuho b on a.ma_loai_thu_ho = b.ma_loai where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_td as ten_loai_thu_ho from {2}' + @exp + ' a left join dmtd2 b on a.ma_loai_thu_ho = b.ma_td where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";

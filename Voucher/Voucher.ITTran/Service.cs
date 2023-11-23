@@ -307,6 +307,12 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct =
 	RETURN
 END
 
+IF @vc_status <> @status_older AND EXISTS(SELECT 1 FROM dmttct WHERE xdefault = 1 AND ma_ct = @vc_code AND status = @vc_status) BEGIN
+	UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	SELECT * FROM @check
+	RETURN
+END
+
 SELECT is_success, message FROM @check";
             CoreService service = new CoreService();
             List<SqlParameter> paras = new List<SqlParameter>();
@@ -461,8 +467,8 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_kho, ma_khon, so_luong, gia, tien, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, px_gia_dd) ";
-                query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_kho, ma_khon, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, px_gia_dd from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_kho, ma_khon, so_luong, gia, tien, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, px_gia_dd, stt_rec_yc, stt_rec0yc) ";
+                query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_kho, ma_khon, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, px_gia_dd, stt_rec_yc, stt_rec0yc from @{_DETAIL_PARA}";
             }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
@@ -498,6 +504,7 @@ SELECT is_success, message FROM @check";
 
             // Lấy danh sách IMEI
             List<ImeiItem> list_imei = new List<ImeiItem>();
+            string stt_rec_yc = "";
             // id = 1 ==> type: PVDetail
             int index_value = 1;
             if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
@@ -511,17 +518,21 @@ SELECT is_success, message FROM @check";
                     {
                         foreach (var item in detail_list)
                         {
-                            List<string> imei = item.ma_imei.Split(',').ToList();
-                            foreach (var imei_item in imei)
+                            stt_rec_yc = item.stt_rec_yc;
+                            if (!string.IsNullOrEmpty(item.ma_imei))
                             {
-                                list_imei.Add(new ImeiItem
+                                List<string> imei = item.ma_imei.Split(',').ToList();
+                                foreach (var imei_item in imei)
                                 {
-                                    ma_imei = imei_item.Trim(),
-                                    ma_vt = item.ma_vt,
-                                    ma_kho = vc_item.ma_kho,
-                                    gia_nt0 = item.gia_nt,
-                                    ghi_chu = vc_item.dien_giai
-                                });
+                                    list_imei.Add(new ImeiItem
+                                    {
+                                        ma_imei = imei_item.Trim(),
+                                        ma_vt = item.ma_vt,
+                                        ma_kho = vc_item.ma_kho,
+                                        gia_nt0 = item.gia_nt,
+                                        ghi_chu = vc_item.dien_giai
+                                    });
+                                }
                             }
                         }
                     }
@@ -554,7 +565,10 @@ SELECT is_success, message FROM @check";
                 queryIMEI = $"EXEC MokaOnline$Voucher$PXBUpdatePNF '{stt_rec}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
-
+            if(vc_item.status != "0")
+            {
+                updateStatusTranfer(stt_rec, stt_rec_yc, vc_item.status);
+            }
             model.success = true;
             model.message = "edit_voucher_success";
             model.result = vc_item;
@@ -838,6 +852,16 @@ END";
         }
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            if(vc_item.status != "2" && vc_item.status != "0")
+            {
+                return result_model;
+            }
             var listImei = new List<string>();
             var ma_cuahang = "";
             if (vc_item.details.Any(x => x.Id == 1))
@@ -891,12 +915,7 @@ END";
                 }
             }
 
-            CommonObjectModel result_model = new CommonObjectModel()
-            {
-                success = true,
-                message = "",
-                result = null
-            };
+            
             var imeiService = new Imei.Service();
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
@@ -932,6 +951,79 @@ END";
                 result_model.result = list_result_error;
             }
             return result_model;
+        }
+        //Cập nhật lịch sử giao dịch và update trạng thái của phiếu đề nghị
+        public void updateStatusTranfer(string stt_rec, string stt_rec_yc, string status)
+        {
+            CoreService service = new CoreService();
+            string sql = @"declare @exp CHAR(6), @q nvarchar(4000)
+                           declare @count int, @t_duyet int, @t_huy int, @t_hoanthanh int, @status_xh char(1)
+                           select @exp = CONVERT(CHAR(6), ngay_ct, 112) from c106$000000 where stt_rec = @stt_rec_yc
+                           select * into #temp from log_lsgdxhdc where stt_rec_dc = @stt_rec and status_dc = '0'
+                           update #temp set crdate_dc = getdate(), status_dc = @status, status_xh = @status
+                           insert into log_lsgdxhdc select * from #temp
+
+                           if @status = '5' begin
+                                SET @q = 'update d106$' +@exp+ ' set tag1 = 0, tag2 = 0, ngay_hh_dc = DATEADD(day, 1, GETDATE()), xstatus = '''+@status+''' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
+                                EXEC sp_executesql @q
+                            end
+                            else if @status = '4' begin
+                                SET @q = 'update d106$' +@exp+ ' set ngay_huy = GETDATE(), xstatus = '''+@status+''' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
+                                EXEC sp_executesql @q
+                            end
+                            else if @status = '2' begin
+                                SET @q = 'update d106$' +@exp+ ' set ngay_xuat = GETDATE(), xstatus = ''3'' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
+                                EXEC sp_executesql @q
+                            end
+                            
+                             select top 0 * into #d106 from d106$000000 
+                             SET @q = 'insert into #d106 select * from d106$' +@exp+ ' where stt_rec = '''+@stt_rec_yc+''' '
+                                EXEC sp_executesql @q
+                            
+                            -- Cập nhật lại trạng thái cho chứng từ
+                            SELECT @count = COUNT(1) FROM #d106
+			                SELECT @t_duyet = COUNT(1) FROM #d106 WHERE tag1 = 1
+			                SELECT @t_hoanthanh = COUNT(1) FROM #d106 WHERE xstatus = '3' or xstatus = '4' or xstatus = '1'
+			                SELECT @t_huy = COUNT(1) FROM #d106 WHERE tag2 = 1
+			                IF @t_huy = @count BEGIN 
+				                SELECT @status_xh = '3'
+			                END
+			                ELSE IF @t_hoanthanh = @count and @t_duyet + @t_huy = @count BEGIN 
+				                SELECT @status_xh = '2'
+			                END
+			                ELSE BEGIN 
+				                SELECT @status_xh = '0'
+			                END
+                            
+                             SET @q = 'update m106$' +@exp+ ' set status = '''+@status_xh+''', t_duyet = '+CAST(@t_duyet AS VARCHAR)+', t_huy = '+CAST(@t_huy AS VARCHAR)+'  where stt_rec = '''+@stt_rec_yc+''' '
+                             SET @q = @q + CHAR(13) + ' update c106$000000 set status = '''+@status_xh+''' where stt_rec = '''+@stt_rec_yc+''' '
+                             SET @q = @q + CHAR(13) + ' update i106$' +@exp+ ' set status = '''+@status_xh+''' where stt_rec = '''+@stt_rec_yc+''' '
+                             
+                             EXEC sp_executesql @q
+
+                            drop table #d106
+                            drop table #temp
+                          ";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@stt_rec",
+                SqlDbType = SqlDbType.Char,
+                Value = stt_rec
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@stt_rec_yc",
+                SqlDbType = SqlDbType.Char,
+                Value = stt_rec_yc
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@status",
+                SqlDbType = SqlDbType.Char,
+                Value = status
+            });
+            service.ExecTransactionNonQuery(sql, paras, ConnectType.Accounting);
         }
     }
 }

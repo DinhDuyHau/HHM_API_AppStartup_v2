@@ -461,8 +461,8 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia, tien, gia_nt, tien_nt, tk_vt, tk_du, ma_nx) ";
-                query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia, tien, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, stt_rec_yc, stt_rec0yc) ";
+                query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, stt_rec_yc, stt_rec0yc from @{_DETAIL_PARA}";
             }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";

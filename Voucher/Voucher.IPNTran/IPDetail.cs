@@ -24,5 +24,7 @@ namespace Voucher.IPNTran
         public string tk_vt { get; set; }
         public string tk_du { get; set; }
         public string ma_nx { get; set; }
+        public string stt_rec_yc { get; set; }
+        public string stt_rec0yc { get; set; }
     }
 }

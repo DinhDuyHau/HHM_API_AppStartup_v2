@@ -26,6 +26,7 @@ namespace Voucher.ITTran
         public string tk_du { get; set; }
         public string ma_nx { get; set; }
         public bool px_gia_dd { get; set; }
-
+        public string stt_rec_yc { get; set; }
+        public string stt_rec0yc { get; set; }
     }
 }
