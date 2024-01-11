@@ -76,7 +76,7 @@ namespace Price
         /// <returns></returns>
         [HttpGet("get_renew_price")]
         #region GetRenewPrice
-        public IActionResult GetRenewPrice(string ma_vt, string ma_cuahang)
+        public IActionResult GetRenewPrice(string ma_vt, string ma_cuahang, string? ma_ncc = "")
         {
             try
             {
@@ -89,11 +89,11 @@ namespace Price
                 Service _service = new Service();
 
                 //check injection
-                if (!_service.IsSQLInjectionValid(ma_vt) || !_service.IsSQLInjectionValid(ma_cuahang))
+                if (!_service.IsSQLInjectionValid(ma_vt) || !_service.IsSQLInjectionValid(ma_cuahang) || !_service.IsSQLInjectionValid(ma_ncc))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy giá dịch vụ
-                List<RenewPriceModel> price_item = _service.GetRenewPrice(ma_vt, ma_cuahang);
+                List<RenewPriceModel> price_item = _service.GetRenewPrice(ma_vt, ma_cuahang, ma_ncc);
                 if (price_item != null)
                 {
                     model.success = true;

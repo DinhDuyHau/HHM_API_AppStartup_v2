@@ -7,7 +7,7 @@ namespace Category.Dmttct
         [IsPrimary]
         public string ma_ct { get; set; }
         [IsPrimary]
-        public string ma_gd { get; set; }
+        public string loai_gd { get; set; }
         [IsPrimary]
         public string status { get; set; }
 

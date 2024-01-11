@@ -15,6 +15,7 @@ using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Voucher.PVTran.Model;
+using Microsoft.VisualBasic;
 
 namespace Voucher.PVTran
 {
@@ -45,7 +46,7 @@ namespace Voucher.PVTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_gd) as ma_gd,rtrim(ma_kh) as ma_kh,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_gd) as ma_gd,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where ma_gd = ''1'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where ma_gd = ''1'' and a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
         public string WhereClauseFinding { get; } = "ma_gd = '1'";
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -257,6 +258,8 @@ namespace Voucher.PVTran
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
             int index_value = 1;
+            string ma_thue = "";
+            decimal thue_suat = 0;
             if (data.details == null)
             {
                 return null;
@@ -308,6 +311,8 @@ namespace Voucher.PVTran
                                     item_detail.Data.AddRange(detail_list);
                                 }
                                 item_detail.Detail_Type = typeof(PVDetail).Name;
+                                ma_thue = detail_list.Max(x => x.ma_thue);
+                                thue_suat = detail_list.Max(x => x.thue_suat);
                                 foreach (var detail_item in detail_list)
                                 {
                                     List<string> imei = detail_item.ma_imei.Split(',').ToList();
@@ -333,6 +338,13 @@ namespace Voucher.PVTran
                                         item.ma_nt = vc_item.ma_nt;
                                         item.mau_bc = "3";
                                         item.ma_tc = "1";
+                                        item.ma_kh = vc_item.ma_kh;
+                                        item.ma_thue = ma_thue;
+                                        item.thue_suat = thue_suat;
+                                        item.t_thue_nt = vc_item.t_thue_nt;
+                                        item.t_thue = vc_item.t_thue_nt;
+                                        item.t_tien_nt = vc_item.t_tien_nt;
+                                        item.t_tien = vc_item.t_tien_nt;
                                     });
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(tax_list);
@@ -348,8 +360,17 @@ namespace Voucher.PVTran
                 index_value++;
             }
 
-            //Check tồn tại của imei gửi lên
-            string query_imei = @" DECLARE @imei TABLE (ma_imei char(32)) ";
+            // Kiểm tra ngay_ct
+
+            if (vc_item.ngay_ct > DateTime.Now)
+            {
+                result_model.success = false;
+                result_model.message = "date_err";
+                return result_model;
+            }
+
+                //Check tồn tại của imei gửi lên
+                string query_imei = @" DECLARE @imei TABLE (ma_imei char(32)) ";
             foreach (var item in list_imei)
             {
                 query_imei += @"INSERT INTO @imei SELECT '" + item + "' \n";
@@ -615,7 +636,7 @@ SELECT is_success, message FROM @check";
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
                 string queryIMEI = $"exec Genbyte$IMEI$Create '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
-                service.ExecuteNonQuery(queryIMEI);
+                service.ExecTransactionNonQuery(queryIMEI);
             }
 
 
@@ -664,6 +685,14 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.TaxTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"delete from c571_dotran  where stt_rec_pna = @vc_id \n";
+            sql += $"delete from c104$000000 where stt_rec = REPLACE(@vc_id, 'PNA', 'DO1') ";
+            sql += $"delete from {"m104$" + ngay_ct.ToString("yyyyMM")} where stt_rec = REPLACE(@vc_id, 'PNA', 'DO1') \n";
+            sql += $"delete from {"d104$" + ngay_ct.ToString("yyyyMM")} where stt_rec = REPLACE(@vc_id, 'PNA', 'DO1') \n";
+            sql += $"delete from {"i104$" + ngay_ct.ToString("yyyyMM")} where stt_rec = REPLACE(@vc_id, 'PNA', 'DO1') \n";
+            sql += $"delete from sync_dotran_prime where stt_rec = REPLACE(@vc_id, 'PNA', 'DO1') \n";
+            sql += $"delete from sync_dotran_d104 where stt_rec = REPLACE(@vc_id, 'PNA', 'DO1') \n";
+
 
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
@@ -672,7 +701,24 @@ SELECT is_success, message FROM @check";
                 SqlDbType = SqlDbType.Char,
                 Value = voucherId.Replace("'", "''")
             });
+
             service.ExecTransactionNonQuery(sql, paras);
+
+            // Thực hiện cập nhật lại trạng thái của phiếu giao hàng DO
+
+            sql = $"update c104$000000 set status = '0' where stt_rec = @vc_id \n";
+            sql += $"update {"m104$" + ngay_ct.ToString("yyyyMM")} set status = '0'  where stt_rec = @vc_id \n";
+            sql += $"update {"i104$" + ngay_ct.ToString("yyyyMM")} set status = '0'  where stt_rec = @vc_id \n";
+
+            paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_id",
+                SqlDbType = SqlDbType.Char,
+                Value = voucherId.Replace("PNA", "DO1")
+            });
+
+            service.ExecTransactionNonQuery(sql, paras, ConnectType.Accounting);
 
             //return
             model.success = true;

@@ -16,6 +16,7 @@ using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Voucher.ITNTran.Model;
 using Genbyte.Component.Voucher.Model;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.ITNTran
 {
@@ -48,7 +49,7 @@ namespace Voucher.ITNTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_kho) as ma_kho,rtrim(ma_khon) as ma_khon,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khon) as ma_khon,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(ma_kho) as ma_kho,rtrim(ma_khon) as ma_khon,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2, fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khon) as ma_khon,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -62,14 +63,16 @@ namespace Voucher.ITNTran
 
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
+        private readonly IConfiguration _configuration;
 
-        public Service()
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
+            _configuration = configuration;
 
         }
 
@@ -602,7 +605,7 @@ SELECT is_success, message FROM @check";
                 throw new Exception(ApiReponseMessage.Error_InputData);
 
             //check exists & trạng thái chứng từ
-            string sql = $"select * from {this.MasterTable} where status = '0' and stt_rec = @vc_id";
+            string sql = $"select * from {this.MasterTable} where (status = '0' or status = '1') and stt_rec = @vc_id";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -613,16 +616,35 @@ SELECT is_success, message FROM @check";
             DataSet ds = service.ExecSql2DataSet(sql, paras);
             if (ds == null || ds.Tables.Count <= 0 || ds.Tables[0].Rows.Count <= 0)
                 throw new Exception(ApiReponseMessage.Error_notExist);
-
-
+            // Kiểm tra xem hoá đơn đã được phát hành hay chưa
+            EInvoice.Service EInvoiceService = new EInvoice.Service(_configuration);
+            bool checkPublishEInvoice = EInvoiceService.CheckPublishedInv(voucherId, this.VoucherCode).Result;
+            if (checkPublishEInvoice)
+            {
+                model.success = false;
+                model.message = "issued_invoices_cannot_be_deleted";
+                model.result = voucherId;
+                return model;
+            }
             //Thực hiện xóa có sử dụng transaction
             DateTime ngay_ct = Convert.ToDateTime(ds.Tables[0].Rows[0]["ngay_ct"]);
+            string vc_id_to1 = voucherId.Replace(this.VoucherCode, "TO1");
             sql = $"exec fs_Voucher$RemoveInv$Imei '{voucherId.Replace("'", "''")}', '{this.VoucherCode}' \n";
             sql += $"delete from {this.MasterTable} where stt_rec = @vc_id \n";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"EXEC MokaOnline$Voucher$PXNDeletePNN @vc_id\n";
+
+            sql += $"delete from c566_totran  where stt_rec_to1 = @vc_id_to1 \n";
+            sql += $"delete from c572_totran  where stt_rec_to1 = @vc_id_to1 \n";
+            sql += $"delete from c105$000000 where stt_rec = @vc_id_to1 \n";
+            sql += $"delete from {"m105$" + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id_to1 \n";
+            sql += $"delete from {"d105$" + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id_to1 \n";
+            sql += $"delete from {"i105$" + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id_to1 \n";
+            sql += $"delete from sync_totran_prime where stt_rec = @vc_id_to1 \n";
+            sql += $"delete from sync_totran_d105 where stt_rec = @vc_id_to1 \n";
+
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -630,7 +652,29 @@ SELECT is_success, message FROM @check";
                 SqlDbType = SqlDbType.Char,
                 Value = voucherId.Replace("'", "''")
             });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_id_to1",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_id_to1.Replace("'", "''")
+            });
             service.ExecTransactionNonQuery(sql, paras);
+
+            // Thực hiện cập nhật lại trạng thái của phiếu đề nghị điều chuyển
+
+            sql = $"update c105$000000 set status = '0' where stt_rec = @vc_id \n";
+            sql += $"update {"m105$" + ngay_ct.ToString("yyyyMM")} set status = '0'  where stt_rec = @vc_id \n";
+            sql += $"update {"i105$" + ngay_ct.ToString("yyyyMM")} set status = '0'  where stt_rec = @vc_id \n";
+
+            paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_id",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_id_to1.Replace("'", "''")
+            });
+
+            service.ExecTransactionNonQuery(sql, paras, ConnectType.Accounting);
 
             //return
             model.success = true;

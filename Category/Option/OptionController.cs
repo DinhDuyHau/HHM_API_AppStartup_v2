@@ -134,5 +134,45 @@ namespace Option
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy hệ số phần bán hàng
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("get_option")]
+        #region get_payment_debit
+        public IActionResult GetSaleOptions()
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                List<OptionModel> option = _service.GetOptionBySubSystem("BH");
+                Dictionary<string, object> options = new Dictionary<string, object>();
+                option.ForEach(option => {
+                    options[option.name] = option.val;
+                });
+
+                if (option != null)
+                {
+                    model.success = true;
+                    model.result = options;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- OptionController/GetSaleOptions", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }

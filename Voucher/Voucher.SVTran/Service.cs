@@ -18,6 +18,7 @@ using Voucher.SVTran.Models;
 using Genbyte.Component.Voucher.Model;
 using Genbyte.Base.Security;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.SVTran
 {
@@ -59,7 +60,7 @@ namespace Voucher.SVTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(Dien_giai) as Dien_giai,t_tien_nt2,t_Ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai,t_tien_nt2,t_Ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang, rtrim(Dien_giai) as Dien_giai,t_tien_nt, t_tien_nt2,t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai,t_tien_nt,t_tien_nt2,t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -70,19 +71,19 @@ namespace Voucher.SVTran
         /// Khai báo quyền truy cập cho các xử lý CRUD
         /// </summary>
         public AccessRight VoucherRight { get; set; }
-        public Security security { get; set; }
+        private readonly IConfiguration _configuration;
 
         // Lấy danh sách imei xóa khỏi grid
         List<string> list_imei_delete = new List<string>();
 
-        public Service(Security security)
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-            this.security = security;
+            this._configuration = configuration;
         }
 
         #region Inserting
@@ -173,7 +174,7 @@ namespace Voucher.SVTran
                                     //cập nhật ngày chứng từ
                                     paid_list.ForEach(x => {
                                         x.ngay_ct = vc_item.ngay_ct;
-                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, this.security.KeyAES, this.security.IVAES);
+                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                                     });
 
                                     item_detail.Data = new List<DetailEntity>();
@@ -201,12 +202,17 @@ namespace Voucher.SVTran
                 }
                 index_value++;
             }
-            result_model = checkPaid(vc_item);
+            result_model = CommonService.checkPaid(vc_item, _PAID_PARA);
             if (!result_model.success)
             {
                 return result_model;
             }
-            result_model = checkImeiInsert(vc_item);
+            result_model = CommonService.checkImeiInsert(vc_item, _DETAIL_PARA);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
+            result_model = CommonService.checkDiscount(vc_item, _DISCOUNT_PARA);
             if (!result_model.success)
             {
                 return result_model;
@@ -415,6 +421,13 @@ namespace Voucher.SVTran
              * CONVERT DỮ LIỆU GỬI LÊN TỪ CLIENT SANG OBJECT
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
+
+            if(vc_item.ngay_ct.Value.Date != DateTime.Today)
+            {
+                result_model.success = false;
+                result_model.message = "voucher_cannot_edit";
+                return result_model;
+            }
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
 
@@ -478,7 +491,7 @@ namespace Voucher.SVTran
                                 if (paid_list != null && paid_list.Count > 0)
                                 {
                                     paid_list.ForEach(x => {
-                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, this.security.KeyAES, this.security.IVAES);
+                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt,  _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                                     });
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
@@ -622,13 +635,18 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
-            result_model = checkPaid(vc_item);
+            result_model = CommonService.checkPaid(vc_item, _PAID_PARA);
             if (!result_model.success)
             {
                 return result_model;
             }
 
-            result_model = checkImeiUpdate(vc_item, res);
+            result_model = CommonService.checkImeiUpdate(vc_item, res, this.list_imei_delete, _DETAIL_PARA);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
+            result_model = CommonService.checkDiscount(vc_item, _DISCOUNT_PARA);
             if (!result_model.success)
             {
                 return result_model;
@@ -994,7 +1012,7 @@ END";
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
 
                 pr_paid.ToList().ForEach(x => {
-                    x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, security.KeyAES, security.IVAES);
+                    x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                 });
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -1198,6 +1216,7 @@ END";
             };
             return result;
         }
+        #endregion
         public CommonObjectModel checkPaid(VoucherItem vc_item)
         {
             CommonObjectModel result_model = new CommonObjectModel()
@@ -1240,6 +1259,7 @@ END";
             if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
             {
                 VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
+                if (item_model.Data == null) return;
                 List<SVPaidModel>? detail_list = new List<SVPaidModel>();
                 foreach (var item in item_model.Data)
                 {
@@ -1249,10 +1269,7 @@ END";
                     }
                 }
                 // Điểm quy đổi
-                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
-                {
-                    CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
-                }
+                CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
                 // Active mã giảm giá
                 if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
                 {
@@ -1265,6 +1282,7 @@ END";
             if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA) != null)
             {
                 VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _SERVICES_PARA);
+                if (item_model.Data == null) return;
                 List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
                 foreach (var item in item_model.Data)
                 {
@@ -1472,6 +1490,51 @@ END";
 
             return new List<ImeiState>();
         }
-        #endregion
+
+        CommonObjectModel checkDiscount(VoucherItem vc_item)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            if (vc_item.details.Any(x => x.Name == _DISCOUNT_PARA))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Name == _DISCOUNT_PARA);
+                bool flag = false;
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var svDetail = item as SVDiscountModel;
+                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_ck) && svDetail.loai_ck == "04")
+                        {
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+                if(flag)
+                {
+                    if (string.IsNullOrEmpty(vc_item.nguoi_duyet_ck))
+                    {
+                        result_model.success = false;
+                        result_model.message = "lbl_invalid_ck04";
+                    }
+                    else
+                    {
+                        bool check = new Employee.Service().checkUser(vc_item.nguoi_duyet_ck, "BGD");
+                        if (!check)
+                        {
+                            result_model.success = false;
+                            result_model.message = "lbl_invalid_ck04";
+                        }
+                    }
+                }
+            }
+            return result_model;
+        }
+
     }
 }

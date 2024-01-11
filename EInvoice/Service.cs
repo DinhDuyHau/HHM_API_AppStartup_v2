@@ -16,7 +16,7 @@ namespace EInvoice
 {
     public class Service: CoreService
     {
-        private string baseUrl { get; set; } = "http://hhm-kt.genbyte.net/AppService/MokaOnline.EInvoiceHHM.asmx";
+        private string baseUrl { get; set; } = "";
         public Service(IConfiguration configuration) {
             this.baseUrl = configuration["EInvoice:EInvoiceService"];
         }
@@ -59,6 +59,7 @@ namespace EInvoice
         }
         public async Task<object> CreateDraft(string voucherId, string ma_ct)
         {
+            ResponseInfo responseInfo = new ResponseInfo();
             CoreService core_service = new CoreService();
 
             //check sql injection
@@ -71,10 +72,25 @@ namespace EInvoice
             {
                 voucher = ds.Tables[0].ToList<VoucherEntity>().FirstOrDefault();
                 voucher.details = ds.Tables[1].ToList<VoucherDetail>();
+                // Kiểm tra xem voucher đã có imei chưa
+                var flag = true;
+                voucher.details.ToList().ForEach(item =>
+                {
+                    if(item.ma_imei == null || item.so_luong != item.ma_imei.Split(",").Length)
+                    {
+                        flag = false;
+                    }
+                });
+                if(flag == false)
+                {
+                    responseInfo.description = "lbl_voucher_not_save";
+                    return responseInfo;
+
+                }
                 if (voucher.ma_thue == null)
                     voucher.ma_thue = "0";
             }
-            ResponseInfo responseInfo = new ResponseInfo();
+            
             try
             {
                 using (var httpClient = new HttpClient())
@@ -196,7 +212,15 @@ namespace EInvoice
             if (ds != null && ds.Tables.Count >= 2)
             {
                 voucher = ds.Tables[0].ToList<VoucherEntity>().FirstOrDefault();
-                voucher.details = ds.Tables[1].ToList<VoucherDetail>();
+                var detail = ds.Tables[1].ToList<VoucherDetail>().ToList();
+                detail.ForEach(x =>
+                {
+                    if (x.ma_imei == null)
+                    {
+                        x.ma_imei = "";
+                    }
+                });
+                voucher.details = detail;
                 if (voucher.ma_thue == null)
                     voucher.ma_thue = "0";
             }
@@ -272,6 +296,68 @@ namespace EInvoice
 
             return responseInfo;
         }
+        public async Task<bool> CheckPublishedInv(string voucherId, string ma_ct)
+        {
+            CoreService core_service = new CoreService();
+
+            //check sql injection
+            if (!core_service.IsSQLInjectionValid(voucherId) || !core_service.IsSQLInjectionValid(ma_ct))
+                throw new Exception(ApiReponseMessage.Error_InputData);
+            string sql = $"EXEC Genbyte$Voucher$GetById '{voucherId}', '{ma_ct}'";
+            DataSet ds = core_service.ExecSql2DataSet(sql);
+            VoucherEntity voucher = new VoucherEntity();
+            if (ds != null && ds.Tables.Count >= 2)
+            {
+                voucher = ds.Tables[0].ToList<VoucherEntity>().FirstOrDefault();
+                voucher.details = ds.Tables[1].ToList<VoucherDetail>();
+                if (voucher.ma_thue == null)
+                    voucher.ma_thue = "0";
+            }
+            ResponseInfo responseInfo = new ResponseInfo();
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    string url = baseUrl + "/" + "GetPublishedInv";
+                    Request request = new Request();
+                    request.voucherInfo = voucher;
+                    string jsonData = JsonConvert.SerializeObject(request);
+                    // Tạo nội dung HTTP
+                    var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                    //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
+                    HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        // Chuyển đổi chuỗi JSON thành đối tượng
+                        //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
+                        var result = JsonConvert.DeserializeObject<Response>(responseBody);
+                        var item = result.d;
+                        // Nếu đủ thông tin thì đã phát hành
+                        if (!string.IsNullOrEmpty(item.voucherId) && string.IsNullOrEmpty(item.errorCode) && item.result != null
+                            && !string.IsNullOrEmpty(item.result.invoiceNo) && item.result.signedDate != null && !string.IsNullOrEmpty(item.result.reservationCode))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
+                    }
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                responseInfo.description = e.Message;
+                return false;
+            }
+
+            return false;
+        }
         public async Task<object> GetPublishedInv(string voucherId, string ma_ct)
         {
             CoreService core_service = new CoreService();
@@ -307,7 +393,15 @@ namespace EInvoice
                         string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
-                        SavePublishInv(responseBody, voucher.ma_ct, voucher.ngay_ct, voucher.ma_kh, voucher.dien_giai);
+                        var flag = SavePublishInv(responseBody, voucher.ma_ct, voucher.ngay_ct, voucher.ma_kh, voucher.dien_giai);
+                        if(!flag)
+                        {
+                            responseInfo.description = "Không thể lấy thông tin hoá đơn";
+                            responseInfo.errorCode = "cannot_get_einvoice";
+                            Response rp = new Response();
+                            rp.d = responseInfo;
+                            return JsonConvert.SerializeObject(rp);
+                        }
                         return responseBody;
                     }
                     else
@@ -324,14 +418,15 @@ namespace EInvoice
 
             return responseInfo;
         }
-        public void SavePublishInv(string jsonInvoice, string ma_ct, DateTime? ngay_ct, string ma_kh, string ghi_chu)
+        public bool SavePublishInv(string jsonInvoice, string ma_ct, DateTime? ngay_ct, string ma_kh, string ghi_chu)
         {
             //Response response = JsonConvert.DeserializeObject<Response>(res);
             var result = JsonConvert.DeserializeObject<Response>(jsonInvoice);
             var item = result.d;
 
+            // Nếu đủ thông tin thì cập nhật lại vào hoá đơn
             if (!string.IsNullOrEmpty(item.voucherId) && string.IsNullOrEmpty(item.errorCode)
-                        && item.result != null && !string.IsNullOrEmpty(item.result.invoiceNo) && item.result.signedDate != null)
+                        && item.result != null && !string.IsNullOrEmpty(item.result.invoiceNo) && item.result.signedDate != null && !string.IsNullOrEmpty(item.result.reservationCode))
             {
                 string sql = "EXEC GENBYTE$EInvoice$MappingPublishedInv @supplierId, @voucherId, @voucherCode, @customerCode, @note, @transactionId, @reservationCode, @buyerTaxCode, @invoiceNo, @invoiceForm, @invoiceSerial, @invoiceDate, @signedDate, @status_v, @status_e, @userId";
                 List<SqlParameter> paras = new List<SqlParameter>();
@@ -389,7 +484,7 @@ namespace EInvoice
                 {
                     ParameterName = "@invoiceNo",
                     SqlDbType = SqlDbType.VarChar,
-                    Value = item.result.invoiceNo
+                    Value = string.IsNullOrEmpty(item.result.invoiceNo.Remove(0, item.result.invoiceSerial.Trim().Length))? "1": item.result.invoiceNo.Remove(0, item.result.invoiceSerial.Trim().Length)
                 });
                 paras.Add(new SqlParameter()
                 {
@@ -435,6 +530,11 @@ namespace EInvoice
                 });
                 #endregion
                 this.ExecuteNonQuery(sql, paras);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

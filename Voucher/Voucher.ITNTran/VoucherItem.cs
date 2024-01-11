@@ -40,8 +40,6 @@ namespace Voucher.ITNTran
         public string hddt_status { get; set; }
         public string hddt_ma_so_thue { get; set; }
         public string hddt_ma_tra_cuu { get; set; }
-
-
-
+        public string fnote3 { get; set; }
     }
 }

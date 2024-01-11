@@ -42,7 +42,7 @@ namespace Voucher.IPNTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_cuahang) as ma_cuahang, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -63,7 +63,7 @@ namespace Voucher.IPNTran
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
-            VoucherRight.AllowDelete = true;
+            VoucherRight.AllowDelete = false;
 
         }
 
@@ -535,7 +535,7 @@ SELECT is_success, message FROM @check";
                     }
                 }
             }
-            if (vc_item.status == "0")
+            if (vc_item.status == "0" || vc_item.status == "1")
             {
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
@@ -565,9 +565,11 @@ SELECT is_success, message FROM @check";
             CommonObjectModel model = new CommonObjectModel()
             {
                 success = false,
-                message = "",
+                message = "voucher_cannot_delete",
                 result = null
             };
+
+            return model;
             CoreService service = new CoreService();
 
             //check sql injection

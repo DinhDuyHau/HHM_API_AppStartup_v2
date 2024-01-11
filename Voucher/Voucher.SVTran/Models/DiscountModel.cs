@@ -16,6 +16,14 @@ namespace Voucher.SVTran.Models
         public string gio_kt { get; set; }
         public string loai_ck { get; set; }
         public string ten_loai { get; set; }
+        public int type { get; set; }
+        public decimal tien_ck { get; set; }
+        public decimal tl_ck { get; set; }
+        public decimal tien_ck_max { get; set; }
+        public decimal tien_ck_tl { get; set; }
+        public decimal tien_ck_ct { get; set; }
+        public int uu_tien { get; set; }
+        public decimal sl_nhom { get; set; }
         public object items { get; set; }
     }
 }

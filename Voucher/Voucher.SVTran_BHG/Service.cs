@@ -60,7 +60,7 @@ namespace Voucher.SVTran_BHG
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(Dien_giai) as dien_giai,t_tien_nt,t_tien_nt2,t_Ck_nt as t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as dien_giai,t_tien_nt,t_tien_nt2,t_Ck_nt as t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as dien_giai,t_tien_nt,t_tien_nt2,t_Ck_nt as t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as dien_giai,t_tien_nt,t_tien_nt2,t_Ck_nt as t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -210,12 +210,12 @@ namespace Voucher.SVTran_BHG
                     item_detail.Detail_Type = typeof(BHDetail).Name;
                 }
             }
-            result_model = checkPaid(vc_item);
+            result_model = CommonService.checkPaid(vc_item, _DETAIL_TT_PARA);
             if (!result_model.success)
             {
                 return result_model;
             }
-            result_model = checkImeiInsert(vc_item);
+            result_model = CommonService.checkImeiInsert(vc_item, _DETAIL_PARA);
             if (!result_model.success)
             {
                 return result_model;
@@ -416,6 +416,12 @@ namespace Voucher.SVTran_BHG
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
+            if (vc_item.ngay_ct.Value.Date != DateTime.Today)
+            {
+                result_model.success = false;
+                result_model.message = "voucher_cannot_edit";
+                return result_model;
+            }
             vc_item.ma_ct = this.VoucherCode;
 
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
@@ -645,12 +651,13 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
-            result_model = checkPaid(vc_item);
+            result_model = CommonService.checkPaid(vc_item, _DETAIL_TT_PARA);
             if (!result_model.success)
             {
                 return result_model;
             }
-            result_model = checkImeiUpdate(vc_item, res);
+
+            result_model = CommonService.checkImeiUpdate(vc_item, res, this.list_imei_delete, _DETAIL_PARA);
             if (!result_model.success)
             {
                 return result_model;
@@ -1157,6 +1164,7 @@ END";
             if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA) != null)
             {
                 VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_TT_PARA);
+                if (item_model.Data == null) return;
                 List<TTDetail>? detail_list = new List<TTDetail>();
                 foreach (var item in item_model.Data)
                 {

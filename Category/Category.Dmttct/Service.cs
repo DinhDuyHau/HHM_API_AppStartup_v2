@@ -51,7 +51,7 @@ namespace Category.Dmttct
                 throw new Exception(ApiReponseMessage.Error_InputData);
 
             //check tồn tại dữ liệu trong db theo khóa chính
-            string sql = "select 1 from dmttct where ma_ct = @ma_ct and ma_gd = @ma_gd and status = @status";
+            string sql = "select 1 from dmttct where ma_ct = @ma_ct and loai_gd = @loai_gd and status = @status";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -61,9 +61,9 @@ namespace Category.Dmttct
             });
             paras.Add(new SqlParameter()
             {
-                ParameterName = "@ma_gd",
+                ParameterName = "@loai_gd",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_gd
+                Value = entity_item.loai_gd
             });
             paras.Add(new SqlParameter()
             {
@@ -203,7 +203,7 @@ namespace Category.Dmttct
                 return false;
 
             DataService db_service = new DataService();
-            string sql = "select 1 from dmttct where ma_ct = @ma_ct and ma_gd = @ma_gd and status = @status";
+            string sql = "select 1 from dmttct where ma_ct = @ma_ct and loai_gd = @loai_gd and status = @status";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -213,9 +213,9 @@ namespace Category.Dmttct
             });
             paras.Add(new SqlParameter()
             {
-                ParameterName = "@ma_gd",
+                ParameterName = "@loai_gd",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_gd
+                Value = entity_item.loai_gd
             });
             paras.Add(new SqlParameter()
             {

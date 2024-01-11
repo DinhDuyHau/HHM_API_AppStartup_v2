@@ -22,6 +22,11 @@ namespace Voucher.PVTran
         public decimal gia_nt { get; set; }
 
         public decimal tien_nt { get; set; }
+        public string ma_thue { get; set; }
+
+        public decimal thue_suat { get; set; }
+        public decimal thue_nt { get; set; }
+        public decimal tt_nt { get; set; }
         public string ma_td1 { get; set; }
         public bool budslive { get; set; }
     }

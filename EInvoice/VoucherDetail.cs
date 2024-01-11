@@ -19,5 +19,6 @@ namespace EInvoice
         public decimal gia_nt { get; set; }
 
         public decimal tien_nt { get; set; }
+        public string ma_imei { get; set; }
     }
 }

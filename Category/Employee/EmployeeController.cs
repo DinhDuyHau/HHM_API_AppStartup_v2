@@ -101,5 +101,81 @@ namespace Employee
             }
         }
         #endregion
+        /// <summary>
+        /// Lấy danh sách ban giám đốc để duyệt chiết khấu ngoại giao
+        /// </summary>
+        [HttpGet("get_list_approver_discount")]
+        #region get_list_apporove_discount
+        public IActionResult GetListBGD(string? name = "", string? order_by = "", int page_index = 1, int page_size = 0)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(name) || !_service.IsSQLInjectionValid(order_by))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy công nợ
+                EntityCollection<UserModel> employees = _service.GetListUser(name ?? "", "BGD", order_by ?? "", page_index, page_size);
+                if (employees != null)
+                {
+                    model.success = true;
+                    model.result = employees;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- EmployeeController/GetListBGD?name={name}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        /// <summary>
+        /// Lấy ASM bằng mã
+        /// </summary>
+        [HttpGet("get_approver_discount_by_id")]
+        #region get_payment_debit
+        public IActionResult GetBGDById(string? name = "")
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(name))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy công nợ
+                EntityCollection<UserModel> employees = _service.GetListUser(name ?? "", "BGD", "", 1, 1);
+                if (employees != null)
+                {
+                    model.success = true;
+                    model.result = (employees.Items != null && employees.Items.Count > 0) ? employees.Items[0] : null;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- EmployeeController/GetBGDById?name={name}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }

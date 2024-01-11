@@ -19,6 +19,7 @@ using Voucher.DRTran.Models;
 using Customer.Model;
 using System.Diagnostics.Metrics;
 using Genbyte.Base.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.DRTran
 {
@@ -53,7 +54,7 @@ namespace Voucher.DRTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -65,16 +66,16 @@ namespace Voucher.DRTran
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
-        public Security security { get; set; }
+        private readonly IConfiguration _configuration;
 
-        public Service(Security security)
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-            this.security = security;
+            _configuration = configuration;
         }
 
         #region Inserting
@@ -182,7 +183,7 @@ namespace Voucher.DRTran
                             x.ngay_ct = vc_item.ngay_ct;
                             x.ma_cuahang = vc_item.ma_cuahang;
                             x.ma_ca = vc_item.ma_ca;
-                            x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, this.security.KeyAES, this.security.IVAES);
+                            x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                         });
 
 
@@ -385,7 +386,7 @@ namespace Voucher.DRTran
                     {
                         detail_list.ForEach(x => {
                             x.ngay_ct = vc_item.ngay_ct;
-                            x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, this.security.KeyAES, this.security.IVAES);
+                            x.stt_rec_tt = APIService.DecryptForWebApp(x.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                         });
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -773,7 +774,7 @@ END";
                     { 
                         stt_rec = d.stt_rec, stt_rec0 = d.stt_rec0, ma_ct = d.ma_ct, ngay_ct = d.ngay_ct, so_ct = d.so_ct, dien_giai = d.dien_giai,
                         tien = d.tien, tien_nt = d.tien_nt,
-                        stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, this.security.KeyAES, this.security.IVAES), 
+                        stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]), 
                         so_hd_tt = d.so_hd_tt, ngay_hd_tt = d.ngay_hd_tt, tt = d.tt,
                         tt_nt = d.tt_nt, line_nbr = d.line_nbr, ma_ca = d.ma_ca, ma_cuahang = d.ma_cuahang, tien_hd = e.t_tt_nt, da_tt = e.da_tt_nt, 
                         tien_cl = e.cl_nt, con_lai = 0

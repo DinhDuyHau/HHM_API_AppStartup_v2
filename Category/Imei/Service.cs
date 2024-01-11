@@ -51,6 +51,44 @@ namespace Imei
         }
 
         /// <summary>
+        /// Lấy trạng thái tồn tức thời của imei, các trạng thái và thông tin chi tiết imei trong chứng từ thu cũ
+        /// </summary>
+        /// <param name="imei"></param>
+        /// <param name="shop_id"></param>
+        /// <param name="vc_code"></param>
+        /// <returns></returns>
+        public DataSet GetPriceRenew(RenewModel renew)
+        {
+            string sql = "exec Genbyte$IMEI$GetImeiInfoRenew @imei, @shop_id, @ma_ncc, @list_vt";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@imei",
+                SqlDbType = SqlDbType.Char,
+                Value = renew.ma_imei
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@shop_id",
+                SqlDbType = SqlDbType.Char,
+                Value = renew.ma_cuahang
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_ncc",
+                SqlDbType = SqlDbType.Char,
+                Value = renew.ma_ncc == null ? DBNull.Value : renew.ma_ncc
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@list_vt",
+                SqlDbType = SqlDbType.Char,
+                Value = renew.list_vt == null ? DBNull.Value : string.Join(",", renew.list_vt)
+            });
+            return base.ExecSql2DataSet(sql, paras);
+        }
+
+        /// <summary>
         /// Lấy thông tin tình trạng của danh sách imei
         /// </summary>
         /// <param name="imei"></param>

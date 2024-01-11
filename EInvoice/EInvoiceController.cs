@@ -175,7 +175,14 @@ namespace EInvoice
                     }
                     else
                     {
-                        model.message = "cannot_create_draft_invoice";
+                        if (result.d.description != null)
+                        {
+                            model.message = result.d.description;
+                        }
+                        else
+                        {
+                            model.message = "cannot_create_draft_invoice";
+                        }
                     }
                 }
                 return Ok(model);

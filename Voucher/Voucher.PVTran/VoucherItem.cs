@@ -22,5 +22,9 @@ namespace Voucher.PVTran
         public decimal t_tien_nt { get; set; }
         public decimal t_thue_nt { get; set; }
         public decimal t_tt_nt { get; set; }
+
+        public DateTime? ngay_ct0 { get; set; }
+        public string so_ct0 { get; set; }
+        public string so_seri0 { get; set; }
     }
 }

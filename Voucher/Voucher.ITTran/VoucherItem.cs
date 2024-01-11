@@ -22,6 +22,7 @@ namespace Voucher.ITTran
         public decimal t_so_luong { get; set; }
         public decimal t_tien_nt { get; set; }
         public decimal t_tien { get; set; }
+        public string fnote3 { get; set; }
 
 
     }

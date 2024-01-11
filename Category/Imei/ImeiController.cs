@@ -12,6 +12,7 @@ using Genbyte.Sys.Common.Models;
 using Genbyte.Base.CoreLib;
 using System.Data;
 using System.Web;
+using Imei.Models;
 
 namespace Imei
 {
@@ -69,17 +70,17 @@ namespace Imei
                                         && !imei_state.dat_hang_yn;
 
                         if (!imei_state.exists_yn)
-                            model.message = "imei_not_exists";
+                            model.message = "exists_yn_no";
                         else if (!imei_state.in_store_yn)
-                            model.message = "imei_not_in_store";
+                            model.message = "in_store_yn_no";
                         else if (imei_state.bao_hanh_yn)
                             model.message = "imei_in_warranty_state";
                         else if (imei_state.dat_hang_yn)
-                            model.message = "imei_in_sale_order_state";
+                            model.message = "dat_hang_yn_yes";
                         else if (imei_state.dieu_chuyen_yn)
-                            model.message = "imei_in_transfer_state";
+                            model.message = "dieu_chuyen_yn_yes";
                         else if (imei_state.xuat_yn)
-                            model.message = "imei_sold_state";
+                            model.message = "xuat_yn_yes";
 
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
@@ -99,6 +100,86 @@ namespace Imei
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- ImeiController/GetImeiInStore?ma_imei={ma_imei}&ma_cuhang={ma_cuahang}&ma_ct={ma_ct}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy thông tin imei theo cửa hàng
+        /// </summary>
+        /// <param name="ma_imei">imei cần lấy thông tin</param>
+        /// <param name="ma_cuahang">mã cửa hàng</param>
+        /// <param name="ma_ct">mã chứng từ</param>
+        /// <param name="ma_kh">Tên sàn TMĐT với ma_ct = BHC</param>
+        /// <returns></returns>
+        [HttpPost("get_price_renew")]
+        #region GetImeiInStore
+        public IActionResult GetPriceRenew(RenewModel renew)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(renew.ma_imei) || !_service.IsSQLInjectionValid(renew.ma_cuahang)
+                    || !_service.IsSQLInjectionValid(renew.ma_ncc))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                renew.ma_imei = HttpUtility.UrlDecode(renew.ma_imei);
+                //lấy trạng thái & thông tin imei
+                DataSet ds = _service.GetPriceRenew(renew);
+                if (ds != null && ds.Tables.Count >= 2)
+                {
+                    ImeiState imei_state = null;
+                    if (ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+                        imei_state = ds.Tables[0].ToList<ImeiState>().FirstOrDefault()!;
+                    }
+                    if (imei_state != null)
+                    {
+                        model.success = imei_state.exists_yn && imei_state.in_store_yn
+                                        && !imei_state.bao_hanh_yn
+                                        && !imei_state.dieu_chuyen_yn
+                                        && !imei_state.xuat_yn
+                                        && !imei_state.dat_hang_yn;
+
+                        if (!imei_state.exists_yn)
+                            model.message = "exists_yn_no";
+                        else if (!imei_state.in_store_yn)
+                            model.message = "in_store_yn_no";
+                        else if (imei_state.bao_hanh_yn)
+                            model.message = "imei_in_warranty_state";
+                        else if (imei_state.dat_hang_yn)
+                            model.message = "dat_hang_yn_yes";
+                        else if (imei_state.dieu_chuyen_yn)
+                            model.message = "dieu_chuyen_yn_yes";
+                        else if (imei_state.xuat_yn)
+                            model.message = "xuat_yn_yes";
+
+                        if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                        {
+                            List<Dictionary<string, object>> item_info = Converter.TableToDictionary(ds.Tables[1]);
+
+                            //Hàng khuyến mại tặng kèm
+                            List<Dictionary<string, object>> promotion = _service.GetPromotionByImei(renew.ma_cuahang, renew.ma_imei);
+                            item_info[0].Add("promotions", promotion);
+
+                            model.result = item_info;
+                        }
+                    }
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ImeiController/GetPriceRenew?ma_imei={renew.ma_imei}&ma_cuhang={renew.ma_cuahang}&ma_ncc={renew.ma_ncc}", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

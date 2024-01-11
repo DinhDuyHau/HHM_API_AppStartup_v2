@@ -45,9 +45,9 @@ namespace Price
             return entities.FirstOrDefault();
         }
 
-        public List<RenewPriceModel> GetRenewPrice(string ma_vt, string ma_cuahang)
+        public List<RenewPriceModel> GetRenewPrice(string ma_vt, string ma_cuahang, string ma_ncc)
         {
-            string sql = "exec Genbyte$Item$GetRenewPrice @ma_vt, @ma_cuahang";
+            string sql = "exec Genbyte$Item$GetRenewPrice @ma_vt, @ma_cuahang, @ma_ncc";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -60,6 +60,12 @@ namespace Price
                 ParameterName = $"@ma_cuahang",
                 SqlDbType = SqlDbType.VarChar,
                 Value = ma_cuahang
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_ncc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_ncc ?? ""
             });
             List<RenewPriceModel> entities = base.ExecSql2List<RenewPriceModel>(sql, paras);
             return entities;
