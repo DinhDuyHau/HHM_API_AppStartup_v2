@@ -13,10 +13,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\HHM_API_Security_v2\Genbyte.Base.Security\Genbyte.Base.Security.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="Employee">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Employee.dll</HintPath>
 		</Reference>

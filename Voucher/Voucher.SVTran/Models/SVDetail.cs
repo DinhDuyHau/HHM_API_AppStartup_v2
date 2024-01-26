@@ -102,7 +102,6 @@ namespace Voucher.SVTran
         public string ma_vt_kmtt { get; set; }
         public decimal tien_kmqd { get; set; }
         public string imei_mua { get; set; }
-        public bool hang_km { get; set; }
 
     }
 }

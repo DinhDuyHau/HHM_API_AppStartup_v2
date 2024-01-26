@@ -177,5 +177,77 @@ namespace Employee
             }
         }
         #endregion
+
+        [HttpGet("get_employee_by_name")]
+        #region get_employee_by_name
+        public IActionResult GetEmployee(string username, string ma_cuahang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(username) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy công nợ
+                EmployeeModel employee = _service.GetEmployee(username, ma_cuahang);
+                if (employee != null)
+                {
+                    model.success = true;
+                    model.result = employee;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- EmployeeController/get_employee_by_name?username={username}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        [HttpGet("get_department_by_name")]
+        #region get_employee_by_name
+        public IActionResult GetDepartment(string ma_kh, string ma_cuahang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_kh) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy bộ phận
+                DepartmentModel employee = _service.GetDepartment(ma_kh, ma_cuahang);
+                if (employee != null)
+                {
+                    model.success = true;
+                    model.result = employee;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- EmployeeController/get_department_by_name?username={ma_kh}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
     }
 }

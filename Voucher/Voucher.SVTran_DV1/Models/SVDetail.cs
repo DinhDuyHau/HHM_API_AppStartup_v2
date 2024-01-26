@@ -29,7 +29,6 @@ namespace Voucher.SVTran_DV1
         public decimal tien_thue { get; set; }
         public decimal tong_tien { get; set; }
         public string imei_mua { get; set; }
-        public bool hang_km { get; set; }
         public bool no_km_yn { get; set; }
 
         public decimal tt_nt { get; set; }

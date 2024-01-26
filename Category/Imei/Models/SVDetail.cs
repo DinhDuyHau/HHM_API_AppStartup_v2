@@ -100,9 +100,10 @@
         public string tk_thue_co { get; set; }
         public decimal thue_suat { get; set; }
         public string ma_imei { get; set; }
-        public bool hang_km { get; set; }
         public decimal tien_kmqd { get; set; }
         public string imei_mua { get; set; }
         public decimal gia_tra_lai { get; set; }
+        public decimal tien_giam { get; set; }
+        public decimal ty_le_giam { get; set; }
     }
 }

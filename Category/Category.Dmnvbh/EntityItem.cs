@@ -11,6 +11,8 @@ namespace Category.Dmnvbh
 
         public string ten_nvbh2 { get; set; }
 
+        public string m_username { get; set; }
+        public string dia_chi { get; set; }
         //[IgnoreDbUpdate(true)]
 
     }

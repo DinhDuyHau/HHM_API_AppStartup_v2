@@ -25,7 +25,7 @@ namespace Category.Dmkh
             CateRight.AllowCreate = true;
             CateRight.AllowUpdate = true;
             CateRight.AllowDelete = true;
-
+            CateRight.ConnectionType = ConnectType.Accounting;
         }
 
         #region CREATE

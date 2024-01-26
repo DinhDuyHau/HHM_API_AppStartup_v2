@@ -15,5 +15,6 @@ namespace Voucher.ISTran_PXM
         public decimal t_tien { get; set; }
         public decimal t_tien_nt { get; set; }
         public DateTime? ngay_lct { get; set; }
+        public string ma_bp { get; set; }
     }
 }

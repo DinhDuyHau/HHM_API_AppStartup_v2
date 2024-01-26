@@ -419,8 +419,8 @@ namespace Voucher.SVTran_BHD
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _PAID_PARA);
+            CommonService.updateService(vc_item, _SERVICES_PARA, ServicesTable, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -926,8 +926,8 @@ SELECT is_success, message FROM @check";
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _PAID_PARA);
+            CommonService.updateService(vc_item, _SERVICES_PARA, ServicesTable, vc_item.email_nhan_key);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;

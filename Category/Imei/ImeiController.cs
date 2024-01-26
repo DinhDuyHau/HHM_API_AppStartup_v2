@@ -67,6 +67,8 @@ namespace Imei
                                         && !imei_state.bao_hanh_yn
                                         && !imei_state.dieu_chuyen_yn 
                                         && !imei_state.xuat_yn
+                                        && !imei_state.ban_hang_yn
+                                        && !imei_state.tra_ncc_yn
                                         && !imei_state.dat_hang_yn;
 
                         if (!imei_state.exists_yn)
@@ -81,6 +83,10 @@ namespace Imei
                             model.message = "dieu_chuyen_yn_yes";
                         else if (imei_state.xuat_yn)
                             model.message = "xuat_yn_yes";
+                        else if (imei_state.ban_hang_yn)
+                            model.message = "ban_hang_yn_yes";
+                        else if (imei_state.tra_ncc_yn)
+                            model.message = "tra_ncc_yn_yes";
 
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
@@ -147,6 +153,8 @@ namespace Imei
                                         && !imei_state.bao_hanh_yn
                                         && !imei_state.dieu_chuyen_yn
                                         && !imei_state.xuat_yn
+                                        & !imei_state.ban_hang_yn
+                                        && !imei_state.tra_ncc_yn
                                         && !imei_state.dat_hang_yn;
 
                         if (!imei_state.exists_yn)
@@ -161,6 +169,10 @@ namespace Imei
                             model.message = "dieu_chuyen_yn_yes";
                         else if (imei_state.xuat_yn)
                             model.message = "xuat_yn_yes";
+                        else if (imei_state.ban_hang_yn)
+                            model.message = "ban_hang_yn_yes";
+                        else if (imei_state.tra_ncc_yn)
+                            model.message = "tra_ncc_yn_yes";
 
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
@@ -277,7 +289,7 @@ namespace Imei
         /// <returns></returns>
         [HttpGet("getbyitem")]
         #region GetImeiState
-        public IActionResult GetByItem(string ma_ct, string? ma_vt, int page_index = 1, int page_size = 0)
+        public IActionResult GetByItem(string ma_ct, string? ma_vt, string? ten_vt, string? ma_imei, string? ma_kho, int page_index = 1, int page_size = 0)
         {
             try
             {
@@ -290,12 +302,12 @@ namespace Imei
                 Service _service = new Service();
 
                 //check injection
-                if (!_service.IsSQLInjectionValid(ma_ct) || !_service.IsSQLInjectionValid(ma_vt))
+                if (!_service.IsSQLInjectionValid(ma_ct) || !_service.IsSQLInjectionValid(ma_vt) || !_service.IsSQLInjectionValid(ten_vt) || !_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_kho))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy trạng thái & thông tin imei
-                EntityCollection<Dictionary<string, object>> imeis = _service.GetImeisInStoreByItem(Startup.Shop, ma_ct, string.IsNullOrEmpty(ma_vt) ? "" : ma_vt, page_index, page_size);
-                if (imeis != null && imeis.Items != null && imeis.Items.Count > 0)
+                EntityCollection<Dictionary<string, object>> imeis = _service.GetImeisInStoreByItem(Startup.Shop, ma_ct, string.IsNullOrEmpty(ma_vt) ? "" : ma_vt, string.IsNullOrEmpty(ten_vt) ? "" : ten_vt, string.IsNullOrEmpty(ma_imei) ? "" : ma_imei, string.IsNullOrEmpty(ma_kho) ? "" : ma_kho, page_index, page_size);
+                if (imeis != null && imeis.Items != null)
                 {
                     model.success = true;
                     model.result = imeis;

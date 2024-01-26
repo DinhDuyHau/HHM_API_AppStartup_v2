@@ -20,7 +20,7 @@ namespace Report.RptStockBalanceImei
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param.page_index, obj_param.page_size, 1);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, 1);
             return raw_model;
         }
 
@@ -53,7 +53,7 @@ namespace Report.RptStockBalanceImei
                     select @SiteName = N'', @SiteName2 = N''
     
                 select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, @SiteName as ten_kho, @SiteName2 as ten_kho2
-                exec rs_rptStockReportImei @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, @language, @userID, @admin
+                exec rs_rptStockReportImei @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, @language, @userID, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -109,6 +109,12 @@ namespace Report.RptStockBalanceImei
                 ParameterName = "@nh_vt3",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = obj_param.nh_vt3
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt4",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.nh_vt4
             });
             list_paras.Add(new SqlParameter
             {

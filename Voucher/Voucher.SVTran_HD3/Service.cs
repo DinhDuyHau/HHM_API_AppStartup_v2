@@ -14,6 +14,8 @@ using Genbyte.Sys.Common.Models;
 using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
+using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace Voucher.SVTran_HD3
 {
@@ -213,7 +215,7 @@ namespace Voucher.SVTran_HD3
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai from @{_DETAIL_PARA} \r\n";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai, stt_rec_hd1, stt_rec0hd1, ma_dv, ma_kho, so_luong) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai, stt_rec_hd1, stt_rec0hd1, ma_dv, ma_kho, so_luong from @{_DETAIL_PARA} \r\n";
             }
 
             //insert các bảng chi tiết ext
@@ -266,7 +268,7 @@ namespace Voucher.SVTran_HD3
             {
                 service.ExecuteNonQuery(this.postConversionPoint(vc_item));
             }
-
+            this.updateTransactionReturnService(vc_item);
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
@@ -536,7 +538,7 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai from @{_DETAIL_PARA} \r\n";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai, stt_rec_hd1, stt_rec0hd1, ma_dv, ma_kho, so_luong) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_no,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, gia_ban, gia_tra_lai, stt_rec_hd1, stt_rec0hd1, ma_dv, ma_kho, so_luong from @{_DETAIL_PARA} \r\n";
             }
 
             ////xóa và insert lại các bảng chi tiết
@@ -597,6 +599,7 @@ SELECT is_success, message FROM @check";
             {
                 service.ExecuteNonQuery(this.postConversionPoint(vc_item));
             }
+            this.updateTransactionReturnService(vc_item);
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
             query = $"delete from {inquiry_table} where stt_rec = '{stt_rec}' \n";
@@ -707,7 +710,7 @@ SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select * from {2}' + @exp + ' where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_dv, b.dvt, b.vt_ton_kho from {2}' + @exp + ' a left join dmdichvu b on a.ma_dv = b.ma_dv where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
@@ -864,6 +867,38 @@ END";
             string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
             sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', null, {master.diem_qd}, {master.t_tt_nt}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
             return sql;
+        }
+        public void updateTransactionReturnService(VoucherItem vc_item)
+        {
+            if (vc_item.status == "2")
+            {
+                if (vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA) != null)
+                {
+                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA);
+                    if (item_model.Data == null) return;
+                    List<SVDetail>? detail_list = new List<SVDetail>();
+                    foreach (var item in item_model.Data)
+                    {
+                        if (item is SVDetail sVDetail)
+                            detail_list.Add(sVDetail);
+                    }
+                    if (detail_list != null)
+                    {
+                        string sql = " INSERT INTO lsgd_tralaidv(stt_rec,stt_rec0,stt_rec_hd,stt_rec0hd,ma_ct,ma_dvcs,ma_cuahang,so_ct,so_ct_hd,ngay_ct,ma_gd,ma_kh,ma_dv,ma_kho,so_luong) VALUES ";
+                        int i = 0;
+                        int length = detail_list.Count;
+                        detail_list.ForEach((item) =>
+                        {
+                            sql += $"('{item.stt_rec}', '{i+1:D3}', '{item.stt_rec_hd1}', '{item.stt_rec0hd1}', '{vc_item.ma_ct}', '{vc_item.ma_dvcs}', '{vc_item.ma_cuahang}', '{vc_item.so_ct}', '{vc_item.so_dh}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{vc_item.ma_gd}', '{vc_item.ma_kh}', '{item.ma_dv}', '{item.ma_kho}', '{item.so_luong}')";
+                            if (i != length - 1) sql += ",";
+                            i++;
+                        });
+                        CoreService service = new CoreService();
+                        service.ExecuteNonQuery(sql);
+                    }
+
+                }
+            }
         }
     }
 }

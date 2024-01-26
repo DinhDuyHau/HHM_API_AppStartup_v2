@@ -16,7 +16,7 @@ namespace Voucher.SVTran_BHE
         public string ma_vt { get; set; }
         public string dvt { get; set; }
         public decimal sl_ban { get; set; }
-        public string no_qua_yn { get; set; }
+        public bool no_qua_yn { get; set; }
         public string stt_rec_tq { get; set; }
         public string stt_rec0_tq { get; set; }
         public DateTime ngay_ct_tq { get; set; }

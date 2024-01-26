@@ -16,6 +16,7 @@ using Mail.Model;
 using Mail;
 using Microsoft.Extensions.Options;
 using Genbyte.Base.Security;
+using System.Data.SqlClient;
 
 namespace Servive
 {
@@ -122,7 +123,87 @@ namespace Servive
             return Ok(model);
         }
         #endregion
+        /// <summary>
+        /// Lấy danh sách hoá đơn của dịch vụ
+        /// </summary>
+        /// <param name="ma_dichvu">mã dịch vụ cần lấy thông tin</param>
+        /// <param name="ma_dichvu">số lượng</param>
+        /// <param name="ma_cuahang">mã cửa hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_sold_service_order")]
+        #region GetSoldServiceOrder
+        public IActionResult GetSoldServiceOrder(string so_ct, string ma_cuahang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
 
+                //check injection
+                if (!_service.IsSQLInjectionValid(so_ct) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
+                var service = _service.GetSoldServiceOrder(so_ct, ma_cuahang?? Startup.Shop);
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+                
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetSoldServiceOrder?so_ct={so_ct}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        /// <summary>
+        /// Lấy danh sách hoá đơn của dịch vụ
+        /// </summary>
+        /// <param name="ma_dichvu">mã dịch vụ cần lấy thông tin</param>
+        /// <param name="ma_dichvu">số lượng</param>
+        /// <param name="ma_cuahang">mã cửa hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_sold_service_orders")]
+        #region GetSoldServiceOrder
+        public IActionResult GetSoldServiceOrders(string ma_kh, string ma_cuahang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_kh) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                var service = _service.GetSoldServiceOrders(ma_kh, ma_cuahang ?? Startup.Shop);
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetSoldServiceOrders?ma_kh={ma_kh}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }

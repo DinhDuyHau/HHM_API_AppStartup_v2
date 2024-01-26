@@ -509,8 +509,8 @@ namespace Voucher.SVTran_BHE
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
+            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;

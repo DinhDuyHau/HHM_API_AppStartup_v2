@@ -21,6 +21,8 @@ namespace Imei
         public bool dieu_chuyen_yn { get; set; }
 
         public bool bao_hanh_yn { get; set; }
+        public bool ban_hang_yn { get; set; }
+        public bool tra_ncc_yn { get; set; }
 
     }
 }

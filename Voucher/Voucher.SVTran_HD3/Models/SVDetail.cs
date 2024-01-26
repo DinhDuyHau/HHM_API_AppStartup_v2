@@ -44,8 +44,14 @@ namespace Voucher.SVTran_HD3
         public DateTime? s9 { get; set; }
         public decimal gia_ban { get; set; }
         public decimal gia_tra_lai { get; set; }
+        public decimal so_luong { get; set; }
         public string stt_rec_hd1 { get; set; }
         public string stt_rec0hd1 { get; set; }
+        public string ma_dv { get; set; }
+        public string ma_kho { get; set; }
+        public string ten_dv { get; set; }
+        public string dvt { get; set; }
+        public bool vt_ton_kho { get; set; }
 
     }
 }

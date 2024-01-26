@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Service.Model;
+using Service.ModelDV1;
 
 namespace Servive
 {
@@ -135,5 +136,67 @@ namespace Servive
             return htmlBuilder.ToString();
         }
 
+        public object GetSoldServiceOrder(string so_ct, string ma_cuahang)
+        {
+            //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
+            string query = @"exec Genbyte$Service$GetSoldInvoice @so_ct, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@so_ct",
+                SqlDbType = SqlDbType.VarChar,
+                Value = so_ct.Trim()
+            },new SqlParameter()
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cuahang.Trim()
+            }});
+            var dataSet = this.ExecSql2DataSet(query, paras);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 0)
+            {
+                result = new
+                {
+                    prime = dataSet.Tables[0].ToList<VoucherItemDV1>(),
+                    detail = dataSet.Tables[1].ToList<SVDetailDV1>(),
+                    thanhtoan = dataSet.Tables[2].ToList<TTDetailDV1>()
+                };
+            }
+            return result;
+        }
+        public object GetSoldServiceOrders(string ma_kh, string ma_cuahang)
+        {
+            //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
+            string query = @"exec Genbyte$Service$GetListSoldInvoice @ma_kh, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh.Trim()
+            },new SqlParameter()
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cuahang.Trim()
+            }});
+            var dataSet = this.ExecSql2DataSet(query, paras);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 1)
+            {
+                var prime = dataSet.Tables[0].ToList<VoucherItemDV1>();
+                var detail = dataSet.Tables[1].ToList<SVDetailDV1>();
+
+                prime.ToList().ForEach(item =>
+                {
+                    item.items = detail.Where(x=>x.stt_rec == item.stt_rec).ToList();
+                });
+                return prime;
+            }
+            return result;
+        }
     }
 }

@@ -202,6 +202,57 @@ namespace Voucher.SVTran
                 }
                 index_value++;
             }
+            //Check tồn  trạng thái chứng từ thuộc danh sách trạng thái được phép thêm
+            string sql = @"DECLARE @check TABLE (
+	            is_success BIT,
+	            message VARCHAR(100)
+            )
+            DECLARE @status_older CHAR(1)
+            INSERT INTO @check (is_success, message) VALUES (1, '')
+
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_not_exists'
+	            SELECT * FROM @check
+	            RETURN
+            END
+
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR right_yn = 1) AND ma_ct = @vc_code AND status = @vc_status) BEGIN
+	            UPDATE @check SET is_success = 0, message = 'status_cannot_create'
+	            SELECT * FROM @check
+	            RETURN
+            END
+
+            SELECT is_success, message FROM @check";
+            CoreService service = new CoreService();
+            List<SqlParameter> paras = new List<SqlParameter>();
+            #region add parameters
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_id",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.stt_rec.Replace("'", "''")
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_code",
+                SqlDbType = SqlDbType.Char,
+                Value = this.VoucherCode
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_status",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.status.Replace("'", "''")
+            });
+            #endregion
+            CheckResult check_result = service.ExecSql2List<CheckResult>(sql, paras).FirstOrDefault()!;
+            if (!check_result.is_success)
+            {
+                result_model.success = false;
+                result_model.message = check_result.message;
+                return result_model;
+            }
+
             result_model = CommonService.checkPaid(vc_item, _PAID_PARA);
             if (!result_model.success)
             {
@@ -390,8 +441,8 @@ namespace Voucher.SVTran
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _PAID_PARA);
+            CommonService.updateService(vc_item, _SERVICES_PARA, ServicesTable, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -810,7 +861,10 @@ SELECT is_success, message FROM @check";
             string update_promotion_query = VoucherUtils.getPromotionQuery(sale_table, _DETAIL_PARA, user_id, 2);
             query += "\n";
             //query += $"delete from {sale_table} where stt_rec = @stt_rec \n";
-            //query += $"insert into {sale_table} (stt_rec,stt_rec0,ma_ct,ma_dvcs,ma_kh,sl_ban,no_qua_yn,ngay_ct,so_ct,ma_kho,ma_vt,dvt,line_nbr,ma_imei,datetime0,datetime2,user_id0,user_id2) ";
+            //query += $"insert into {sale_table} (stt_rec,stt_rec0,ma_ct,ma_dvcs,ma_kh,sl_ban,
+            //
+            //
+            //,ngay_ct,so_ct,ma_kho,ma_vt,dvt,line_nbr,ma_imei,datetime0,datetime2,user_id0,user_id2) ";
             //query += $" select stt_rec,stt_rec0,ma_ct,@ma_dvcs,@ma_kh,so_luong,no_km_yn,ngay_ct,so_ct,ma_kho,ma_vt,dvt,line_nbr,ma_imei, getdate(), getdate(),0, 0 from @{_DETAIL_PARA} where km_yn = 1";
             query += $"{update_promotion_query}";
 
@@ -859,8 +913,8 @@ SELECT is_success, message FROM @check";
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _PAID_PARA);
+            CommonService.updateService(vc_item, _SERVICES_PARA, ServicesTable, vc_item.email_nhan_key);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -1256,24 +1310,32 @@ END";
         }
         public void updatePaid(VoucherItem vc_item)
         {
-            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
+            if (vc_item.status == "2")
             {
-                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
-                if (item_model.Data == null) return;
-                List<SVPaidModel>? detail_list = new List<SVPaidModel>();
-                foreach (var item in item_model.Data)
+                if(vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA) != null)
                 {
-                    if (item is SVPaidModel sVPaid)
+                    VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _PAID_PARA);
+                    if (item_model.Data == null) return;
+                    List<SVPaidModel>? detail_list = new List<SVPaidModel>();
+                    foreach (var item in item_model.Data)
                     {
-                        detail_list.Add(sVPaid);
+                        if (item is SVPaidModel sVPaid)
+                        {
+                            detail_list.Add(sVPaid);
+                        }
+                    }
+                    // Điểm quy đổi
+                    CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
+                    // Active mã giảm giá
+                    if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                    {
+                        CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
                     }
                 }
-                // Điểm quy đổi
-                CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
-                // Active mã giảm giá
-                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
+                else
                 {
-                    CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
+                    // Điểm quy đổi
+                    CommonService.postConversionPoint(vc_item, null);
                 }
             }
         }

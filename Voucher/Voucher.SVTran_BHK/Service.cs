@@ -497,8 +497,8 @@ namespace Voucher.SVTran_BHK
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
+            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -1081,8 +1081,8 @@ SELECT is_success, message FROM @check";
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
-            updateService(vc_item);
+            CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
+            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -1539,8 +1539,9 @@ END";
             };
             var imeiService = new Imei.Service();
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
-            List<Imei.ImeiState> state_imei_htc = imeiService.GetStateOfImeis(listImei);
+            List<Imei.ImeiState> state_imei_htc = imeiService.GetStateOfImeis(listImei_htc);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
+            List<string> exists_htc = state_imei_htc.Where(x => x.exists_yn == true && x.xuat_yn == false).Select(x => x.ma_imei).ToList();
             List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
             dat_hang.AddRange(state_imei_htc.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList());
             if (exists != null && exists.Count > 0)
@@ -1553,6 +1554,18 @@ END";
                 });
                 result_model.success = false;
                 result_model.message = "imei_not_exists";
+                result_model.result = list_result_error;
+            }
+            if (exists_htc != null && exists_htc.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", exists_htc)
+                });
+                result_model.success = false;
+                result_model.message = "imei_exists";
                 result_model.result = list_result_error;
             }
             if (dat_hang != null && dat_hang.Count > 0)
@@ -1572,6 +1585,7 @@ END";
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
             var listImei = new List<string>();
+            var listImei_htc = new List<string>();
             var ma_cuahang = "";
             if (vc_item.details.Any(x => x.Id == 1))
             {
@@ -1591,8 +1605,25 @@ END";
 
                 }
             }
+            if (vc_item.details.Any(x => x.Id == 6))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 6);
 
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var svDetail = item as HtcDetail;
+                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
+                        {
+                            listImei_htc.Add(svDetail.ma_imei.Trim());
+                        }
+                    }
+
+                }
+            }
             var listImei_old = new List<string>();
+            var listImei_htc_old = new List<string>();
             var ma_cuahang_old = "";
             if (vc_item_old.details.Any(x => x.Id == 1))
             {
@@ -1613,7 +1644,24 @@ END";
 
                 }
             }
+            if (vc_item_old.details.Any(x => x.Id == 6))
+            {
+                DetailItemModel? item_detail = vc_item_old.details.FirstOrDefault(x => x.Id == 6);
 
+                if (item_detail != null)
+                {
+
+                    foreach (var item in item_detail.Data as List<HtcDetail>)
+                    {
+                        var svDetail = item as HtcDetail;
+                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
+                        {
+                            listImei_htc_old.Add(svDetail.ma_imei.Trim());
+                        }
+                    }
+
+                }
+            }
             CommonObjectModel result_model = new CommonObjectModel()
             {
                 success = true,
@@ -1622,8 +1670,13 @@ END";
             };
             var imeiService = new Imei.Service();
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
+            List<Imei.ImeiState> state_imei_htc = imeiService.GetStateOfImeis(listImei_htc);
+
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
+            List<string> exists_htc= state_imei_htc.Where(x => x.exists_yn == true && x.xuat_yn == false).Select(x => x.ma_imei).ToList();
             List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
+            dat_hang.AddRange(state_imei_htc.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList());
+
             if (exists != null && exists.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -1636,11 +1689,28 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+            if (exists_htc != null && exists_htc.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", exists_htc)
+                });
+                result_model.success = false;
+                result_model.message = "imei_exists";
+                result_model.result = list_result_error;
+            }
             listImei_old.Except(listImei).ToList().ForEach(x =>
             {
                 list_imei_delete.Add(x);
             });
+            listImei_htc_old.Except(listImei_htc).ToList().ForEach(x =>
+            {
+                list_imei_delete.Add(x);
+            });
             dat_hang = dat_hang.Except(listImei_old).ToList();
+            dat_hang = dat_hang.Except(listImei_htc_old).ToList();
             if (dat_hang != null && dat_hang.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();

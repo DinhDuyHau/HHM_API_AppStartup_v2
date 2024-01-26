@@ -295,7 +295,8 @@ namespace Voucher.SVTran_HDF
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
+            CommonService.updatePaid(vc_item, _PAID_PARA);
+            //CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -669,7 +670,7 @@ SELECT is_success, message FROM @check";
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
-            updatePaid(vc_item);
+            CommonService.updatePaid(vc_item, _PAID_PARA);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -948,6 +949,7 @@ END";
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
             List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
+            List<string> ban_hang = state_imei.Where(x => x.ban_hang_yn == false).Select(x => x.ma_imei).ToList();
             if (exists != null && exists.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -970,6 +972,18 @@ END";
                 });
                 result_model.success = false;
                 result_model.message = "dat_hang_yn_yes";
+                result_model.result = list_result_error;
+            }
+            if (ban_hang != null && ban_hang.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", ban_hang)
+                });
+                result_model.success = false;
+                result_model.message = "ban_hang_yn_no";
                 result_model.result = list_result_error;
             }
             return result_model;
@@ -1029,6 +1043,7 @@ END";
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
             List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
+            List<string> ban_hang = state_imei.Where(x => x.ban_hang_yn == false).Select(x => x.ma_imei).ToList();
             if (exists != null && exists.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -1056,6 +1071,20 @@ END";
                 });
                 result_model.success = false;
                 result_model.message = "dat_hang_yn_yes";
+                result_model.result = list_result_error;
+            }
+
+            ban_hang = ban_hang.Except(listImei_old).ToList();
+            if (ban_hang != null && ban_hang.Count > 0)
+            {
+                var list_result_error = new List<ResultMessageError>();
+                list_result_error.Add(new ResultMessageError
+                {
+                    name = "%imei",
+                    value = string.Join(", ", ban_hang)
+                });
+                result_model.success = false;
+                result_model.message = "ban_hang_yn_no";
                 result_model.result = list_result_error;
             }
             return result_model;

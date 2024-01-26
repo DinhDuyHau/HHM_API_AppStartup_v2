@@ -2,7 +2,7 @@
 
 namespace Voucher.SVTran_BHG
 {
-    public class HDDetail : DetailEntity
+    public class TLDetail : DetailEntity
     {
         public string ma_vt { get; set; }
         public string ten_vt { get; set; }

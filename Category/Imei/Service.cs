@@ -142,9 +142,9 @@ namespace Imei
         /// </summary>
         /// <param name="imei"></param>
         /// <returns></returns>
-        public EntityCollection<Dictionary<string, object>> GetImeisInStoreByItem(string shop_id, string voucher_code, string ma_vt = "", int page_index = 1, int page_size = 0)
+        public EntityCollection<Dictionary<string, object>> GetImeisInStoreByItem(string shop_id, string voucher_code, string ma_vt = "", string ten_vt = "", string ma_imei = "", string ma_kho = "", int page_index = 1, int page_size = 0)
         {
-            string sql = "exec Genbyte$IMEI$GetByItem @shop_id, @vc_code, @item, @page_index, @page_size";
+            string sql = "exec Genbyte$IMEI$GetByItem @shop_id, @vc_code, @item, @item_name, @imei, @site, @page_index, @page_size";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -163,6 +163,24 @@ namespace Imei
                 ParameterName = "@item",
                 SqlDbType = SqlDbType.VarChar,
                 Value = ma_vt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@item_name",
+                SqlDbType = SqlDbType.NVarChar,
+                Value = ten_vt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@imei",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_imei
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@site",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kho
             });
             paras.Add(new SqlParameter()
             {

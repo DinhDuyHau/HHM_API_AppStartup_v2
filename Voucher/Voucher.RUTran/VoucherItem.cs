@@ -19,5 +19,7 @@ namespace Voucher.RUTran
         public decimal t_tt { get; set; }
         public decimal t_tt_nt { get; set; }
         public DateTime? ngay_lct { get; set; }
+        public DateTime? ngay_ho_so { get; set; }
+        public string ma_ho_so { get; set; }
     }
 }

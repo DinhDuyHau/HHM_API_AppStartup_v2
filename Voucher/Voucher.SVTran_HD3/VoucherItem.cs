@@ -10,5 +10,6 @@ namespace Voucher.SVTran_HD3
         public decimal t_con_no { get; set; }
         public decimal tien_dat_coc { get; set; }
         public decimal t_tien_tnk { get; set; }
+        public string so_dh { get; set; }
     }
 }

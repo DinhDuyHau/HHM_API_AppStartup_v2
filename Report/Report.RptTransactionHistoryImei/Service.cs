@@ -20,7 +20,7 @@ namespace Report.RptTransactionHistoryImei
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param.page_index, obj_param.page_size, 1);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, 1);
             return raw_model;
         }
 
@@ -36,16 +36,10 @@ namespace Report.RptTransactionHistoryImei
 
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
-            sql = @"select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_imei as ma_imei
-                    exec rs_rptTransactionHistoryImei @tu_ngay, @den_ngay, @ma_cuahang, @ma_imei,  @language, @userID, @admin
+            sql = @"select cast(@den_ngay as smalldatetime) as date_to, @ma_imei as ma_imei
+                    exec rs_rptTransactionHistoryImei @den_ngay, @ma_cuahang, @ma_imei,  @language, @userID, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@tu_ngay",
-                SqlDbType = SqlDbType.DateTime,
-                SqlValue = obj_param.tu_ngay
-            });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@den_ngay",

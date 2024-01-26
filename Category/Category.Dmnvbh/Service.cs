@@ -25,6 +25,7 @@ namespace Category.Dmnvbh
             CateRight.AllowCreate = false;
             CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
+            CateRight.ConnectionType = ConnectType.Accounting;
 
         }
 

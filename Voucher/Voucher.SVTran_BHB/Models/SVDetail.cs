@@ -1,10 +1,10 @@
 ﻿using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher.Model;
 
 namespace Voucher.SVTran_BHB
 {
-    public class SVDetail : DetailEntity
+    public class SVDetail : MerchandiseDetailBase
     {
-        public string ma_vt { get; set; }
         public string ten_vt { get; set; }
         public int km_yn { get; set; }
         public string ma_sp { get; set; }
@@ -17,7 +17,6 @@ namespace Voucher.SVTran_BHB
         public string ma_lo { get; set; }
         public string ma_vv { get; set; }
         public string tk_vt { get; set; }
-        public decimal so_luong { get; set; }
         public decimal gia_nt { get; set; }
         public decimal gia { get; set; }
         public decimal gia_nt2 { get; set; }
@@ -99,7 +98,6 @@ namespace Voucher.SVTran_BHB
         public string tk_thue_no { get; set; }
         public string tk_thue_co { get; set; }
         public decimal thue_suat { get; set; }
-        public string ma_imei { get; set; }
     }
 }
  

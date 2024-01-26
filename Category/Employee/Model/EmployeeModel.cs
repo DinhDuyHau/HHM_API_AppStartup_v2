@@ -12,5 +12,7 @@ namespace Employee.Model
         public string ten_nvbh { get; set; }
         public string ma_bp { get; set; }
         public string ma_cuahang { get; set; }
+        public string m_username { get; set; }
+        public string dia_chi { get; set; }
     }
 }

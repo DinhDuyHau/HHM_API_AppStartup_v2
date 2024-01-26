@@ -17,6 +17,7 @@ namespace Voucher.SVTran_DXA
         public DateTime? ngay_ct3 { get; set; }
         public DateTime? ngay_hl { get; set; }
         public DateTime? ngay_lo { get; set; }
+        public string s1 { get; set; }
 
     }
 }
