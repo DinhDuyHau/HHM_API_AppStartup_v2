@@ -537,9 +537,9 @@ SELECT is_success, message FROM @check";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
 
+                query += $"\ndelete from {detail_table} where stt_rec = @stt_rec \n";
                 // sửa lại dữ liệu imei và một số các dữ liệu khác
-                query += $"update {detail_table} set ma_imei = b.ma_imei, ma_kho = b.ma_kho, ma_ct = b.ma_ct, ngay_ct = b.ngay_ct, so_ct = b.so_ct, ma_cuahang = b.ma_cuahang, ma_ca = b.ma_ca " +
-                    $"from {detail_table} a join @{_DETAIL_PARA} b on a.stt_rec = b.stt_rec and a.stt_rec0 = b.stt_rec0";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1 from @{_DETAIL_PARA} \r\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 //query += $"delete from {detail_table} where stt_rec = @stt_rec \n";

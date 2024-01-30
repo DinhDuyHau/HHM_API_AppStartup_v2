@@ -72,5 +72,9 @@ namespace Voucher.SVTran_MHA
         public DateTime? s8 { get; set; }
         public DateTime? s9 { get; set; }
         public bool new_imei_yn { get; set; }
+        public decimal t_con_no { get; set; }
+        public decimal t_da_tra { get; set; }
+
+
     }
 }

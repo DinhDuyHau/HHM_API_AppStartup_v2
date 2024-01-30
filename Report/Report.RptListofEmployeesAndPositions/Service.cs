@@ -2,6 +2,7 @@
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -12,6 +13,7 @@ namespace Report.RptListofEmployeesAndPositions
     public class Service : IComponentService
     {
         public IMemoryCache MemoryCache { get; set; }
+        public IConfiguration Configuration { get; set; }
         public string controller { get; set; } = "rptListofEmployeesAndPositions";
         // Bảng hiển thị lên báo cáo
         public readonly int id = 1;
@@ -21,7 +23,7 @@ namespace Report.RptListofEmployeesAndPositions
             ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
-            DataUtils data_utis = new DataUtils(MemoryCache);
+            DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
             CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, id);
             return raw_model;
         }
@@ -31,7 +33,7 @@ namespace Report.RptListofEmployeesAndPositions
             ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
-            DataUtils data_utis = new DataUtils(MemoryCache);
+            DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
             CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
             return raw_model;
         }

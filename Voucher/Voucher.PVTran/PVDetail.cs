@@ -29,5 +29,15 @@ namespace Voucher.PVTran
         public decimal tt_nt { get; set; }
         public string ma_td1 { get; set; }
         public bool budslive { get; set; }
+        public decimal he_so { get; set; }
+        public decimal gia { get; set; }
+        public decimal gia_nt0 { get; set; }
+        public decimal gia0 { get; set; }
+        public decimal tien { get; set; }
+        public decimal thue { get; set; }
+        public decimal tt { get; set; }
+        public decimal tien0 { get; set; }
+        public decimal tien_nt0 { get; set; }
+        public string so_dh_i { get; set; }
     }
 }

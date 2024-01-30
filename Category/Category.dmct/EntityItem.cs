@@ -10,5 +10,6 @@ namespace Category.Dmct
         public string ten_ct { get; set; }
 
         public string ten_ct2 { get; set; }
+        public string entity { get; set; }
     }
 }

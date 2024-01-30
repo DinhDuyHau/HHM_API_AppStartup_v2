@@ -459,8 +459,8 @@ namespace Voucher.SVTran_BHG
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_DV_PARA))
             {
                 detail_dv_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_DV_PARA);
-                detail_dv_table = detail_tt_query?.TableName + (detail_dv_query.Partition_yn ? expression : "");
-                string insert_serivce_query = VoucherUtils.getWarrantyQuery(new DVDetail(), detail_dv_table, _DETAIL_DV_PARA, 1);
+                detail_dv_table = detail_dv_query?.TableName + (detail_dv_query.Partition_yn ? expression : "");
+                string insert_serivce_query = VoucherUtils.getServiceQuery(new DVDetail(), detail_dv_table, _DETAIL_DV_PARA, 1);
 
                 query += "\n\n";
                 query += detail_dv_query?.QueryString;
