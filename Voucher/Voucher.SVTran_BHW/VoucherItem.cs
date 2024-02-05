@@ -18,5 +18,6 @@ namespace Voucher.SVTran_BHW
         public string ma_nk { get; set; }
         public string so_seri { get; set; }
         public string email_nhan_key { get; set; }
+        public string nguoi_lap { get; set; }
     }
 }

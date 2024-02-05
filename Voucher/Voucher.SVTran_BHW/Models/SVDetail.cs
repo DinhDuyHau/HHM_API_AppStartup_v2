@@ -102,5 +102,6 @@ namespace Voucher.SVTran_BHW
         public decimal thue_suat { get; set; }
         public bool no_km_yn { get; set; }
         public string imei_mua { get; set; }
+        public decimal tien_kmqd { get; set; }
     }
 }

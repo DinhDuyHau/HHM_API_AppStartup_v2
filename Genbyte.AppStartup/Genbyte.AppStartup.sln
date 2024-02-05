@@ -215,6 +215,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmvv", "..\Categor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptCheckInventory", "..\Report\Report.RptCheckInventory\Report.RptCheckInventory.csproj", "{14685ED4-B4E0-4101-ADA4-73A538033B62}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.SVTran_HDR", "..\Voucher\Voucher.SVTran_HDR\Voucher.SVTran_HDR.csproj", "{45F740A6-95CD-4C02-B1A7-5984BC779CF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -633,6 +635,10 @@ Global
 		{14685ED4-B4E0-4101-ADA4-73A538033B62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14685ED4-B4E0-4101-ADA4-73A538033B62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14685ED4-B4E0-4101-ADA4-73A538033B62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -732,6 +738,7 @@ Global
 		{2F3F2753-9C3C-4403-80F2-C4206EB94887} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 		{4F07A0F2-AE00-41BB-9C38-8B13B1F7555A} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 		{14685ED4-B4E0-4101-ADA4-73A538033B62} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{45F740A6-95CD-4C02-B1A7-5984BC779CF6} = {5B528E59-011A-4B15-B331-273D9C39BC11}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}

@@ -11,5 +11,8 @@ namespace Voucher.SVTran_HDR
         public decimal tien_dat_coc { get; set; }
         public decimal t_tien_tnk { get; set; }
         public string ma_nvvc { get; set; }
+        public string stt_rec_hd { get; set; }
+        public string so_hd { get; set; }
+        public DateTime? ngay_hd { get; set; }
     }
 }

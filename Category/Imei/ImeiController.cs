@@ -13,6 +13,7 @@ using Genbyte.Base.CoreLib;
 using System.Data;
 using System.Web;
 using Imei.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Imei
 {
@@ -21,8 +22,10 @@ namespace Imei
     [Route("[controller]")]
     public class ImeiController : ControllerBase
     {
-        public ImeiController() 
+        private readonly IConfiguration _configuration;
+        public ImeiController(IConfiguration _configuration) 
         { 
+            this._configuration = _configuration;
         }
 
         /// <summary>
@@ -406,7 +409,7 @@ namespace Imei
         {
             try
             {
-                Service _service = new Service();
+                Service _service = new Service(_configuration);
 
                 //check injection
                 if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang))

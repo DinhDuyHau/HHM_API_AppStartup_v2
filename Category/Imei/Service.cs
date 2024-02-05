@@ -1,10 +1,12 @@
 ﻿using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 using Imei.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -12,6 +14,13 @@ namespace Imei
 {
     public class Service : CoreService
     {
+        private readonly IConfiguration _configuration;
+        public Service()
+        {
+        }
+        public Service(IConfiguration _configuration) {
+            this._configuration = _configuration;
+        }
         /// <summary>
         /// Lấy trạng thái tồn tức thời của imei, các trạng thái và thông tin chi tiết imei
         /// </summary>
@@ -372,6 +381,46 @@ namespace Imei
                 IList<TTDetail> tt_detail = ds.Tables[4].ToList<TTDetail>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<KMDetail> km_detail = ds.Tables[6].ToList<KMDetail>();
+
+                vc_item.stt_rec = APIService.EncryptForWebApp(vc_item.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                pr_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    v.stt_rec_ct = !string.IsNullOrWhiteSpace(v.stt_rec_ct) ? APIService.EncryptForWebApp(v.stt_rec_ct, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_dh = !string.IsNullOrWhiteSpace(v.stt_rec_dh) ? APIService.EncryptForWebApp(v.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_gh = !string.IsNullOrWhiteSpace(v.stt_rec_gh) ? APIService.EncryptForWebApp(v.stt_rec_gh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_pn = !string.IsNullOrWhiteSpace(v.stt_rec_pn) ? APIService.EncryptForWebApp(v.stt_rec_pn, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_px = !string.IsNullOrWhiteSpace(v.stt_rec_px) ? APIService.EncryptForWebApp(v.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                });
+
+                dv_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    v.stt_rec_ct = !string.IsNullOrWhiteSpace(v.stt_rec_ct) ? APIService.EncryptForWebApp(v.stt_rec_ct, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_dh = !string.IsNullOrWhiteSpace(v.stt_rec_dh) ? APIService.EncryptForWebApp(v.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_gh = !string.IsNullOrWhiteSpace(v.stt_rec_gh) ? APIService.EncryptForWebApp(v.stt_rec_gh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_pn = !string.IsNullOrWhiteSpace(v.stt_rec_pn) ? APIService.EncryptForWebApp(v.stt_rec_pn, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_px = !string.IsNullOrWhiteSpace(v.stt_rec_px) ? APIService.EncryptForWebApp(v.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                });
+
+                ck_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+
+                tt_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+                bh_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+                km_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    v.stt_rec_tq = !string.IsNullOrWhiteSpace(v.stt_rec_tq) ? APIService.EncryptForWebApp(v.stt_rec_tq, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                });
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;

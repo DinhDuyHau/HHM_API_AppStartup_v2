@@ -15,6 +15,8 @@ using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Component.Voucher.Model;
+using Genbyte.Base.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.SVTran_BHG
 {
@@ -77,15 +79,17 @@ namespace Voucher.SVTran_BHG
 
         // Lấy danh sách imei xóa khỏi grid
         List<string> list_imei_delete = new List<string>();
+        private readonly IConfiguration _configuration;
 
 
-        public Service()
+        public Service(IConfiguration _configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
+            this._configuration = _configuration;
 
         }
 
@@ -162,7 +166,11 @@ namespace Voucher.SVTran_BHG
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x =>
+                        {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.stt_rec_dh = APIService.DecryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -601,7 +609,11 @@ namespace Voucher.SVTran_BHG
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x =>
+                        {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.stt_rec_dh = APIService.DecryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -1167,6 +1179,11 @@ END";
                 IList<TTDetail> tt_detail = ds.Tables[3].ToList<TTDetail>();
                 IList<BHDetail> bh_detail = ds.Tables[4].ToList<BHDetail>();
                 IList<DVDetail> dv_detail = ds.Tables[5].ToList<DVDetail>();
+
+                tl_detail.ToList().ForEach(x =>
+                {
+                    x.stt_rec_dh = APIService.EncryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
                 sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6)
                     SET @stt_rec = @vc_id
 	                SELECT @exp = CONVERT(CHAR(6), @ngay_ct, 112)

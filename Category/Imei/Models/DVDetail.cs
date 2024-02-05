@@ -81,5 +81,6 @@
         public string tk_thue_co { get; set; }
         public decimal thue_suat { get; set; }
         public string ma_imei { get; set; }
+        public decimal gia_tra_lai { get; set; }
     }
 }

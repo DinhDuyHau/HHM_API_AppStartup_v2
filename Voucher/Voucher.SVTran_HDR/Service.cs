@@ -7,6 +7,8 @@ using System.Data;
 using System.Reflection;
 using Genbyte.Sys.AppAuth;
 using System.Text.Json;
+using Genbyte.Base.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.SVTran_HDR
 {
@@ -35,6 +37,10 @@ namespace Voucher.SVTran_HDR
         public string PaidTable { get; } = "d579tt$";
         private const string _PAID_PARA = "d579tt";
 
+        // bảng lưu dữ liệu chi tiết của dịch vụ
+        public string ServiceTable { get; } = "d579dv$";
+        private const string _SERVICE_PARA = "d579dv";
+
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d579,d579,d579";
                
@@ -52,15 +58,16 @@ namespace Voucher.SVTran_HDR
         /// Khai báo quyền truy cập cho các xử lý CRUD
         /// </summary>
         public AccessRight VoucherRight { get; set; }
+        private readonly IConfiguration _configuration;
 
-        public Service()
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            _configuration = configuration;
         }
 
         #region Inserting
@@ -92,6 +99,7 @@ namespace Voucher.SVTran_HDR
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
+            vc_item.stt_rec_hd = APIService.DecryptForWebApp(vc_item.stt_rec_hd, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -146,6 +154,18 @@ namespace Voucher.SVTran_HDR
                                     item_detail.Data.AddRange(paid_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVPaidModel).Name;
+                                break;
+                            case 4:
+                                List<SVServiceModel>? service_list = JsonSerializer.Deserialize<List<SVServiceModel>>((JsonElement)item_model.Data);
+                                if (service_list != null && service_list.Count > 0)
+                                {
+                                    //cập nhật ngày chứng từ
+                                    service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+
+                                    item_detail.Data = new List<DetailEntity>();
+                                    item_detail.Data.AddRange(service_list);
+                                }
+                                item_detail.Detail_Type = typeof(SVServiceModel).Name;
                                 break;
                             default:
                                 break;
@@ -214,7 +234,7 @@ namespace Voucher.SVTran_HDR
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
-            string detail_table = "", bill_table = "", paid_table = "";
+            string detail_table = "", bill_table = "", paid_table = "", service_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -253,6 +273,17 @@ namespace Voucher.SVTran_HDR
                 //query += $"insert into {paid_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, line_nbr, ma_thanhtoan, ma_nvbh_i, tien, tien_nt, so_the_nh, ma_chuan_chi, ma_may_pos, tk_nh_nhan, so_hd_vnpay, vi_dien_tu, so_hd_tragop, tien_phi_bh, ma_dv_tragop) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, line_nbr, ma_thanhtoan, ma_nvbh_i, tien, tien_nt, so_the_nh, ma_chuan_chi, ma_may_pos, tk_nh_nhan, so_hd_vnpay, vi_dien_tu, so_hd_tragop, tien_phi_bh, ma_dv_tragop from @{_PAID_PARA}";
                 query += $"{insert_paid_query}";
             }
+            if (voucherQuery.Details.Any(x => x.ParaName == _SERVICE_PARA))
+            {
+                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _SERVICE_PARA);
+                service_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string insert_service_query = VoucherUtils.getServiceQuery(new SVServiceModel(), service_table, _SERVICE_PARA, 1);
+
+                query += "\n\n";
+                query += detail_query?.QueryString;
+                query += "\n";
+                query += $"{insert_service_query}";
+            }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
 
@@ -278,6 +309,8 @@ namespace Voucher.SVTran_HDR
                 query += $"exec fs_UpdateNullToTable '{bill_table}', '{bill_table}', 'stt_rec = ''{stt_rec}''' \n";
             if (!string.IsNullOrEmpty(paid_table))
                 query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
+            if (!string.IsNullOrEmpty(service_table))
+                query += $"exec fs_UpdateNullToTable '{service_table}', '{service_table}', 'stt_rec = ''{stt_rec}''' \n";
 
             service.ExecuteNonQuery(query);
             if (vc_item.status == "2")
@@ -323,6 +356,7 @@ namespace Voucher.SVTran_HDR
 
             // cập nhật ma_gd = 2
             vc_item.ma_gd = VoucherUtils.MA_GD;
+            vc_item.stt_rec_hd = APIService.DecryptForWebApp(vc_item.stt_rec_hd, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -375,6 +409,18 @@ namespace Voucher.SVTran_HDR
                                     item_detail.Data.AddRange(paid_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVPaidModel).Name;
+                                break;
+                            case 4:
+                                List<SVServiceModel>? service_list = JsonSerializer.Deserialize<List<SVServiceModel>>((JsonElement)item_model.Data);
+                                if (service_list != null && service_list.Count > 0)
+                                {
+                                    //cập nhật ngày chứng từ
+                                    service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+
+                                    item_detail.Data = new List<DetailEntity>();
+                                    item_detail.Data.AddRange(service_list);
+                                }
+                                item_detail.Detail_Type = typeof(SVServiceModel).Name;
                                 break;
                             default:
                                 break;
@@ -552,7 +598,7 @@ SELECT is_success, message FROM @check";
 
             //xóa và insert lại các bảng chi tiết
             DetailQuery? detail_query = null;
-            string detail_table = "", bill_table = "", paid_table = "";
+            string detail_table = "", bill_table = "", paid_table = "", service_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -607,6 +653,22 @@ SELECT is_success, message FROM @check";
             {
                 query += VoucherUtils.getDeleteQuery(this.PaidTable + expression);
             }
+            if (voucherQuery.Details.Any(x => x.ParaName == _SERVICE_PARA))
+            {
+                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _SERVICE_PARA);
+                service_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string update_service_query = VoucherUtils.getServiceQuery(new SVServiceModel(), service_table, _SERVICE_PARA, 2);
+
+                query += "\n\n";
+                query += detail_query?.QueryString;
+                query += "\n";
+                query += $"{update_service_query}";
+            }
+            else
+            {
+                query += VoucherUtils.getDeleteQuery(this.ServiceTable + expression);
+            }
+
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
 
@@ -694,6 +756,7 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.BillTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.PaidTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"delete from {this.ServiceTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -753,6 +816,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, a3.ten_nvbh as ten_asm_duyet from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmnvbh a3 on a1.ma_asm_duyet = a3.ma_nvbh where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {4}' + @exp + ' where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_dv, b.vt_ton_kho from {5}' + @exp + ' a left join dmdichvu b on a.ma_dv = b.ma_dv where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.BillTable, this.PaidTable);
@@ -769,9 +833,11 @@ END";
             if (ds != null && ds.Tables.Count >= 2)
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
+                vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<SVBillModel> pr_bill = ds.Tables[2].ToList<SVBillModel>();
                 IList<SVPaidModel> pr_paid = ds.Tables[3].ToList<SVPaidModel>();
+                IList<SVServiceModel> pr_service = ds.Tables[4].ToList<SVServiceModel>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -791,6 +857,12 @@ END";
                     Id = 3,
                     Name = _PAID_PARA,
                     Data = pr_paid
+                }
+                ,new DetailItemModel()
+                {
+                    Id = 4,
+                    Name = _SERVICE_PARA,
+                    Data = pr_service
                 }
                 });
 
