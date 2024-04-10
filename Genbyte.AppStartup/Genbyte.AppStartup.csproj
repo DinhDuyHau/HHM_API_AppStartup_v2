@@ -36,15 +36,19 @@
 	<ItemGroup>
 	  <Reference Include="Genbyte.Base.CoreLib">
 	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
+	    <Private>True</Private>
 	  </Reference>
 	  <Reference Include="Genbyte.Base.Security">
 	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
+	    <Private>True</Private>
 	  </Reference>
 	  <Reference Include="Genbyte.Sys.AppAuth">
 	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
+	    <Private>True</Private>
 	  </Reference>
 	  <Reference Include="Genbyte.Sys.Common">
 	    <HintPath>..\..\RUN-API\Debug\net6.0\Genbyte.Sys.Common.dll</HintPath>
+	    <Private>True</Private>
 	  </Reference>
 	</ItemGroup>
 </Project>

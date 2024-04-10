@@ -13,13 +13,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\HHM_API_Security_v2\Genbyte.Base.Security\Genbyte.Base.Security.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="Genbyte.Base.CoreLib">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
 			<Private>False</Private>
+		</Reference>
+		<Reference Include="Genbyte.Base.Security">
+		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
+		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Component.Voucher">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>

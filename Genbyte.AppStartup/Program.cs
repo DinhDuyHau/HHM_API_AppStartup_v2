@@ -7,11 +7,28 @@ using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.AppAuth.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // add services to DI container
 {
     var services = builder.Services;
-    services.AddCors();
+
+    //add CORS for client request
+    var corsSetting = builder.Configuration.GetSection("CorsSetting");
+    services.Configure<string[]>(corsSetting);
+    string[] cors_settings = corsSetting.Get<string[]>();
+    services.AddCors(options =>
+    {
+        options.AddPolicy(name: MyAllowSpecificOrigins,
+                          policy =>
+                          {
+                              policy.WithOrigins(cors_settings)
+                                .AllowAnyHeader()
+                                .AllowCredentials()
+                                .AllowAnyMethod();
+                          });
+    });
+
     services.AddControllers();
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -48,6 +65,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddMemoryCache();
 
     // configure DI for application services
+    services.AddScoped<ITokenUtils, JwtUtils>();
     services.AddScoped<IUserService, UserService>();
 
 }
@@ -70,10 +88,11 @@ app.UseSwaggerUI(c =>
 app.UseAuthorization();
 
 // global cors policy
-app.UseCors(x => x
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+//app.UseCors(x => x
+//    .AllowAnyOrigin()
+//    .AllowAnyMethod()
+//    .AllowAnyHeader());
+app.UseCors(MyAllowSpecificOrigins);
 
 // custom jwt auth middleware
 app.UseMiddleware<JwtAuthentication>();

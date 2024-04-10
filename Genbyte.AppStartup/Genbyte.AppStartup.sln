@@ -187,14 +187,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmnhvt", "..\Categ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptStockBalanceImeiFIFO", "..\Report\Report.RptStockBalanceImeiFIFO\Report.RptStockBalanceImeiFIFO.csproj", "{91E70B4C-8C7B-46D5-8E10-F37BA8D16039}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Voucher", "..\..\HHM_API_Component_v2\Genbyte.Component.Voucher\Genbyte.Component.Voucher.csproj", "{EE817BF2-A36A-4192-BA64-B237722E5692}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Sys.Common", "..\..\HHM_API_System_v2\Genbyte.Sys.Common\Genbyte.Sys.Common.csproj", "{D8AC950B-2A4B-462D-92C0-7AC75005D367}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Report", "..\..\HHM_API_Component_v2\Genbyte.Component.Report\Genbyte.Component.Report.csproj", "{E3D84AFF-C51B-4590-AA3E-963829A02C1F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Base.Security", "..\..\HHM_API_Security_v2\Genbyte.Base.Security\Genbyte.Base.Security.csproj", "{591673C6-8482-42C8-91AE-C86E9702CFB2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptImeiReport", "..\Report\Report.RptImeiReport\Report.RptImeiReport.csproj", "{0031C195-7F07-4590-8244-368C36E84936}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscountCode", "..\Category\DiscountCode\DiscountCode.csproj", "{ABD8CC41-EA6C-4538-9D01-5A44BC9FD182}"
@@ -205,10 +197,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Employee", "..\Category\Emp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "..\Category\Service\Service.csproj", "{892FD349-2E68-48C3-A404-2F54B40836CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Category", "..\..\HHM_API_Component_v2\Genbyte.Component.Category\Genbyte.Component.Category.csproj", "{DF96F1D4-1F93-4A3F-99C5-3769EEF80EA6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Base.CoreLib", "..\..\HHM_API_System_v2\Genbyte.Base.CoreLib\Genbyte.Base.CoreLib.csproj", "{F0CE6ACD-647A-4883-8DAE-F1487EFF2873}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmhddt_httt", "..\Category\Category.Dmhddt_httt\Category.Dmhddt_httt.csproj", "{2F3F2753-9C3C-4403-80F2-C4206EB94887}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmvv", "..\Category\Category.Dmvv\Category.Dmvv.csproj", "{4F07A0F2-AE00-41BB-9C38-8B13B1F7555A}"
@@ -216,6 +204,20 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptCheckInventory", "..\Report\Report.RptCheckInventory\Report.RptCheckInventory.csproj", "{14685ED4-B4E0-4101-ADA4-73A538033B62}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.SVTran_HDR", "..\Voucher\Voucher.SVTran_HDR\Voucher.SVTran_HDR.csproj", "{45F740A6-95CD-4C02-B1A7-5984BC779CF6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Category", "..\..\Component\Genbyte.Component.Category\Genbyte.Component.Category.csproj", "{AB6F57A6-0710-44FF-B6CD-FFA14116C645}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Report", "..\..\Component\Genbyte.Component.Report\Genbyte.Component.Report.csproj", "{A7512488-E1E6-448A-8316-C4895AD8DB60}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Voucher", "..\..\Component\Genbyte.Component.Voucher\Genbyte.Component.Voucher.csproj", "{A13DDDA4-2225-47B0-B239-E938D36D7BD1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Sys.Common", "..\..\System\Genbyte.Sys.Common\Genbyte.Sys.Common.csproj", "{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Base.CoreLib", "..\..\System\Genbyte.Base.CoreLib\Genbyte.Base.CoreLib.csproj", "{B00F8336-B00C-4C7B-B9FA-E35613BD05B7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Base.Security", "..\..\Security\Genbyte.Base.Security\Genbyte.Base.Security.csproj", "{7587E1C3-0A84-4A9B-ADFF-DE1AC2D4AB86}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Sys.AppAuth", "..\..\Security\Genbyte.Sys.AppAuth\Genbyte.Sys.AppAuth.csproj", "{5C59F5FB-5C1A-426A-A1C3-54A94C4A603B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -579,22 +581,6 @@ Global
 		{91E70B4C-8C7B-46D5-8E10-F37BA8D16039}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91E70B4C-8C7B-46D5-8E10-F37BA8D16039}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91E70B4C-8C7B-46D5-8E10-F37BA8D16039}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EE817BF2-A36A-4192-BA64-B237722E5692}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EE817BF2-A36A-4192-BA64-B237722E5692}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EE817BF2-A36A-4192-BA64-B237722E5692}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EE817BF2-A36A-4192-BA64-B237722E5692}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8AC950B-2A4B-462D-92C0-7AC75005D367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8AC950B-2A4B-462D-92C0-7AC75005D367}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8AC950B-2A4B-462D-92C0-7AC75005D367}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8AC950B-2A4B-462D-92C0-7AC75005D367}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E3D84AFF-C51B-4590-AA3E-963829A02C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3D84AFF-C51B-4590-AA3E-963829A02C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3D84AFF-C51B-4590-AA3E-963829A02C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3D84AFF-C51B-4590-AA3E-963829A02C1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{591673C6-8482-42C8-91AE-C86E9702CFB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{591673C6-8482-42C8-91AE-C86E9702CFB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{591673C6-8482-42C8-91AE-C86E9702CFB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{591673C6-8482-42C8-91AE-C86E9702CFB2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0031C195-7F07-4590-8244-368C36E84936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0031C195-7F07-4590-8244-368C36E84936}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0031C195-7F07-4590-8244-368C36E84936}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -615,14 +601,6 @@ Global
 		{892FD349-2E68-48C3-A404-2F54B40836CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{892FD349-2E68-48C3-A404-2F54B40836CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{892FD349-2E68-48C3-A404-2F54B40836CE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DF96F1D4-1F93-4A3F-99C5-3769EEF80EA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DF96F1D4-1F93-4A3F-99C5-3769EEF80EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF96F1D4-1F93-4A3F-99C5-3769EEF80EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DF96F1D4-1F93-4A3F-99C5-3769EEF80EA6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F0CE6ACD-647A-4883-8DAE-F1487EFF2873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F0CE6ACD-647A-4883-8DAE-F1487EFF2873}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F0CE6ACD-647A-4883-8DAE-F1487EFF2873}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F0CE6ACD-647A-4883-8DAE-F1487EFF2873}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2F3F2753-9C3C-4403-80F2-C4206EB94887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2F3F2753-9C3C-4403-80F2-C4206EB94887}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F3F2753-9C3C-4403-80F2-C4206EB94887}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -639,6 +617,34 @@ Global
 		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{45F740A6-95CD-4C02-B1A7-5984BC779CF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB6F57A6-0710-44FF-B6CD-FFA14116C645}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB6F57A6-0710-44FF-B6CD-FFA14116C645}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB6F57A6-0710-44FF-B6CD-FFA14116C645}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB6F57A6-0710-44FF-B6CD-FFA14116C645}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B00F8336-B00C-4C7B-B9FA-E35613BD05B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B00F8336-B00C-4C7B-B9FA-E35613BD05B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B00F8336-B00C-4C7B-B9FA-E35613BD05B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B00F8336-B00C-4C7B-B9FA-E35613BD05B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7587E1C3-0A84-4A9B-ADFF-DE1AC2D4AB86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7587E1C3-0A84-4A9B-ADFF-DE1AC2D4AB86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7587E1C3-0A84-4A9B-ADFF-DE1AC2D4AB86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7587E1C3-0A84-4A9B-ADFF-DE1AC2D4AB86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C59F5FB-5C1A-426A-A1C3-54A94C4A603B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C59F5FB-5C1A-426A-A1C3-54A94C4A603B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C59F5FB-5C1A-426A-A1C3-54A94C4A603B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C59F5FB-5C1A-426A-A1C3-54A94C4A603B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
