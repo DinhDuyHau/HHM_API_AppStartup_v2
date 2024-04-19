@@ -264,6 +264,7 @@ namespace Imei
                 //check injection
                 if (!_service.IsSQLInjectionValid(imeis.ToArray()))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
                 imeis.ForEach(x => x = HttpUtility.UrlDecode(x));
                 for (int i = 0; i < imeis.Count; i++)
                 {

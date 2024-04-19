@@ -473,12 +473,16 @@ namespace Voucher.SVTran
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
 
-            if(vc_item.ngay_ct.Value.Date != DateTime.Today)
+            //TẠM COMMENT ĐOẠN NÀY ĐỂ CHẠY TEST
+            /*
+            if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";
                 return result_model;
             }
+            */
+
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
 

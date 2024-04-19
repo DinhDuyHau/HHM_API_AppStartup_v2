@@ -21,6 +21,56 @@ namespace Imei
         public Service(IConfiguration _configuration) {
             this._configuration = _configuration;
         }
+
+        #region Check SQL Injection
+        /// <summary>
+        /// Viết mới lại phương thức kiểm tra SQL injection cho lớp dẫn xuất
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public new bool IsSQLInjectionValid(string[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (!CheckSQLInjectionForString(array[i])) return false;
+            }
+            return true;
+        }
+
+        public static bool CheckSQLInjectionForString(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+            string[] strArray2 = new string[] {
+                "'",
+                "--",
+                ";",
+                "alter",
+                "drop",
+                "insert",
+                "update",
+                "delete",
+                "exec",
+                "create",
+                "truncate"
+            };
+            int num3 = (strArray2.Length - 1);
+            int i = 0;
+            while ((i <= num3))
+            {
+                if ((value.IndexOf(strArray2[i], StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    return false;
+                }
+                i += 1;
+            }
+
+            return true;
+        }
+        #endregion
+
         /// <summary>
         /// Lấy trạng thái tồn tức thời của imei, các trạng thái và thông tin chi tiết imei
         /// </summary>
