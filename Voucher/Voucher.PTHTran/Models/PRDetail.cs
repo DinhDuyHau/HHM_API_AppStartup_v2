@@ -48,5 +48,13 @@ namespace Voucher.PTHTran
         public decimal tien_hoa_hong_nt { get; set; }
         public string ten_loai_thu_ho { get; set; }
         public string ma_imei { get; set; }
+
+        public string ma_dvth { get; set; }
+        public string ten_dvth { get; set; }
+
+        public string ma_kh_thuho { get; set; }
+        public string ten_kh_thuho { get; set; }
+
+
     }
 }

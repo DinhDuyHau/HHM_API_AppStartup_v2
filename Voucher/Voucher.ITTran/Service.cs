@@ -624,6 +624,17 @@ SELECT is_success, message FROM @check";
             });
             service.ExecTransactionNonQuery(sql, paras);
 
+            //update trạng thái 'treo' cho phiếu đề nghị điều chuyển tương ứng với phiếu xuất/nhập điều chuyển
+            sql = $"EXEC MokaOnline$Voucher$TO1_UpdateAfterDeletePXB @pxb_voucher_id";
+            paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@pxb_voucher_id",
+                SqlDbType = SqlDbType.Char,
+                Value = voucherId.Replace("'", "''")
+            });
+            service.ExecuteNonQuery(sql, paras, ConnectType.Accounting);
+
             //return
             model.success = true;
             model.message = "delete_voucher_success";

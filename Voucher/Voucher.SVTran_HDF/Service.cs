@@ -321,7 +321,7 @@ namespace Voucher.SVTran_HDF
             if (!string.IsNullOrEmpty(service_table))
                 query += $"exec fs_UpdateNullToTable '{service_table}', '{service_table}', 'stt_rec = ''{stt_rec}''' \n";
 
-            service.ExecuteNonQuery(query);
+            service.ExecTransactionNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
             CommonService.updatePaid(vc_item, _PAID_PARA);

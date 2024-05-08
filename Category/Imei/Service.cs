@@ -118,7 +118,7 @@ namespace Imei
         /// <returns></returns>
         public DataSet GetPriceRenew(RenewModel renew)
         {
-            string sql = "exec Genbyte$IMEI$GetImeiInfoRenew @imei, @shop_id, @ma_ncc, @list_vt";
+            string sql = "exec Genbyte$IMEI$GetImeiInfoRenew @imei, @shop_id, @ma_ncc, @list_vt, @imei_thu_cu";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -143,6 +143,12 @@ namespace Imei
                 ParameterName = $"@list_vt",
                 SqlDbType = SqlDbType.Char,
                 Value = renew.list_vt == null ? DBNull.Value : string.Join(",", renew.list_vt)
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@imei_thu_cu",
+                SqlDbType = SqlDbType.VarChar,
+                Value = renew.imei_thu_cu == null ? "" : renew.imei_thu_cu
             });
             return base.ExecSql2DataSet(sql, paras);
         }
@@ -378,7 +384,7 @@ namespace Imei
         /// <param name="imeiId"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam)
+        public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "")
         {
             CommonObjectModel model = new CommonObjectModel()
             {
@@ -389,7 +395,7 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
@@ -419,7 +425,14 @@ namespace Imei
                 ParameterName = "@tien_giam",
                 SqlDbType = SqlDbType.Decimal,
                 Value = tien_giam
-            }});
+            },
+            new SqlParameter()
+            {
+                ParameterName = "@loai_tra_lai",
+                SqlDbType = SqlDbType.Char,
+                Value = loai_tra_lai.Trim()
+            }
+            });
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
 
             if (ds != null && ds.Tables.Count >= 1)

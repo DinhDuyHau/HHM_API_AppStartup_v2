@@ -143,6 +143,7 @@ namespace EInvoice
             }
         }
         #endregion
+
         /// <summary>
         /// Lập nháp hóa đơn
         /// </summary>

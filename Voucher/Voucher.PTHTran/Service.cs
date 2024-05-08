@@ -266,7 +266,7 @@ namespace Voucher.PTHTran
             // update trường tài khoản theo danh mục giao dịch xử lý
             query += $"select * into #gdtien FROM dmgdtien WHERE ma_ct = '{ma_ct_goc}' AND loai_ct = @loai_ct AND ma_loaigd = @ma_loaigd";
             query += "\n";
-            query += $"set @tk = (select tk from #gdtien where 1 = 1)";
+            query += $"set @tk = (select tk from #gdtien where 1 = 1) \n";
 
             query += $"{insert_prime_table_query}";
 
@@ -286,7 +286,7 @@ namespace Voucher.PTHTran
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho from @{_DETAIL_PARA}";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _PAID_PARA))
             {
@@ -586,7 +586,7 @@ SELECT is_success, message FROM @check";
                 query += "\n\n";
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong_nt, tien_hoa_hong_nt, ma_imei from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong_nt, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho from @{_DETAIL_PARA}";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _PAID_PARA))
             {
@@ -738,7 +738,7 @@ SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_td as ten_loai_thu_ho from {2}' + @exp + ' a left join dmtd2 b on a.ma_loai_thu_ho = b.ma_td where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_td as ten_loai_thu_ho, c.ten_dvth, d.ten_kh as ten_kh_thuho from {2}' + @exp + ' a left join dmtd2 b on a.ma_loai_thu_ho = b.ma_td left join dmdvthuho c on a.ma_dvth = c.ma_dvth left join dmkh d on a.ma_kh_thuho = d.ma_kh where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";

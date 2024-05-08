@@ -529,12 +529,16 @@ namespace Voucher.SVTran_BHK
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
+
+            //2024-05-02: tạm bỏ qua đoạn check này ở giai đoạn triển khai
+            /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";
                 return result_model;
             }
+            */
             vc_item.ma_ct = this.VoucherCode;
 
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)

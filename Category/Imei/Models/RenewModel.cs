@@ -12,5 +12,7 @@ namespace Imei.Models
         public string ma_cuahang { get; set; }
         public string ma_ncc { get; set; }
         public List<string> list_vt { get; set; }
+
+        public string imei_thu_cu { get; set; }
     }
 }
