@@ -17,5 +17,7 @@ namespace Price.Model
         public decimal gia_ban { get; set; }
         public string ma_thue { get; set; }
         public decimal thue_suat { get; set; }
+
+        public decimal gia_vat { get; set; }
     }
 }

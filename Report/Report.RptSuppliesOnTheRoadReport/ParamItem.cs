@@ -1,0 +1,22 @@
+﻿using Genbyte.Component.Report.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Report.RptSuppliesOnTheRoadReport
+{
+    public class ParamItem : ParamItemBase
+    {
+        public DateTime tu_ngay { get; set; }
+
+        public DateTime den_ngay { get; set; }
+
+        public string tu_so { get; set; } = "";
+
+        public string den_so { get; set; } = "";
+
+        public string ma_vt { get; set; } = "";
+    }
+}

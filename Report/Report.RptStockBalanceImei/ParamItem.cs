@@ -15,9 +15,6 @@ namespace Report.RptStockBalanceImei
         public string ma_vt { get; set; } = "";
         public string ma_dvcs { get; set; } = "";
         public string loai_ky { get; set; } = "2";
-        public string tt_sx1 { get; set; } = "0";
-        public string tt_sx2 { get; set; } = "0";
-        public string tt_sx3 { get; set; } = "0";
 
         public string nh_vt1 { get; set; } = "";
         public string nh_vt2 { get; set; } = "";

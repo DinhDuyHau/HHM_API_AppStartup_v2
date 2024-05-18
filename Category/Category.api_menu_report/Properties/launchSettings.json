@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Category.Api_menu_report": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50017;http://localhost:50025"
+    }
+  }
+}

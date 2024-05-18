@@ -45,7 +45,6 @@ namespace Report.RptEndofShiftReport
             string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            string ma_ca = string.IsNullOrWhiteSpace(obj_param.ma_ca) ? Startup.Shift : obj_param.ma_ca;
             
             sql = @"declare @StoreName nvarchar(250), @ShiftName nvarchar(250)
 select @StoreName = ten_cuahang from dmcuahang where ma_cuahang = @ma_cuahang
@@ -70,7 +69,7 @@ exec rs_rptEndofShiftReport @tu_ngay, @ma_cuahang, @ma_ca, 'v', @user_id, @admin
             {
                 ParameterName = "@ma_ca",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_ca
+                SqlValue = obj_param.ma_ca
             });
             list_paras.Add(new SqlParameter
             {

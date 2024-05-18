@@ -66,6 +66,7 @@ namespace EInvoice
             }
         }
         #endregion
+
         [HttpPost("invoicePDFV2")]
         #region GetPDFInvoiceV2
         public IActionResult GetInvoicePDFV2(string stt_rec, string ma_ct)

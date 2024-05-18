@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>D:\GEN-E\HHM_CORE\Inv_Shop\API\RUN-API</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Genbyte.Base.CoreLib">
+      <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Genbyte.Component.Category">
+      <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Category.dll</HintPath>
+    </Reference>
+    <Reference Include="Genbyte.Sys.Common">
+      <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Voucher.ISTran_PXM": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50078;http://localhost:50079"
+    }
+  }
+}

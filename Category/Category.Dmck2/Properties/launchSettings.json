@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Category.Dmck2": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50016;http://localhost:50023"
+    }
+  }
+}

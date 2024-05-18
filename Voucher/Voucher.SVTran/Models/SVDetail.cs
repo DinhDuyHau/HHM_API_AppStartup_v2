@@ -103,5 +103,7 @@ namespace Voucher.SVTran
         public decimal tien_kmqd { get; set; }
         public string imei_mua { get; set; }
 
+        public decimal gia_vat { get; set; }
+
     }
 }
