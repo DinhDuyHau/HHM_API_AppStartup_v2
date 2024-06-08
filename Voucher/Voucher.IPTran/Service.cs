@@ -38,11 +38,11 @@ namespace Voucher.IPTran
         private const string _DETAIL_PARA = "d575";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
-        public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d575,d575,d575";
+        public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca,ma_cuahang_x,ma_kho,ma_khox;#10$,#20$,#30$,#40$,#50$,#60$,#65$; , , , , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d575,d575,d575";
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_cuahang) as ma_cuahang, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_cuahang) as ma_cuahang, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -60,7 +60,7 @@ namespace Voucher.IPTran
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
-            VoucherRight.AllowCreate = true;
+            VoucherRight.AllowCreate = false;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = false;
 
@@ -464,6 +464,72 @@ SELECT is_success, message FROM @check";
                 query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, stt_rec_yc, stt_rec0yc from @{_DETAIL_PARA}";
             }
             query += "\n\n";
+
+            //2024-06-04: begin
+            //cập nhật ngày chứng từ tự động lấy mặc định là ngày hệ thống
+            DateTime new_ngay_ct = DateTime.Today;
+            string new_partition = new_ngay_ct.ToString("yyyyMM");
+            string new_prime_table = this.PrimeTable.Trim() + new_partition;
+            string new_detail_table = this.DetailTable.Trim() + new_partition;
+            string new_inquiry_table = this.InquiryTable.Trim() + new_partition;
+
+            string old_prime_table = prime_table;
+            string old_detail_table = detail_table;
+            string old_inquiry_table = this.InquiryTable.Trim() + expression;
+
+            query += "\n";
+            query += $"declare @today DATETIME = '{new_ngay_ct.ToString("yyyy-MM-dd")}' \n";
+            query += $"declare @old_partition char(6) = '{expression}', @new_partition char(6) = '{new_partition}' \n";
+            query += @$"if exists(select 1 from {this.MasterTable} where status <> '0' and ngay_ct <> @today) begin
+	SET XACT_ABORT ON
+	BEGIN TRAN
+	BEGIN TRY
+		if @old_partition <> @new_partition begin
+			select * into #tmp_prime from {old_prime_table} where stt_rec = @stt_rec
+			select * into #tmp_detail from {old_detail_table} where stt_rec = @stt_rec
+
+			update #tmp_prime set ngay_ct = @today where stt_rec = @stt_rec
+			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
+
+			delete from {this.MasterTable} where stt_rec = @stt_rec
+			delete from {old_prime_table} where stt_rec = @stt_rec
+			delete from {old_detail_table} where stt_rec = @stt_rec
+			delete from {old_inquiry_table} where stt_rec = @stt_rec
+
+			insert into {new_prime_table} select * from #tmp_prime
+			insert into {new_detail_table} select * from #tmp_detail
+
+			drop table #tmp_prime
+			drop table #tmp_detail
+		end
+		else begin
+			update {this.MasterTable} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_prime_table} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_detail_table} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_inquiry_table} set ngay_ct = @today where stt_rec = @stt_rec
+		end
+		COMMIT
+	END TRY
+	BEGIN CATCH
+	   ROLLBACK
+	   DECLARE @ErrorMessage VARCHAR(2000)
+	   SELECT @ErrorMessage = ERROR_MESSAGE()
+	   INSERT INTO log_syncerror (name, cr_date, message) VALUES('IPTran', GETDATE(), @ErrorMessage)
+	   RAISERROR(@ErrorMessage, 16, 1)
+	END CATCH
+	SET XACT_ABORT OFF
+end";
+            query += "\n\n";
+
+            if(expression != new_partition)
+            {
+                //set lại tên bảng theo phân kỳ mới
+                prime_table = new_prime_table;
+                detail_table = new_detail_table;
+                expression = new_partition;
+            }
+            //2024-06-04: end
+
             query += "select @stt_rec as stt_rec";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
@@ -534,6 +600,13 @@ SELECT is_success, message FROM @check";
                     }
                 }
             }
+
+            list_imei.ForEach(item =>
+            {
+                item.ma_vt = item.ma_vt.Trim();
+                item.ma_kho = item.ma_kho.Trim();
+            });
+
             if (vc_item.status == "0")
             {
                 string json = JsonSerializer.Serialize(list_imei);
@@ -544,9 +617,11 @@ SELECT is_success, message FROM @check";
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
             if (vc_item.status == "2")
             {
-                string json = JsonSerializer.Serialize(list_imei);
+                //string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
-                queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
+                //queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
+
+                queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
@@ -619,6 +694,7 @@ SELECT is_success, message FROM @check";
         /** 
          * Load top bản ghi của chứng từ (không phân trang) 
          */
+        #region TopLoading
         public CommonObjectModel TopLoading(List<Dictionary<string, object>> data)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -630,10 +706,12 @@ SELECT is_success, message FROM @check";
 
             return model;
         }
+        #endregion
 
         /** 
          * Lấy dữ liệu của chứng từ theo khóa chính 
          */
+        #region GetById
         public CommonObjectModel GetById(string voucherId)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -673,6 +751,10 @@ END";
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<IPDetail> pr_detail = ds.Tables[1].ToList<IPDetail>();
 
+                //set ngày lập chứng từ -> ngày ct phiếu xuất
+                //ngày hệ thống = ngày hiện tại của server
+                vc_item.ngay_ht = DateTime.Today;
+
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();
@@ -688,10 +770,12 @@ END";
 
             return model;
         }
+        #endregion
 
         /** 
          * tìm kiếm chứng từ (có xử lý phân trang) 
          */
+        #region Finding
         public CommonObjectModel Finding(List<Dictionary<string, object>> data)
         {
             EntityCollection<VoucherFindingModel> entities = new EntityCollection<VoucherFindingModel>()
@@ -734,11 +818,13 @@ END";
 
             return model;
         }
+        #endregion
 
         /** 
         * Lấy danh sách dữ liệu của danh mục có xử lý phân trang
         * entities: input object có type là EntityCollection<T>
         */
+        #region GetByPaging
         public CommonObjectModel GetByPaging(object entities, string order_by = "", int page_index = 1, int page_size = 0)
         {
             //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
@@ -752,10 +838,13 @@ END";
             };
             return result;
         }
+        #endregion
+
         /** 
        * Lấy dữ liệu khác của từng mã
        * entities: input object có type là EntityCollection<T>
        */
+        #region GetOtherData
         public CommonObjectModel GetOtherData(string so_ct, string ma_cuahang)
         {
             //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
@@ -769,11 +858,17 @@ END";
             };
             return result;
         }
+        #endregion
+
+        #region GetImeis
         public List<ImeiState> GetImeis(CommonObjectModel model)
         {
             return new List<ImeiState>();
         }
         #endregion
+
+        #endregion
+
         CommonObjectModel checkImeiInsert(VoucherItem vc_item)
         {
             var listImei = new List<string>();
@@ -832,6 +927,7 @@ END";
             }
             return result_model;
         }
+
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
             var listImei = new List<string>();
@@ -923,6 +1019,7 @@ END";
             }
             return result_model;
         }
+
     }
 }
 

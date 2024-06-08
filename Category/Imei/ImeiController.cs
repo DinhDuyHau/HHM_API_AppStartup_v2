@@ -407,7 +407,7 @@ namespace Imei
 
         [HttpGet("soldinfo/")]
         #region GetImeiSoldInfo
-        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string loai_tra_lai = "")
+        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "")
         {
             try
             {

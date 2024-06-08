@@ -103,5 +103,6 @@ namespace Voucher.SVTran_BHK
         public bool no_km_yn { get; set; }
         public string imei_mua { get; set; }
 
+        public decimal gia_vat { get; set; }
     }
 }

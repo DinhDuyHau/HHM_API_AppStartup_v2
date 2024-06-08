@@ -22,5 +22,8 @@ namespace Voucher.PR3Tran
         public decimal t_duyet { get; set; }
         public decimal t_huy { get; set; }
         public string fnote3 { get; set; }
+
+        public string ma_cuahang_x { get; set; }
+
     }
 }

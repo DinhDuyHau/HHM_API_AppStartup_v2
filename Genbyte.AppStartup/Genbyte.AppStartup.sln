@@ -231,7 +231,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptStockBalanceImeiB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptSuppliesOnTheRoadReport", "..\Report\Report.RptSuppliesOnTheRoadReport\Report.RptSuppliesOnTheRoadReport.csproj", "{F90FA4F4-E973-40EE-B7A2-A1BC5248C09E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Report.RptSaleByImei", "..\Report\Report.RptSaleByImei\Report.RptSaleByImei.csproj", "{9EB6C341-76CD-475B-B441-D0CB75A47986}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptSaleByImei", "..\Report\Report.RptSaleByImei\Report.RptSaleByImei.csproj", "{9EB6C341-76CD-475B-B441-D0CB75A47986}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptCustomerBalanceOfMultiAccount", "..\Report\Report.RptCustomerBalanceOfMultiAccount\Report.RptCustomerBalanceOfMultiAccount.csproj", "{1E14B75F-AB0F-4E57-A60D-019A403DD865}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptDCCustomers", "..\Report\Report.RptDCCustomers\Report.RptDCCustomers.csproj", "{12E1A996-7166-4A50-8AE1-1916A396D231}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genbyte.Sys.ExcelSAXExport", "..\..\System\Genbyte.Sys.ExcelSAXExport\Genbyte.Sys.ExcelSAXExport.csproj", "{84297DDB-BA74-43AB-88A4-7CCB602C3261}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptRetailPrice", "..\Report\Report.RptRetailPrice\Report.RptRetailPrice.csproj", "{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -687,6 +695,22 @@ Global
 		{9EB6C341-76CD-475B-B441-D0CB75A47986}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB6C341-76CD-475B-B441-D0CB75A47986}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EB6C341-76CD-475B-B441-D0CB75A47986}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E14B75F-AB0F-4E57-A60D-019A403DD865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E14B75F-AB0F-4E57-A60D-019A403DD865}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E14B75F-AB0F-4E57-A60D-019A403DD865}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E14B75F-AB0F-4E57-A60D-019A403DD865}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12E1A996-7166-4A50-8AE1-1916A396D231}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12E1A996-7166-4A50-8AE1-1916A396D231}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12E1A996-7166-4A50-8AE1-1916A396D231}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12E1A996-7166-4A50-8AE1-1916A396D231}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84297DDB-BA74-43AB-88A4-7CCB602C3261}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84297DDB-BA74-43AB-88A4-7CCB602C3261}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84297DDB-BA74-43AB-88A4-7CCB602C3261}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84297DDB-BA74-43AB-88A4-7CCB602C3261}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -794,6 +818,9 @@ Global
 		{FFB02313-ECE9-46FB-A42F-40A4E1FEF396} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{F90FA4F4-E973-40EE-B7A2-A1BC5248C09E} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{9EB6C341-76CD-475B-B441-D0CB75A47986} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{1E14B75F-AB0F-4E57-A60D-019A403DD865} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{12E1A996-7166-4A50-8AE1-1916A396D231} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}

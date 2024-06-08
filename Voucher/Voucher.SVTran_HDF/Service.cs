@@ -356,7 +356,7 @@ namespace Voucher.SVTran_HDF
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
-            if (vc_item.ngay_ct.Value.Date != DateTime.Today)
+            if (vc_item.ngay_ct.Value.Date.AddDays(3) < DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";

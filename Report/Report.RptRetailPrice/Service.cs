@@ -9,13 +9,13 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Reflection.Metadata;
 
-namespace Report.RptImeiReport
+namespace Report.RptRetailPrice
 {
     public class Service : IReportService
     {
-        public IMemoryCache MemoryCache { get; set; }
         public IConfiguration Configuration { get; set; }
-        public string controller { get; set; } = "rptImeiReport";
+        public IMemoryCache MemoryCache { get; set; }
+        public string controller { get; set; } = "rptRetailPrice";
 
         // Bảng hiển thị lên báo cáo.
         public readonly int table_index = 1;
@@ -55,52 +55,50 @@ namespace Report.RptImeiReport
 
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
-            sql = @"
-                select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_cuahang ma_cuahang
-                exec rs_rptImeiReport @ma_imei, @tu_ngay, @den_ngay, @ma_cuahang, @language, @userID, @admin
+            // lấy cửa hàng mặc định đăng nhập
+            string ma_cuahang = Startup.Shop;
+            int user_id = Startup.UserId;
+            int admin = Startup.Admin;
+
+            sql = @"select cast(@ngay_hl as smalldatetime) as ngay_hl
+exec rs_rptRetailPrice @ngay_hl, @ma_cuahang, @ma_vt, @nh_vt3, 'v', @user_id , @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_imei",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_imei
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@tu_ngay",
+                ParameterName = "@ngay_hl",
                 SqlDbType = SqlDbType.DateTime,
-                SqlValue = obj_param.tu_ngay
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@den_ngay",
-                SqlDbType = SqlDbType.DateTime,
-                SqlValue = obj_param.den_ngay
+                SqlValue = obj_param.ngay_hl
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_cuahang == null ? "" : obj_param.ma_cuahang
+            });         
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_vt",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_cuahang == null ? Startup.Shop : obj_param.ma_cuahang
+                SqlValue = obj_param.ma_vt == null ? "" : obj_param.ma_vt
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@language",
+                ParameterName = "@nh_vt3",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.language
+                SqlValue = obj_param.nh_vt3 == null ? "" : obj_param.nh_vt3
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@userID",
+                ParameterName = "@user_id",
                 SqlDbType = SqlDbType.Int,
-                SqlValue = obj_param.userId
+                SqlValue = user_id
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
-                SqlValue = obj_param.admin
+                SqlValue = admin
             });
             return list_paras;
         }

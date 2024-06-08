@@ -49,7 +49,7 @@ namespace Voucher.PVTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai, t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where ma_gd = ''1'' and a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where ma_gd = ''1'' and a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
         public string WhereClauseFinding { get; } = "ma_gd = '1'";
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -594,53 +594,70 @@ SELECT is_success, message FROM @check";
 
             service.ExecuteNonQuery(query);
 
-            List<ImeiItem> list_imei = new List<ImeiItem>();
-            // id = 1 ==> type: PVDetail
-            int index_value = 1;
-            if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+            //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
+            string queryIMEI = "";
+            if (vc_item.status == "2")
             {
-                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
-
-                if (item_detail != null)
+                //create query insert IMEI
+                queryIMEI = $"exec Genbyte$IMEI$Purchase$Post '{stt_rec}', '{vc_item.ma_ct}'";
+                DataSet ds_post = service.ExecSql2DataSet(queryIMEI);
+                if(ds_post != null && ds_post.Tables.Count > 0 && ds_post.Tables[0].Rows.Count > 0)
                 {
-                    List<PVDetail> detail_list = item_detail.Data.Cast<PVDetail>().ToList();
-                    if (detail_list != null && detail_list.Count > 0)
+                    DataRow dr = ds_post.Tables[0].Rows[0];
+                    model.success = Convert.ToBoolean(dr["is_success"]);
+                    model.message = dr["msg"].ToString();
+                    model.result = new List<VoucherItem>() { vc_item };
+
+                    return model;
+                }
+            }
+            else
+            {
+                List<ImeiItem> list_imei = new List<ImeiItem>();
+                // id = 1 ==> type: PVDetail
+                int index_value = 1;
+                if (vc_item.details.Any(x => x.Id == index_value))
+                {
+                    VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+
+                    if (item_detail != null && item_detail.Data != null && item_detail.Data.Count > 0)
                     {
-                        foreach (var item in detail_list)
+                        List<PVDetail> detail_list = item_detail.Data.Cast<PVDetail>().ToList();
+                        if (detail_list != null && detail_list.Count > 0)
                         {
-                            List<string> imei = item.ma_imei.Split(',').ToList();
-                            foreach (var imei_item in imei)
+                            foreach (PVDetail item in detail_list)
                             {
-                                list_imei.Add(new ImeiItem
+                                if (item != null && !string.IsNullOrEmpty(item.ma_imei))
                                 {
-                                    stt_rec0 = item.stt_rec0,
-                                    ma_imei = imei_item.Trim(),
-                                    ma_vt = item.ma_vt,
-                                    ma_kho = item.ma_kho,
-                                    gia_nt0 = item.gia_nt,
-                                    ghi_chu = vc_item.dien_giai,
-                                    ma_td1 = item.ma_td1,
-                                    budslive = item.budslive,
-                                });
+                                    List<string> imei = item.ma_imei.Split(',').ToList();
+                                    foreach (string imei_item in imei)
+                                    {
+                                        if (!string.IsNullOrEmpty(imei_item))
+                                            list_imei.Add(new ImeiItem
+                                            {
+                                                stt_rec0 = item.stt_rec0,
+                                                ma_imei = imei_item.Trim(),
+                                                ma_vt = item.ma_vt.Trim(),
+                                                ma_kho = string.IsNullOrEmpty(item.ma_kho) ? "" : item.ma_kho.Trim(),
+                                                gia_nt0 = item.gia_nt,
+                                                //ghi_chu = vc_item.dien_giai,
+                                                ma_td1 = string.IsNullOrEmpty(item.ma_td1) ? "" : item.ma_td1.Trim(),
+                                                budslive = item.budslive,
+                                            });
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
-            string json = JsonSerializer.Serialize(list_imei);
-            string queryIMEI = "";
-            //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
-            if (vc_item.status == "2")
-            {
-                //create query insert IMEI
-                queryIMEI = $"exec Genbyte$IMEI$Create '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
-                service.ExecTransactionNonQuery(queryIMEI);
-            }
-            else
-            {
-                queryIMEI = $"exec Genbyte$IMEI$PostImeiOrder '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.so_ct}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{vc_item.ma_ct}', '{json}'";
-                service.ExecTransactionNonQuery(queryIMEI);
-            }
+
+                if (list_imei != null && list_imei.Count > 0)
+                {
+                    string json = JsonSerializer.Serialize(list_imei);
+                    queryIMEI = $"exec Genbyte$IMEI$PostImeiOrder '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.so_ct}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{vc_item.ma_ct}', '{json}'";
+                    service.ExecuteNonQuery(queryIMEI);
+                }
+            }          
 
             model.success = true;
             model.message = "edit_voucher_success";

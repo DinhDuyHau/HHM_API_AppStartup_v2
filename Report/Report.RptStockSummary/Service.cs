@@ -1,4 +1,5 @@
 ﻿using Genbyte.Component.Report;
+using Genbyte.Component.Report.Model;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -10,11 +11,14 @@ using System.Reflection.Metadata;
 
 namespace Report.RptStockSummary
 {
-    public class Service : IComponentService
+    public class Service : IReportService
     {
         public IMemoryCache MemoryCache { get; set; }
         public IConfiguration Configuration { get; set; }
         public string controller { get; set; } = "rptStockSummary";
+
+        // Bảng hiển thị lên báo cáo.
+        public readonly int table_index = 1;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
         {
@@ -22,7 +26,7 @@ namespace Report.RptStockSummary
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, 1);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
             return raw_model;
         }
 
@@ -36,20 +40,32 @@ namespace Report.RptStockSummary
             return raw_model;
         }
 
+        public Query InitExport(string controller, Dictionary<string, object> param)
+        {
+            string sql = "";
+            ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
+            List<SqlParameter> list_paras = init(obj_param, out sql);
+            return new Query()
+            {
+                SqlString = sql,
+                Parameters = list_paras,
+                RptTableIndex = this.table_index
+            };
+        }
+
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
-            sql = @"declare @c varchar(1024)
-                    select @c = case @nh_theo when '0' then 'loai_vt' when '1' then 'nh_vt1' else '' end
-                    if (@c = 'nh_vt1') and (cast(@tt_sx1 as tinyint) + cast(@tt_sx2 as tinyint) + cast(@tt_sx3 as tinyint) <> 0) begin
-                      select @c = @tt_sx1 + ',' + @tt_sx2 + ',' + @tt_sx3
-                      select @c = replace(replace(replace(@c, '1', 'nh_vt1'), '2', 'nh_vt2'), '3', 'nh_vt3')
-                      select @c = replace(replace(replace(@c, '0,', ''), ',0', ''), '0', '')
-                    end
+            // lấy cửa hàng mặc định đăng nhập
+            string ma_cuahang = Startup.Shop;
+            int user_id = Startup.UserId;
+            int admin = Startup.Admin;
+            string ma_nvbh = "";
+            string ma_dvcs = Startup.Unit;
 
-                    select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, cast(@in_sl as tinyint) as in_sl,
-                          convert(varchar, @tu_ngay, 103) as tu_ngay, convert(varchar, @den_ngay, 103) as den_ngay
-                    exec rs_rptStockSummary @tu_ngay, @den_ngay, @ma_cuahang, @ma_kho, @ma_vt, @ma_dvcs, @loai_vt, @nh_vt1, @nh_vt2, @nh_vt3, @tinh_ps, @c, 'ma_vt', @in_theo, @loai_du_lieu, @language, @userID, @admin
-            ";
+            sql = @"select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, 1 as in_sl,
+      convert(varchar, @tu_ngay, 103) as tu_ngay, convert(varchar, @den_ngay, 103) as den_ngay
+exec rs_rptStockSummary @tu_ngay, @den_ngay, @ma_cuahang, @ma_kho, @ma_vt, @ma_dvcs, '', @nh_vt1, @nh_vt2, @nh_vt3, 1, '', 'ma_vt', '3', 2, 'v', @user_id, @admin";
+
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -65,16 +81,16 @@ namespace Report.RptStockSummary
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_kho",
+                ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_kho
+                SqlValue = ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_cuahang",
+                ParameterName = "@ma_kho",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_cuahang == null ? Startup.Shop : obj_param.ma_cuahang
-            });
+                SqlValue = obj_param.ma_kho
+            });           
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_vt",
@@ -85,13 +101,7 @@ namespace Report.RptStockSummary
             {
                 ParameterName = "@ma_dvcs",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_dvcs
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@loai_vt",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.loai_vt
+                SqlValue = ma_dvcs
             });
             list_paras.Add(new SqlParameter
             {
@@ -113,69 +123,15 @@ namespace Report.RptStockSummary
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@tt_sx1",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.tt_sx1
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@tt_sx2",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.tt_sx2
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@tt_sx3",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.tt_sx3
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@tinh_ps",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.tinh_ps
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@nh_theo",
-                SqlDbType = SqlDbType.NVarChar,
-                SqlValue = obj_param.group
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@in_theo",
-                SqlDbType = SqlDbType.NVarChar,
-                SqlValue = obj_param.order
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@loai_du_lieu",
+                ParameterName = "@user_id",
                 SqlDbType = SqlDbType.Int,
-                SqlValue = obj_param.dataType
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@language",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.language
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@userID",
-                SqlDbType = SqlDbType.Int,
-                SqlValue = obj_param.userId
+                SqlValue = user_id
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = obj_param.admin
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@in_sl",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.in_sl
             });
             return list_paras;
         }

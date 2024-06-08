@@ -77,5 +77,9 @@ namespace Voucher.SVTran_DV1
         public decimal gia_nt { get; set; }
         public string ma_dv { get; set; }
         public bool vt_ton_kho { get; set; }
+
+        public decimal gia_vat { get; set; }
+
+        public decimal gia_vat_nt { get; set; }
     }
 }

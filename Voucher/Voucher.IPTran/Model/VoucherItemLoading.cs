@@ -12,5 +12,9 @@ namespace Voucher.IPTran.Model
         public string ten_khox { get; set; }
         public string ten_cuahang { get; set; }
         public string ten_cuahang_x { get; set; }
+
+        public DateTime? ngay_lct { get; set; }
+
+        public DateTime ngay_ht { get; set; }
     }
 }

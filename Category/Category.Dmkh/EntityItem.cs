@@ -40,5 +40,11 @@ namespace Category.Dmkh
         public string ngan_hang { get; set; }
         public string status { get; set; } = "1";
 
+        //Mã giao dịch của khách hàng
+        public string ma_td2 { get; set; }
+
+        //Tên giao dịch của khách hàng
+        public string ten_cty { get; set; }
+
     }
 }

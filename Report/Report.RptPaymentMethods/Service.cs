@@ -1,4 +1,5 @@
 ﻿using Genbyte.Component.Report;
+using Genbyte.Component.Report.Model;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -10,7 +11,7 @@ using System.Reflection.Metadata;
 
 namespace Report.RptPaymentMethodsDetail
 {
-    public class Service : IComponentService
+    public class Service : IReportService
     {
         public IMemoryCache MemoryCache { get; set; }
 
@@ -18,7 +19,8 @@ namespace Report.RptPaymentMethodsDetail
 
         public string controller { get; set; } = "rptPaymentMethods";
 
-        private const int M_TABLE_VIEW_INDEX = 1;
+        // Bảng hiển thị lên báo cáo.
+        public readonly int table_index = 0;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
         {
@@ -27,7 +29,7 @@ namespace Report.RptPaymentMethodsDetail
 
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, M_TABLE_VIEW_INDEX);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
             return raw_model;
         }
 
@@ -39,6 +41,19 @@ namespace Report.RptPaymentMethodsDetail
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
             CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
             return raw_model;
+        }
+
+        public Query InitExport(string controller, Dictionary<string, object> param)
+        {
+            string sql = "";
+            ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
+            List<SqlParameter> list_paras = init(obj_param, out sql);
+            return new Query()
+            {
+                SqlString = sql,
+                Parameters = list_paras,
+                RptTableIndex = this.table_index
+            };
         }
 
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
