@@ -14,35 +14,37 @@ using Genbyte.Sys.Common.Models;
 using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
-using Voucher.IPTran.Model;
+using System.Text.RegularExpressions;
+using Voucher.IRTran_PNW.Models;
 using Genbyte.Component.Voucher.Model;
 
-namespace Voucher.IPTran
+namespace Voucher.IRTran_PNW
 {
     public class Service : IVoucherService
     {
         //Mã chứng từ
-        public string VoucherCode { get; } = "PNF";
+        public string VoucherCode { get; } = "PNW";
 
         //Bảng gốc dữ liệu không phân kỳ
-        public string MasterTable { get; } = "c575$000000";
+        public string MasterTable { get; } = "c573$000000";
 
         //Bảng chính chứa dữ liệu phân kỳ
-        public string PrimeTable { get; } = "m575$";
+        public string PrimeTable { get; } = "m573$";
 
         //Bảng lưu thông tin tìm kiếm
-        public string InquiryTable { get; } = "i575$";
+        public string InquiryTable { get; } = "i573$";
 
         //Bảng lưu dữ liệu chi tiết của chứng từ
-        public string DetailTable { get; } = "d575$";
-        private const string _DETAIL_PARA = "d575";
+        public string DetailTable { get; } = "d573$";
+        private const string _DETAIL_PARA = "d573";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
-        public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca,ma_cuahang_x,ma_kho,ma_khox;#10$,#20$,#30$,#40$,#50$,#60$,#65$; , , , , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d575,d575,d575";
+        public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d573,d573,d573";
+
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_cuahang) as ma_cuahang, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', 'ma_cuahang = ''" + Startup.Shop + "'''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, ''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -56,13 +58,14 @@ namespace Voucher.IPTran
 
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
+
         public Service()
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
-            VoucherRight.AllowCreate = false;
+            VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
-            VoucherRight.AllowDelete = false;
+            VoucherRight.AllowDelete = true;
 
         }
 
@@ -83,6 +86,61 @@ namespace Voucher.IPTran
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
 
+
+            //Check tồn  trạng thái chứng từ thuộc danh sách trạng thái được phép thêm
+            string sql = @"DECLARE @check TABLE (
+	            is_success BIT,
+	            message VARCHAR(100)
+            )
+            DECLARE @status_older CHAR(1)
+            INSERT INTO @check (is_success, message) VALUES (1, '')
+
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_not_exists'
+	            SELECT * FROM @check
+	            RETURN
+            END
+
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR right_yn = 1) AND ma_ct = @vc_code AND status = @vc_status) BEGIN
+	            UPDATE @check SET is_success = 0, message = 'status_cannot_create'
+	            SELECT * FROM @check
+	            RETURN
+            END
+
+            SELECT is_success, message FROM @check";
+            CoreService service = new CoreService();
+            List<SqlParameter> paras = new List<SqlParameter>();
+            #region add parameters
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_id",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.stt_rec.Replace("'", "''")
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_code",
+                SqlDbType = SqlDbType.Char,
+                Value = this.VoucherCode
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_status",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.status.Replace("'", "''")
+            });
+            #endregion
+            CheckResult check_result = service.ExecSql2List<CheckResult>(sql, paras).FirstOrDefault()!;
+            if (!check_result.is_success)
+            {
+                result_model.success = false;
+                result_model.message = check_result.message;
+                return result_model;
+            }
+
+
+
+
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
             {
                 vc_item.ma_nt = "VND";
@@ -91,9 +149,15 @@ namespace Voucher.IPTran
 
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
+            vc_item.ngay_lct = DateTime.Today;
+            vc_item.ma_gd = "1";
+            vc_item.loai_ct = "1";
+            vc_item.t_tien = vc_item.t_tien_nt;
 
+            vc_item.ma_cuahang = Startup.Shop;
+            vc_item.ma_ca = Startup.Shift;
             //convert dữ liệu chi tiết chứng từ
-            // id = 1 ==> type: IPDetail
+            // id = 1 ==> type: PRDetail
             int index_value = 1;
             if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
             {
@@ -102,25 +166,26 @@ namespace Voucher.IPTran
 
                 if (item_model != null && item_detail != null)
                 {
-                    List<IPDetail>? detail_list = JsonSerializer.Deserialize<List<IPDetail>>((JsonElement)item_model.Data);
+                    List<PNWDetail>? detail_list = JsonSerializer.Deserialize<List<PNWDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
                         detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
+                        detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
+
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
-                    item_detail.Detail_Type = typeof(IPDetail).Name;
+                    item_detail.Detail_Type = typeof(PNWDetail).Name;
                 }
             }
-
             result_model = checkImeiInsert(vc_item);
             if (!result_model.success)
             {
                 return result_model;
             }
-
             result_model.result = vc_item;
             return result_model;
         }
@@ -171,9 +236,11 @@ namespace Voucher.IPTran
             //insert prime
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
+            string insert_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 1);
             query += "\n\n";
-            query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_nt, ty_gia, t_so_luong, t_tien2, t_tien_nt2, t_tt, t_tt_nt, ma_thue, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2) ";
-            query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt2, @t_tien_nt2, @t_tt_nt, @t_tt_nt, @ma_thue, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate() ";
+            //query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_kh, ma_nt, ty_gia, t_so_luong, t_tien2, t_tien_nt2, t_tt, t_tt_nt, ma_thue, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2, ma_nvbh, ma_nvvc) ";
+            //query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_kh, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt2, @t_tien_nt2, @t_tt_nt, @t_tt_nt, @ma_thue, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate(), @ma_nvbh, @ma_nvvc ";
+            query += $"{insert_prime_table_query}";
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
@@ -188,15 +255,17 @@ namespace Voucher.IPTran
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_kho, ma_khox, so_luong, gia_nt, gia_nt2, tien_nt, tien_nt2) select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, '@{vc_item.ma_kho}', '@{vc_item.ma_khox}', so_luong, gia_nt2, gia_nt2, tien_nt2, tien_nt2 from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn from @{_DETAIL_PARA}";
             }
+
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query insert vào bảng prime và detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện thêm mới
             vc_item.stt_rec = stt_rec;
@@ -218,7 +287,48 @@ namespace Voucher.IPTran
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
+            List<ImeiItem> list_imei = new List<ImeiItem>();
+            // id = 1 ==> type: PVDetail
+            int index_value = 1;
+            if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
 
+                if (item_detail != null)
+                {
+                    List<PNWDetail> detail_list = item_detail.Data.Cast<PNWDetail>().ToList();
+                    if (detail_list != null && detail_list.Count > 0)
+                    {
+                        foreach (var item in detail_list)
+                        {
+                            List<string> imei = item.ma_imei.Split(',').ToList();
+                            foreach (var imei_item in imei)
+                            {
+                                list_imei.Add(new ImeiItem
+                                {
+                                    ma_imei = imei_item.Trim(),
+                                    ma_vt = item.ma_vt,
+                                    ma_kho = item.ma_kho,
+                                    gia_nt0 = item.gia_nt,
+                                    ghi_chu = vc_item.dien_giai
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            if (vc_item.status == "0")
+            {
+                string json = JsonSerializer.Serialize(list_imei);
+                //create query insert IMEI
+                query = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
+                service.ExecuteNonQuery(query);
+            }
+            if (vc_item.status == "2")
+            {
+                query = $"EXEC Genbyte$IMEI$PNW$Update '{stt_rec}'";
+                service.ExecuteNonQuery(query);
+            }
             model.success = true;
             model.message = "create_voucher_success";
             model.result = vc_item;
@@ -250,8 +360,10 @@ namespace Voucher.IPTran
                 vc_item.ty_gia = 1;
             }
 
+            vc_item.t_tien = vc_item.t_tien_nt;
+
             //convert dữ liệu chi tiết chứng từ
-            // id = 1 ==> type: IPDetail
+            // id = 1 ==> type: PRDetail
             int index_value = 1;
             // Lấy danh sách tất cả các imei
             List<string> imeis = new List<string>();
@@ -262,11 +374,12 @@ namespace Voucher.IPTran
 
                 if (item_model != null && item_detail != null)
                 {
-                    List<IPDetail>? detail_list = JsonSerializer.Deserialize<List<IPDetail>>((JsonElement)item_model.Data);
+                    List<PNWDetail>? detail_list = JsonSerializer.Deserialize<List<PNWDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         detail_list.ForEach((item) =>
                         {
+                            item.tien = item.tien_nt;
                             if (item.ma_imei != null && item.ma_imei != "")
                             {
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
@@ -275,36 +388,42 @@ namespace Voucher.IPTran
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
-                    item_detail.Detail_Type = typeof(IPDetail).Name;
+                    item_detail.Detail_Type = typeof(PNWDetail).Name;
                 }
             }
 
             //Check tồn tại chứng từ & trạng thái chứng từ thuộc danh sách trạng thái được phép sửa
             string sql = @"DECLARE @check TABLE (
-	is_success BIT,
-	message VARCHAR(100)
-)
-DECLARE @status_older CHAR(1)
-INSERT INTO @check (is_success, message) VALUES (1, '')
-SELECT @status_older = (SELECT status FROM " + this.MasterTable + @" WHERE stt_rec = @vc_id)
-IF @status_older is NULL
-BEGIN
-	UPDATE @check SET is_success = 0, message = 'voucher_not_exists'
-	SELECT * FROM @check
-	RETURN
-END
+	            is_success BIT,
+	            message VARCHAR(100)
+            )
+            DECLARE @status_older CHAR(1)
+            INSERT INTO @check (is_success, message) VALUES (1, '')
+            SELECT @status_older = (SELECT status FROM " + this.MasterTable + @" WHERE stt_rec = @vc_id)
+            IF @status_older is NULL
+            BEGIN
+	            UPDATE @check SET is_success = 0, message = 'voucher_not_exists'
+	            SELECT * FROM @check
+	            RETURN
+            END
 
-IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
-    UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
-	SELECT * FROM @check
-	RETURN
-END
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
+	            SELECT * FROM @check
+	            RETURN
+            END
 
-IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
-	UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
-	SELECT * FROM @check
-	RETURN
-END
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR right_yn = 1) AND ma_ct = @vc_code AND status = @vc_status) BEGIN
+	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
+	             SELECT * FROM @check
+	             RETURN
+            END
+
+            IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
+	            UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
+            END
 
 SELECT is_success, message FROM @check";
             CoreService service = new CoreService();
@@ -350,8 +469,8 @@ SELECT is_success, message FROM @check";
             }
 
             /**
-              * Lấy thông tin chứng từ cũ trước khi thực hiện update
-              */
+             * Lấy thông tin chứng từ cũ trước khi thực hiện update
+             */
             //sql = "EXEC Genbyte$System$GetVoucherPrimeInfo @vc_id, @vc_code";
             //paras = new List<SqlParameter>();
             //#region add parameters
@@ -384,13 +503,14 @@ SELECT is_success, message FROM @check";
 
                 foreach (VoucherDetail item in vc_item.details)
                 {
+                    if (item.Data == null || item.Data.Count == 0)
+                        continue;
                     item.Data.ForEach(x =>
                     {
                         x.stt_rec = vc_item.stt_rec;
                         x.ma_ct = old_voucher.ma_ct;
                         x.ma_cuahang = old_voucher.ma_cuahang;
                         x.ngay_ct = old_voucher.ngay_ct;
-
                         x.ma_ca = Startup.Shift;
                     });
                 }
@@ -438,11 +558,13 @@ SELECT is_success, message FROM @check";
             //update prime
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
+            string update_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 2);
             query += "\n\n";
-            query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_nt = @ma_nt," +
-                $" ty_gia = @ty_gia, ma_kho = @ma_kho, ma_khox = @ma_khox, t_so_luong = @t_so_luong, t_tien = @t_tien, t_tien_nt = @t_tien_nt," +
-                $" ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate()";
-            query += $" where stt_rec = @stt_rec";
+            //query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_nt = @ma_nt," +
+            //    $" ty_gia = @ty_gia, t_so_luong = @t_so_luong, ma_thue = @ma_thue, t_thue = @t_thue_nt, t_thue_nt = @t_thue_nt, t_tien2 = @t_tien_nt2, t_tien_nt2 = @t_tien_nt2," +
+            //    $" t_tt_nt = @t_tt_nt, t_tt = @t_tt_nt, ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate(), ma_nvbh = @ma_nvbh, ma_nvvc = @ma_nvvc ";
+            //query += $" where stt_rec = @stt_rec";
+            query += $"{update_prime_table_query}";
 
             //xóa và insert lại các bảng chi tiết
             DetailQuery? detail_query = null;
@@ -460,76 +582,9 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia, tien, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, stt_rec_yc, stt_rec0yc) ";
-                query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_imei_xuat, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, stt_rec_yc, stt_rec0yc from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn from @{_DETAIL_PARA}";
             }
             query += "\n\n";
-
-            //2024-06-04: begin
-            //cập nhật ngày chứng từ tự động lấy mặc định là ngày hệ thống
-            DateTime new_ngay_ct = DateTime.Today;
-            string new_partition = new_ngay_ct.ToString("yyyyMM");
-            string new_prime_table = this.PrimeTable.Trim() + new_partition;
-            string new_detail_table = this.DetailTable.Trim() + new_partition;
-            string new_inquiry_table = this.InquiryTable.Trim() + new_partition;
-
-            string old_prime_table = prime_table;
-            string old_detail_table = detail_table;
-            string old_inquiry_table = this.InquiryTable.Trim() + expression;
-
-            query += "\n";
-            query += $"declare @today DATETIME = '{new_ngay_ct.ToString("yyyy-MM-dd")}' \n";
-            query += $"declare @old_partition char(6) = '{expression}', @new_partition char(6) = '{new_partition}' \n";
-            query += @$"if exists(select 1 from {this.MasterTable} where status <> '0' and ngay_ct <> @today) begin
-	SET XACT_ABORT ON
-	BEGIN TRAN
-	BEGIN TRY
-		if @old_partition <> @new_partition begin
-			select * into #tmp_prime from {old_prime_table} where stt_rec = @stt_rec
-			select * into #tmp_detail from {old_detail_table} where stt_rec = @stt_rec
-
-			update #tmp_prime set ngay_ct = @today where stt_rec = @stt_rec
-			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
-
-			delete from {this.MasterTable} where stt_rec = @stt_rec
-			delete from {old_prime_table} where stt_rec = @stt_rec
-			delete from {old_detail_table} where stt_rec = @stt_rec
-			delete from {old_inquiry_table} where stt_rec = @stt_rec
-
-			insert into {new_prime_table} select * from #tmp_prime
-			insert into {new_detail_table} select * from #tmp_detail
-
-			drop table #tmp_prime
-			drop table #tmp_detail
-		end
-		else begin
-			update {this.MasterTable} set ngay_ct = @today where stt_rec = @stt_rec
-			update {old_prime_table} set ngay_ct = @today where stt_rec = @stt_rec
-			update {old_detail_table} set ngay_ct = @today where stt_rec = @stt_rec
-			update {old_inquiry_table} set ngay_ct = @today where stt_rec = @stt_rec
-		end
-		COMMIT
-	END TRY
-	BEGIN CATCH
-	   ROLLBACK
-	   DECLARE @ErrorMessage VARCHAR(2000)
-	   SELECT @ErrorMessage = ERROR_MESSAGE()
-	   INSERT INTO log_syncerror (name, cr_date, message) VALUES('IPTran', GETDATE(), @ErrorMessage)
-	   RAISERROR(@ErrorMessage, 16, 1)
-	END CATCH
-	SET XACT_ABORT OFF
-end";
-            query += "\n\n";
-
-            if(expression != new_partition)
-            {
-                //set lại tên bảng theo phân kỳ mới
-                prime_table = new_prime_table;
-                detail_table = new_detail_table;
-                expression = new_partition;
-            }
-            //2024-06-04: end
-
             query += "select @stt_rec as stt_rec";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
@@ -560,7 +615,6 @@ end";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
 
-            //Update dat_hang_yn = 1 đồng thời cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
             string queryIMEI = "";
             if (list_imei_delete.Count > 0)
             {
@@ -568,8 +622,6 @@ end";
                 queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 0, '{json_del}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
-
-
             List<ImeiItem> list_imei = new List<ImeiItem>();
             // id = 1 ==> type: PVDetail
             int index_value = 1;
@@ -579,7 +631,7 @@ end";
 
                 if (item_detail != null)
                 {
-                    List<IPDetail> detail_list = item_detail.Data.Cast<IPDetail>().ToList();
+                    List<PNWDetail> detail_list = item_detail.Data.Cast<PNWDetail>().ToList();
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         foreach (var item in detail_list)
@@ -591,7 +643,7 @@ end";
                                 {
                                     ma_imei = imei_item.Trim(),
                                     ma_vt = item.ma_vt,
-                                    ma_kho = vc_item.ma_kho,
+                                    ma_kho = item.ma_kho,
                                     gia_nt0 = item.gia_nt,
                                     ghi_chu = vc_item.dien_giai
                                 });
@@ -600,13 +652,6 @@ end";
                     }
                 }
             }
-
-            list_imei.ForEach(item =>
-            {
-                item.ma_vt = item.ma_vt.Trim();
-                item.ma_kho = item.ma_kho.Trim();
-            });
-
             if (vc_item.status == "0")
             {
                 string json = JsonSerializer.Serialize(list_imei);
@@ -614,15 +659,10 @@ end";
                 queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
-            //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
             if (vc_item.status == "2")
             {
-                //string json = JsonSerializer.Serialize(list_imei);
-                //create query insert IMEI
-                //queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
-
-                queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
-                service.ExecuteNonQuery(queryIMEI);
+                query = $"EXEC Genbyte$IMEI$PNW$Update '{stt_rec}'";
+                service.ExecuteNonQuery(query);
             }
 
             model.success = true;
@@ -640,11 +680,9 @@ end";
             CommonObjectModel model = new CommonObjectModel()
             {
                 success = false,
-                message = "voucher_cannot_delete",
+                message = "",
                 result = null
             };
-
-            return model;
             CoreService service = new CoreService();
 
             //check sql injection
@@ -694,7 +732,6 @@ end";
         /** 
          * Load top bản ghi của chứng từ (không phân trang) 
          */
-        #region TopLoading
         public CommonObjectModel TopLoading(List<Dictionary<string, object>> data)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -706,12 +743,10 @@ end";
 
             return model;
         }
-        #endregion
 
         /** 
          * Lấy dữ liệu của chứng từ theo khóa chính 
          */
-        #region GetById
         public CommonObjectModel GetById(string voucherId)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -731,8 +766,8 @@ end";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_cuahang, c.ten_cuahang as ten_cuahang_x, d.ten_kho, e.ten_kho as ten_khox from {1}' + @exp + ' a left join dmcuahang b on a.ma_cuahang = b.ma_cuahang left join dmcuahang c on a.ma_cuahang_x = c.ma_cuahang left join dmkho d on a.ma_kho = d.ma_kho left join dmkho e on a.ma_khox = e.ma_kho where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_vt from {2}' + @exp + ' a left join dmvt b on a.ma_vt = b.ma_vt where a.stt_rec = @stt_rec'
+	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.ten_kh as ten_ongba from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join dmkh c on a.ong_ba = c.ma_kh  where stt_rec = @stt_rec '
+	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable);
@@ -749,11 +784,7 @@ END";
             if (ds != null && ds.Tables.Count >= 2)
             {
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
-                IList<IPDetail> pr_detail = ds.Tables[1].ToList<IPDetail>();
-
-                //set ngày lập chứng từ -> ngày ct phiếu xuất
-                //ngày hệ thống = ngày hiện tại của server
-                vc_item.ngay_ht = DateTime.Today;
+                IList<PNWDetail> pr_detail = ds.Tables[1].ToList<PNWDetail>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -764,18 +795,15 @@ END";
                     Name = _DETAIL_PARA,
                     Data = pr_detail
                 });
-
                 model.result = invoice_model;
             }
 
             return model;
         }
-        #endregion
 
         /** 
          * tìm kiếm chứng từ (có xử lý phân trang) 
          */
-        #region Finding
         public CommonObjectModel Finding(List<Dictionary<string, object>> data)
         {
             EntityCollection<VoucherFindingModel> entities = new EntityCollection<VoucherFindingModel>()
@@ -818,13 +846,11 @@ END";
 
             return model;
         }
-        #endregion
 
         /** 
         * Lấy danh sách dữ liệu của danh mục có xử lý phân trang
         * entities: input object có type là EntityCollection<T>
         */
-        #region GetByPaging
         public CommonObjectModel GetByPaging(object entities, string order_by = "", int page_index = 1, int page_size = 0)
         {
             //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
@@ -838,18 +864,13 @@ END";
             };
             return result;
         }
-        #endregion
 
         /** 
        * Lấy dữ liệu khác của từng mã
        * entities: input object có type là EntityCollection<T>
        */
-        #region GetOtherData
-        public CommonObjectModel GetOtherData(string so_ct, string ma_cuahang)
+        public CommonObjectModel GetOtherData(string ma_ct, string ma_cuahang)
         {
-            //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
-            //code here...
-
             CommonObjectModel result = new CommonObjectModel()
             {
                 message = "",
@@ -858,17 +879,46 @@ END";
             };
             return result;
         }
-        #endregion
 
-        #region GetImeis
         public List<ImeiState> GetImeis(CommonObjectModel model)
         {
+            VoucherItem vc_item = (VoucherItem)model.result;
+            var listImei = new List<string>();
+            var ma_cuahang = "";
+            if (vc_item.details.Any(x => x.Id == 1))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var PRDetail = item as PNWDetail;
+                        if (PRDetail != null && !string.IsNullOrEmpty(PRDetail.ma_imei))
+                        {
+                            listImei.Add(PRDetail.ma_imei.Trim());
+                            ma_cuahang = PRDetail.ma_cuahang;
+                        }
+                    }
+
+                }
+            }
+            CoreService service = new CoreService();
+            //call imei
+            var query = $"exec Genbyte$IMEI$CheckStateBeforeSave '{string.Join(',', listImei)}', '{ma_cuahang}', '1' \n";
+            var dataSet = service.ExecSql2DataSet(query);
+            if (dataSet.Tables.Count > 0)
+            {
+                if (dataSet.Tables[0].Rows.Count > 0)
+                {
+                    var listImeiInvalid = dataSet.Tables[0].ToList<ImeiState>().Where(a => a.state == false).ToList();
+                    return listImeiInvalid;
+                }
+            }
+
             return new List<ImeiState>();
         }
         #endregion
-
-        #endregion
-
         CommonObjectModel checkImeiInsert(VoucherItem vc_item)
         {
             var listImei = new List<string>();
@@ -881,10 +931,10 @@ END";
                 {
                     foreach (var item in item_detail.Data)
                     {
-                        var svDetail = item as IPDetail;
+                        var svDetail = item as PNWDetail;
                         if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
                         {
-                            listImei.Add(svDetail.ma_imei.Trim());
+                            if(!svDetail.doi_bh_yn) listImei.Add(svDetail.ma_imei.Trim());
                             ma_cuahang = svDetail.ma_cuahang;
                         }
                     }
@@ -927,7 +977,6 @@ END";
             }
             return result_model;
         }
-
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
             var listImei = new List<string>();
@@ -940,7 +989,7 @@ END";
                 {
                     foreach (var item in item_detail.Data)
                     {
-                        var svDetail = item as IPDetail;
+                        var svDetail = item as PNWDetail;
                         if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
                         {
                             listImei.Add(svDetail.ma_imei.Trim());
@@ -960,9 +1009,9 @@ END";
                 if (item_detail != null)
                 {
 
-                    foreach (var item in item_detail.Data as List<IPDetail>)
+                    foreach (var item in item_detail.Data as List<PNWDetail>)
                     {
-                        var svDetail = item as IPDetail;
+                        var svDetail = item as PNWDetail;
                         if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
                         {
                             var lst_imei = svDetail.ma_imei.Split(",").ToList();
@@ -1019,7 +1068,5 @@ END";
             }
             return result_model;
         }
-
     }
 }
-

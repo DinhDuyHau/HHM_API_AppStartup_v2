@@ -64,9 +64,24 @@ string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
     // In-Memory Caching
     builder.Services.AddMemoryCache();
 
+    //for session 
+    var sessionSettingConfig = builder.Configuration.GetSection("SessionSetting");
+    services.Configure<SessionSetting>(sessionSettingConfig);
+    SessionSetting sesion_settings = sessionSettingConfig.Get<SessionSetting>();
+    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddSession(options =>
+    {
+        options.Cookie.Name = sesion_settings.Name;
+        options.IdleTimeout = new TimeSpan(0, sesion_settings.ExpireMinutes, 0);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+    });
+
     // configure DI for application services
     services.AddScoped<ITokenUtils, JwtUtils>();
     services.AddScoped<IUserService, UserService>();
+
+    builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 }
 
@@ -87,6 +102,8 @@ app.UseSwaggerUI(c =>
 
 app.UseAuthorization();
 
+app.UseSession();
+
 // global cors policy
 //app.UseCors(x => x
 //    .AllowAnyOrigin()
@@ -96,6 +113,8 @@ app.UseCors(MyAllowSpecificOrigins);
 
 // custom jwt auth middleware
 app.UseMiddleware<JwtAuthentication>();
+
+Startup.Services = app.Services;
 
 app.MapControllers();
 

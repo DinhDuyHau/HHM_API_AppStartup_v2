@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<BaseOutputPath>.\..\..\..\RUN-API</BaseOutputPath>
+		<BaseOutputPath>D:\GEN-E\HHM_CORE\Inv_Shop\API\RUN-API</BaseOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -13,14 +13,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Component\Genbyte.Component.Voucher\Genbyte.Component.Voucher.csproj">
-	    <Private>False</Private>
-	  </ProjectReference>
-	</ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="Genbyte.Base.CoreLib">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Genbyte.Component.Voucher">
+			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Sys.AppAuth">
@@ -32,8 +30,8 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Imei">
-		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Imei.dll</HintPath>
-		  <Private>False</Private>
+			<HintPath>..\..\..\RUN-API\Debug\net6.0\Imei.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
 

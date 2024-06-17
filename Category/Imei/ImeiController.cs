@@ -266,10 +266,15 @@ namespace Imei
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 imeis.ForEach(x => x = HttpUtility.UrlDecode(x));
+
+                //2024-06-15: tạm bỏ qua đoạn code dưới để cho phép imei có chứa ký tự đặc biệt
+                /*
                 for (int i = 0; i < imeis.Count; i++)
                 {
                     imeis[i] = HttpUtility.UrlDecode(imeis[i]);
                 }
+                */
+
                 //lấy trạng thái & thông tin imei
                 model.result = _service.GetStateAndItemOfImeis(imeis);
                 if (model.result != null)
@@ -431,5 +436,32 @@ namespace Imei
             }
         }
         #endregion
+
+        [HttpGet("warranty-out-info/")]
+        #region GetImeiSoldInfo
+        public IActionResult GetWarrantyOutInfo(string ma_imei, string ma_cuahang)
+        {
+            try
+            {
+                Service _service = new Service(_configuration);
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
+                //lấy trạng thái & thông tin imei
+                CommonObjectModel model = _service.GetImeiWarrantyOutInfo(ma_imei, ma_cuahang);
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/warranty-out-info", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
     }
 }

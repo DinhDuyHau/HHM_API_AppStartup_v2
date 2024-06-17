@@ -525,5 +525,41 @@ namespace Imei
             }
             return model;
         }
+
+        public CommonObjectModel GetImeiWarrantyOutInfo(string imeiId, string ma_cuahang)
+        {
+            CommonObjectModel model = new CommonObjectModel()
+            {
+                success = false,
+                message = "",
+                result = null
+            };
+            CoreService core_service = new CoreService();
+
+            string sql = @"exec Genbyte$Imei$CheckWarrantyOut @ma_imei, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_imei",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Value = imeiId.Trim()
+                },new SqlParameter()
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Value = ma_cuahang.Trim()
+                }
+            });
+            DataSet ds = core_service.ExecSql2DataSet(sql, paras);
+
+            if (ds != null && ds.Tables.Count >= 1 && ds.Tables[0].Rows.Count > 0)
+            {               
+                model.result = ds.Tables[0].ToList<ImeiWarrantyOut>();
+                model.success = true;
+            }
+            return model;
+        }
+
     }
 }

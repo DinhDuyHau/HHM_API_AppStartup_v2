@@ -237,9 +237,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptCustomerBalanceOf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptDCCustomers", "..\Report\Report.RptDCCustomers\Report.RptDCCustomers.csproj", "{12E1A996-7166-4A50-8AE1-1916A396D231}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genbyte.Sys.ExcelSAXExport", "..\..\System\Genbyte.Sys.ExcelSAXExport\Genbyte.Sys.ExcelSAXExport.csproj", "{84297DDB-BA74-43AB-88A4-7CCB602C3261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Sys.ExcelSAXExport", "..\..\System\Genbyte.Sys.ExcelSAXExport\Genbyte.Sys.ExcelSAXExport.csproj", "{84297DDB-BA74-43AB-88A4-7CCB602C3261}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptRetailPrice", "..\Report\Report.RptRetailPrice\Report.RptRetailPrice.csproj", "{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.ISTran_PXW", "..\Voucher\Voucher.ISTran_PXW\Voucher.ISTran_PXW.csproj", "{117C66DA-F10D-4BB8-B280-DAF7CC1165E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.IRTran_PNW", "..\Voucher\Voucher.IRTran_PNW\Voucher.IRTran_PNW.csproj", "{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmtt", "..\Category\Category.Dmtt\Category.Dmtt.csproj", "{10DC31C5-3ED8-4493-B3D3-5777103E52BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -711,6 +717,18 @@ Global
 		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{117C66DA-F10D-4BB8-B280-DAF7CC1165E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{117C66DA-F10D-4BB8-B280-DAF7CC1165E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{117C66DA-F10D-4BB8-B280-DAF7CC1165E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{117C66DA-F10D-4BB8-B280-DAF7CC1165E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -821,6 +839,9 @@ Global
 		{1E14B75F-AB0F-4E57-A60D-019A403DD865} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{12E1A996-7166-4A50-8AE1-1916A396D231} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{3BF1B1EA-D369-481D-B8F3-9095C6D1BB59} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{117C66DA-F10D-4BB8-B280-DAF7CC1165E1} = {5B528E59-011A-4B15-B331-273D9C39BC11}
+		{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF} = {5B528E59-011A-4B15-B331-273D9C39BC11}
+		{10DC31C5-3ED8-4493-B3D3-5777103E52BF} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}
