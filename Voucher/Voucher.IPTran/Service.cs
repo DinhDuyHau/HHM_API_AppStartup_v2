@@ -16,6 +16,7 @@ using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Voucher.IPTran.Model;
 using Genbyte.Component.Voucher.Model;
+using System.Text.RegularExpressions;
 
 namespace Voucher.IPTran
 {
@@ -42,7 +43,7 @@ namespace Voucher.IPTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_cuahang) as ma_cuahang, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', 'ma_cuahang = ''" + Startup.Shop + "'''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading_PNF '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_cuahang) as ma_cuahang, rtrim(ma_kho) as ma_kho,rtrim(ma_khox) as ma_khox,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct, rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khox) as ma_khox, rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', 'ma_cuahang = ''" + Startup.Shop + "'''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -778,35 +779,46 @@ END";
         #region Finding
         public CommonObjectModel Finding(List<Dictionary<string, object>> data)
         {
-            EntityCollection<VoucherFindingModel> entities = new EntityCollection<VoucherFindingModel>()
+            //convert
+            FindExtParam param = Converter.DictionaryToFindExtParam(data);
+
+            EntityCollection<Dictionary<string, object>> entities = new EntityCollection<Dictionary<string, object>>()
             {
-                PageCount = 1,
-                PageIndex = 1,
-                PageSize = 50,
-                RecordCount = 1,
-                Items = new List<VoucherFindingModel>()
+                PageCount = 0,
+                PageIndex = param.page_index,
+                PageSize = param.page_size,
+                RecordCount = 0,
+                Items = new List<Dictionary<string, object>>()
             };
 
-            PropertyInfo[] props = typeof(VoucherFindingModel).GetProperties();
-            foreach (Dictionary<string, object> record in data)
+            CoreService core_service = new CoreService();
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_PNF @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @ext_filter, @order_fields";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+                new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
+                new SqlParameter(){ ParameterName = "@ngay_kt", SqlDbType = SqlDbType.DateTime, Value = param.ngay_kt },
+                new SqlParameter(){ ParameterName = "@ma_cuahang", SqlDbType = SqlDbType.VarChar, Value = param.ma_cuahang?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_ct", SqlDbType = SqlDbType.VarChar, Value = param.ma_ct?.Trim() },
+                new SqlParameter(){ ParameterName = "@so_ct_bd", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_bd },
+                new SqlParameter(){ ParameterName = "@so_ct_kt", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_kt },
+                new SqlParameter(){ ParameterName = "@ma_kh", SqlDbType = SqlDbType.VarChar, Value = param.ma_kh?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_kho", SqlDbType = SqlDbType.VarChar, Value = param.ma_kho?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_vt", SqlDbType = SqlDbType.VarChar, Value = param.ma_vt?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_imei", SqlDbType = SqlDbType.VarChar, Value = param.ma_imei?.Trim() },
+                new SqlParameter(){ ParameterName = "@status", SqlDbType = SqlDbType.VarChar, Value = param.status },
+                new SqlParameter(){ ParameterName = "@whereClause", SqlDbType = SqlDbType.NVarChar, Value = param.where_clause },
+                new SqlParameter(){ ParameterName = "@page_index", SqlDbType = SqlDbType.Int, Value = param.page_index },
+                new SqlParameter(){ ParameterName = "@page_size", SqlDbType = SqlDbType.Int, Value = param.page_size },
+                new SqlParameter(){ ParameterName = "@ext_filter", SqlDbType = SqlDbType.NVarChar, Value = param.ext_filter },
+                new SqlParameter(){ ParameterName = "@order_fields", SqlDbType = SqlDbType.NVarChar, Value = "status, so_ct desc, ngay_ct desc, stt_rec desc" },
+            });
+            DataSet dataSet = core_service.ExecSql2DataSet(sql, paras);
+            if (dataSet != null && dataSet.Tables.Count > 1)
             {
-                VoucherFindingModel item = new VoucherFindingModel();
-                foreach (PropertyInfo property in props)
-                {
-                    if (record.ContainsKey(property.Name))
-                    {
-                        Type type = property.PropertyType;
-                        if (type == typeof(int) || type == typeof(int?))
-                            property.SetValue(item, Convert.ToInt32(record[property.Name]));
-                        else if (type == typeof(decimal) || type == typeof(decimal?))
-                            property.SetValue(item, Convert.ToDecimal(record[property.Name]));
-                        else if (type == typeof(DateTime) || type == typeof(DateTime?))
-                            property.SetValue(item, Convert.ToDateTime(record[property.Name]));
-                        else
-                            property.SetValue(item, record[property.Name]);
-                    }
-                }
-                entities.Items.Add(item);
+                entities.PageCount = (int)dataSet.Tables[0].Rows[0]["TotalPage"];
+                entities.RecordCount = (int)dataSet.Tables[0].Rows[0]["TotalRecordCount"];
+                entities.PageSize = (int)dataSet.Tables[0].Rows[0]["PageSize"];
+                entities.Items = Converter.TableToListDictionary(dataSet.Tables[1]);
             }
 
             CommonObjectModel model = new CommonObjectModel()

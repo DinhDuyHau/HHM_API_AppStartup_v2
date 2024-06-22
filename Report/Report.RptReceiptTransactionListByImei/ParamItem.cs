@@ -1,0 +1,17 @@
+﻿using Genbyte.Component.Report.Model;
+
+namespace Report.RptReceiptTransactionListByImei
+{
+    public class ParamItem : ParamItemBase
+    {
+        public DateTime tu_ngay { get; set; }
+        public DateTime den_ngay { get; set; }
+        public string ma_vt { get; set; } = "";
+        public string ma_imei { get; set; } = "";
+        public string ma_kh { get; set; } = "";
+        public string ma_kho { get; set; } = "";
+        public string kho_hang_dc { get; set; } = "";
+        public string loai_du_lieu { get; set; } = "";
+
+    }
+}

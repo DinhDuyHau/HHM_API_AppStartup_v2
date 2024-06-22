@@ -247,6 +247,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.IRTran_PNW", "..\Vo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmtt", "..\Category\Category.Dmtt\Category.Dmtt.csproj", "{10DC31C5-3ED8-4493-B3D3-5777103E52BF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptReceiptTransactionListByImei", "..\Report\Report.RptReceiptTransactionListByImei\Report.RptReceiptTransactionListByImei.csproj", "{83DCC051-2CDF-461C-9341-F761F73B202E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptAccountsReceivableReport", "..\Report\Report.RptAccountsReceivableReport\Report.RptAccountsReceivableReport.csproj", "{6775BAFF-7A6F-48DD-AEF6-36F3513A194D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptAccountsPayableReport", "..\Report\Report.RptAccountsPayableReport\Report.RptAccountsPayableReport.csproj", "{D09487D9-A9F9-47F5-85FA-F18A1E135BA8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptIssueTransactionListByImei", "..\Report\Report.RptIssueTransactionListByImei\Report.RptIssueTransactionListByImei.csproj", "{2BC02583-DBC4-4FAA-AF01-3173298529D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -729,6 +737,22 @@ Global
 		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10DC31C5-3ED8-4493-B3D3-5777103E52BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83DCC051-2CDF-461C-9341-F761F73B202E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83DCC051-2CDF-461C-9341-F761F73B202E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83DCC051-2CDF-461C-9341-F761F73B202E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83DCC051-2CDF-461C-9341-F761F73B202E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6775BAFF-7A6F-48DD-AEF6-36F3513A194D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6775BAFF-7A6F-48DD-AEF6-36F3513A194D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6775BAFF-7A6F-48DD-AEF6-36F3513A194D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6775BAFF-7A6F-48DD-AEF6-36F3513A194D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D09487D9-A9F9-47F5-85FA-F18A1E135BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D09487D9-A9F9-47F5-85FA-F18A1E135BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D09487D9-A9F9-47F5-85FA-F18A1E135BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D09487D9-A9F9-47F5-85FA-F18A1E135BA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BC02583-DBC4-4FAA-AF01-3173298529D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BC02583-DBC4-4FAA-AF01-3173298529D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BC02583-DBC4-4FAA-AF01-3173298529D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BC02583-DBC4-4FAA-AF01-3173298529D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -842,6 +866,10 @@ Global
 		{117C66DA-F10D-4BB8-B280-DAF7CC1165E1} = {5B528E59-011A-4B15-B331-273D9C39BC11}
 		{E689B87C-42EF-4F8C-8A16-36F3B76E6BAF} = {5B528E59-011A-4B15-B331-273D9C39BC11}
 		{10DC31C5-3ED8-4493-B3D3-5777103E52BF} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
+		{83DCC051-2CDF-461C-9341-F761F73B202E} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{6775BAFF-7A6F-48DD-AEF6-36F3513A194D} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{D09487D9-A9F9-47F5-85FA-F18A1E135BA8} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
+		{2BC02583-DBC4-4FAA-AF01-3173298529D9} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}

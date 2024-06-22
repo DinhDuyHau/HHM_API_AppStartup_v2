@@ -451,12 +451,17 @@ namespace Voucher.SVTran_BHD
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
+            
+            //2024-06-17: tạm bỏ qua check ngày chứng từ trong giai đoạn triển khai
+            /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";
                 return result_model;
             }
+            */
+
             vc_item.ma_ct = this.VoucherCode;
             vc_item.ma_gd = "2";
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
