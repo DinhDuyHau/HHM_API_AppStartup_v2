@@ -29,5 +29,10 @@ namespace Voucher.SVTran_DXA
         public decimal tong_tien { get; set; }
         public string imei_mua { get; set; }
         public bool no_km_yn { get; set; }
+
+        public decimal gia_full_vat { get; set; }
+
+        public decimal gia_full_vat_nt { get; set; }
+
     }
 }

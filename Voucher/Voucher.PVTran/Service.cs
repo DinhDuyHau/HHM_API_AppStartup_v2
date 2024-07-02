@@ -561,8 +561,82 @@ SELECT is_success, message FROM @check";
                 query += $"delete from {tax_table} where stt_rec = @stt_rec \n";
                 query += $"insert into {tax_table} (stt_rec, stt_rec0, ma_dvcs, loai_ct, ma_ct, ngay_lct, ngay_ct, so_ct, ngay_ct0, so_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, so_luong, ty_gia, ma_nt, gia_nt, gia, t_tien_nt, t_tien, ma_thue, thue_suat, t_thue_nt, t_thue, ma_tt, tk_thue_no, tk_du, ma_kho, ma_vv, ma_sp, ma_bp, so_lsx, ghi_chu, nam, ky, line_nbr, status, datetime0, datetime2, user_id0, user_id2, ma_hd, ma_ku, ma_phi, so_dh, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, ma_ca, ma_cuahang, s4, s5, s6, s7, s8, s9, ma_mau_ct) select stt_rec, stt_rec0, ma_dvcs, loai_ct, ma_ct, ngay_lct, ngay_ct, so_ct, ngay_ct0, so_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, so_luong, ty_gia, ma_nt, gia_nt, gia, t_tien_nt, t_tien_nt, ma_thue, thue_suat, t_thue_nt, t_thue_nt, ma_tt, tk_thue_no, tk_du, ma_kho, ma_vv, ma_sp, ma_bp, so_lsx, ghi_chu, nam, ky, line_nbr, status, datetime0, datetime2, user_id0, user_id2, ma_hd, ma_ku, ma_phi, so_dh, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, ma_ca, ma_cuahang, s4, s5, s6, s7, s8, s9, ma_mau_ct from @{_TAX_PARA}";
             }
-
             query += "\n\n";
+
+            //2024-07-01: begin
+            //cập nhật ngày chứng từ tự động lấy mặc định là ngày hệ thống
+            DateTime new_ngay_ct = DateTime.Today;
+            string new_partition = new_ngay_ct.ToString("yyyyMM");
+            string new_prime_table = this.PrimeTable.Trim() + new_partition;
+            string new_detail_table = this.DetailTable.Trim() + new_partition;
+            string new_inquiry_table = this.InquiryTable.Trim() + new_partition;
+            string new_tax_table = this.TaxTable.Trim() + new_partition;
+
+            string old_prime_table = prime_table;
+            string old_detail_table = detail_table;
+            string old_tax_table = tax_table;
+            string old_inquiry_table = this.InquiryTable.Trim() + expression;
+
+            query += "\n";
+            query += $"declare @today DATETIME = '{new_ngay_ct.ToString("yyyy-MM-dd")}' \n";
+            query += $"declare @old_partition char(6) = '{expression}', @new_partition char(6) = '{new_partition}' \n";
+            query += @$"if exists(select 1 from {old_prime_table} where stt_rec = @stt_rec and status <> '0' and ngay_ct <> @today) begin
+	SET XACT_ABORT ON
+	BEGIN TRAN
+	BEGIN TRY
+		if @old_partition <> @new_partition begin
+			select * into #tmp_prime from {old_prime_table} where stt_rec = @stt_rec
+			select * into #tmp_detail from {old_detail_table} where stt_rec = @stt_rec
+			select * into #tmp_tax from {old_tax_table} where stt_rec = @stt_rec
+
+			update #tmp_prime set ngay_ct = @today where stt_rec = @stt_rec
+			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
+			update #tmp_tax set ngay_ct = @today where stt_rec = @stt_rec
+
+			delete from {this.MasterTable} where stt_rec = @stt_rec
+			delete from {old_prime_table} where stt_rec = @stt_rec
+			delete from {old_detail_table} where stt_rec = @stt_rec
+			delete from {old_tax_table} where stt_rec = @stt_rec
+			delete from {old_inquiry_table} where stt_rec = @stt_rec
+
+			insert into {new_prime_table} select * from #tmp_prime
+			insert into {new_detail_table} select * from #tmp_detail
+			insert into {new_tax_table} select * from #tmp_tax
+
+			drop table #tmp_prime
+			drop table #tmp_detail
+			drop table #tmp_tax
+		end
+		else begin
+			update {this.MasterTable} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_prime_table} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_detail_table} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_tax_table} set ngay_ct = @today where stt_rec = @stt_rec
+			update {old_inquiry_table} set ngay_ct = @today where stt_rec = @stt_rec
+		end
+		COMMIT
+	END TRY
+	BEGIN CATCH
+	   ROLLBACK
+	   DECLARE @ErrorMessage VARCHAR(2000)
+	   SELECT @ErrorMessage = ERROR_MESSAGE()
+	   INSERT INTO log_syncerror (name, cr_date, message) VALUES('PVTran', GETDATE(), @ErrorMessage)
+	   RAISERROR(@ErrorMessage, 16, 1)
+	END CATCH
+	SET XACT_ABORT OFF
+end";
+            query += "\n\n";
+
+            if (expression != new_partition)
+            {
+                //set lại tên bảng theo phân kỳ mới
+                prime_table = new_prime_table;
+                detail_table = new_detail_table;
+                tax_table = new_tax_table;
+                expression = new_partition;
+            }
+            //2024-07-01: end
+
             query += "select @stt_rec as stt_rec";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
@@ -753,6 +827,7 @@ SELECT is_success, message FROM @check";
         /** 
          * Load top bản ghi của chứng từ (không phân trang) 
          */
+        #region TopLoading
         public CommonObjectModel TopLoading(List<Dictionary<string, object>> data)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -764,10 +839,12 @@ SELECT is_success, message FROM @check";
 
             return model;
         }
+        #endregion
 
         /** 
          * Lấy dữ liệu của chứng từ theo khóa chính 
          */
+        #region GetById
         public CommonObjectModel GetById(string voucherId)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -809,6 +886,9 @@ END";
                 IList<PVDetail> pr_detail = ds.Tables[1].ToList<PVDetail>();
                 IList<TaxDetail> tax_detail = ds.Tables[2].ToList<TaxDetail>();
 
+                //ngày hệ thống = ngày hiện tại của server
+                vc_item.ngay_ht = DateTime.Today;
+
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();
@@ -830,10 +910,12 @@ END";
 
             return model;
         }
+        #endregion
 
         /** 
          * tìm kiếm chứng từ (có xử lý phân trang) 
          */
+        #region Finding
         public CommonObjectModel Finding(List<Dictionary<string, object>> data)
         {
             EntityCollection<VoucherFindingModel> entities = new EntityCollection<VoucherFindingModel>()
@@ -876,11 +958,13 @@ END";
 
             return model;
         }
+        #endregion
 
         /** 
         * Lấy danh sách dữ liệu của danh mục có xử lý phân trang
         * entities: input object có type là EntityCollection<T>
         */
+        #region GetByPaging
         public CommonObjectModel GetByPaging(object entities, string order_by = "", int page_index = 1, int page_size = 0)
         {
             //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
@@ -894,10 +978,13 @@ END";
             };
             return result;
         }
+        #endregion
+
         /** 
        * Lấy dữ liệu khác của từng mã
        * entities: input object có type là EntityCollection<T>
        */
+        #region GetOtherData
         public CommonObjectModel GetOtherData(string so_ct, string ma_cuahang)
         {
             //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
@@ -911,12 +998,18 @@ END";
             };
             return result;
         }
+        #endregion
+
+        #region GetImeis
         public List<ImeiState> GetImeis(CommonObjectModel model)
         {
             return new List<ImeiState>();
         }
         #endregion
 
+        #endregion
+
+        #region checkImeiUpdate
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
             var listImei = new List<string>();
@@ -1013,5 +1106,7 @@ END";
             }
             return result_model;
         }
+        #endregion
+
     }
 }

@@ -14,5 +14,8 @@ namespace Voucher.SVTran_BHC
         public DateTime? ngay_nhan_hang { get; set; }
         public decimal phi_vc { get; set; }
         public string nguoi_nhan_hang { get; set; }
+
+        public string ma_van_don { get; set; }
+
     }
 }

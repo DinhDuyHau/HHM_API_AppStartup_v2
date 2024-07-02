@@ -412,8 +412,8 @@ namespace Voucher.SVTran_BHC
                 query += "\n";
                 query += $"update @{_ECOMMERCE_PARA} set line_nbr = row_id$, stt_rec = @stt_rec, stt_rec0 = right(row_id$ + 1000, 3), ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct where 1=1";
                 query += "\n\n";
-                query += $"insert into {ecommerce_table} (stt_rec, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang)" +
-                                                $" select stt_rec, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang from @{_ECOMMERCE_PARA}";
+                query += $"insert into {ecommerce_table} (stt_rec, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang, ma_van_don)" +
+                                                $" select stt_rec, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang, ma_van_don from @{_ECOMMERCE_PARA}";
             }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
@@ -941,8 +941,8 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {ecommerce_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {ecommerce_table} (stt_rec,stt_rec0, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang)" +
-                                                 $" select stt_rec,stt_rec0, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang from @{_ECOMMERCE_PARA}";
+                query += $"insert into {ecommerce_table} (stt_rec,stt_rec0, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang, ma_van_don)" +
+                                                 $" select stt_rec,stt_rec0, ma_ct, ngay_ct, so_ct, ma_kh_tmdt, ma_dh, doanh_thu, giam_gia_tmdt , giam_gia_hhm, thanh_tien, ma_dvvc, ngay_nhan_hang, phi_vc, nguoi_nhan_hang, ma_van_don from @{_ECOMMERCE_PARA}";
             }
             else
             {

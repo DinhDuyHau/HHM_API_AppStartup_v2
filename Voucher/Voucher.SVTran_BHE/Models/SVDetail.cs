@@ -101,5 +101,8 @@ namespace Voucher.SVTran_BHE
         public string tk_thue_co { get; set; }
         public decimal thue_suat { get; set; }
         public bool no_km_yn { get; set; }
+
+        public decimal gia_vat { get; set; }
+
     }
 }

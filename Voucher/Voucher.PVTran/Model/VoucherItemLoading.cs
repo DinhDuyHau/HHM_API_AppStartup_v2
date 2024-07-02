@@ -12,5 +12,8 @@ namespace Voucher.PVTran.Model
         public string ten_tt { get; set; }
         public string ten_gd { get; set; }
         public string ten_cuahang { get; set; }
+
+        //ngày hệ thống
+        public DateTime ngay_ht { get; set; }
     }
 }

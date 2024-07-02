@@ -102,5 +102,8 @@ namespace Voucher.SVTran_BHI
         public string stt_rec0_hd { get; set; }
         public string ten_vt { get; set; }
 
+        public decimal gia_vat { get; set; }
+
+
     }
 }

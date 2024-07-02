@@ -98,6 +98,8 @@ namespace Voucher.SVTran_BHB
         public string tk_thue_no { get; set; }
         public string tk_thue_co { get; set; }
         public decimal thue_suat { get; set; }
+
+        public decimal gia_vat { get; set; }
     }
 }
  
