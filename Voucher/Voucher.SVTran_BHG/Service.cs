@@ -1156,7 +1156,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select x1.*, x2.ten_vt from {3}' + @exp + ' x1 inner join dmvt x2 on x1.ma_vt = x2.ma_vt where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {4}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
-	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi from {5}' + @exp + ' b1 inner join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi, b2.ten_dv from {5}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh left join dmdichvu b2 on b1.ma_dv = b2.ma_dv where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select d1.*, d0.ten_dv from {6}' + @exp + ' d1 inner join dmdichvu d0 on d1.ma_dv = d0.ma_dv where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";

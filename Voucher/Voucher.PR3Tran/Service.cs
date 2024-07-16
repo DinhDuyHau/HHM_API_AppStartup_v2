@@ -447,7 +447,7 @@ SELECT is_success, message FROM @check";
                 vc_item.ma_dvcs = old_voucher.ma_dvcs;
                 //vc_item.ma_cuahang = old_voucher.ma_cuahang;
                 vc_item.ngay_ct = old_voucher.ngay_ct;
-                bool temp = VoucherUtils.isASMApprove(vc_item.ngay_ct, vc_item.ma_cuahang, vc_item.ma_cuahang_n);
+                //bool temp = VoucherUtils.isASMApprove(vc_item.ngay_ct, vc_item.ma_cuahang, vc_item.ma_cuahang_n);
                 vc_item.ma_gd = VoucherUtils.isTranferSite(vc_item.ma_kho, vc_item.ma_khon) ? "1" : "2";
                 vc_item.fnote3 = VoucherUtils.isASMApprove(vc_item.ngay_ct, vc_item.ma_cuahang, vc_item.ma_cuahang_n) ? "1" : "0";
                 foreach (VoucherDetail item in vc_item.details)

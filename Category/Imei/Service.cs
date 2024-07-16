@@ -444,6 +444,7 @@ namespace Imei
                 IList<TTDetail> tt_detail = ds.Tables[4].ToList<TTDetail>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<KMDetail> km_detail = ds.Tables[6].ToList<KMDetail>();
+                IList<EInvoiceInfo> einvoice_info = ds.Tables[7].ToList<EInvoiceInfo>();
 
                 vc_item.stt_rec = APIService.EncryptForWebApp(vc_item.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                 pr_detail.ToList().ForEach(v =>
@@ -485,41 +486,58 @@ namespace Imei
                     v.stt_rec_tq = !string.IsNullOrWhiteSpace(v.stt_rec_tq) ? APIService.EncryptForWebApp(v.stt_rec_tq, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
                 });
 
+                einvoice_info.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();
                 invoice_model.details.Add(new DetailItemModel()
                 {
                     Id = 1,
+                    Name = "Items",
                     Data = pr_detail
                 });
                 invoice_model.details.Add(new DetailItemModel()
                 {
                     Id = 2,
+                    Name = "Services",
                     Data = dv_detail
                 });
                 invoice_model.details.Add(new DetailItemModel()
                 {
                     Id = 3,
+                    Name = "Discounts",
                     Data = ck_detail
                 });
 
                 invoice_model.details.Add(new DetailItemModel()
                 {
                     Id = 4,
+                    Name = "Payments",
                     Data = tt_detail
                 });
 
                 invoice_model.details.Add(new DetailItemModel()
                 {
                     Id = 5,
+                    Name = "Warranty",
                     Data = bh_detail
                 });
 
                 invoice_model.details.Add(new DetailItemModel()
                 {
                     Id = 6,
+                    Name = "Ext",
                     Data = km_detail
+                });
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 7,
+                    Name = "Einvoice",
+                    Data = einvoice_info
                 });
                 model.result = invoice_model;
             }

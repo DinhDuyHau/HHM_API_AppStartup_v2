@@ -14,5 +14,11 @@ namespace Voucher.SVTran_BHD
         public string ma_nk { get; set; }
         public string so_seri { get; set; }
         public string email_nhan_key { get; set; }
+
+        public decimal t_cp_khac { get; set; }
+        public decimal t_cp_khac_nt { get; set; }
+
+        public decimal fqty1 { get; set; }
+
     }
 }

@@ -26,5 +26,9 @@ namespace Voucher.PVTran
         public DateTime? ngay_ct0 { get; set; }
         public string so_ct0 { get; set; }
         public string so_seri0 { get; set; }
+
+        public decimal t_ck_nt { get; set; }
+
+        public decimal t_ck { get; set; }
     }
 }

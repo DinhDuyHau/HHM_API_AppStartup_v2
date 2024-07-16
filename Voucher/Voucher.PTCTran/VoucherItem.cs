@@ -22,5 +22,7 @@ namespace Voucher.PTCTran
         public decimal t_con_no { get; set; }
         public decimal t_da_tra { get; set; }
         public DateTime? ngay_lct { get; set; }
+
+        public string fnote3 { get; set; }
     }
 }
