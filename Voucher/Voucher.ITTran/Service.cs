@@ -37,12 +37,15 @@ namespace Voucher.ITTran
         public string DetailTable { get; } = "d585$";
         private const string _DETAIL_PARA = "d585";
 
+        //Loại chứng từ
+        private string loai_ct = "1";
+
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca,ma_cuahang_n,ma_kho,ma_khon;#10$,#20$,#30$,#40$,#50$,#60$,#65$; , , , , , , :ma_kho,ma_vt,ma_imei,ma_khon;#10$,#20$,#30$,#40$;d585,d585,d585,d585";
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading_PXB '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(ma_kho) as ma_kho,rtrim(ma_khon) as ma_khon,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,fnote3', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khon) as ma_khon,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.fnote3 = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where a.ma_cuahang = ''@@SHOP_ID'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', 'ma_cuahang = ''" + Startup.Shop + "'''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading_PXB '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(ma_kho) as ma_kho,rtrim(ma_khon) as ma_khon,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,loai_ct', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khon) as ma_khon,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.loai_ct = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "'''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -56,6 +59,53 @@ namespace Voucher.ITTran
 
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
+
+        //query check điều chuyển trước khi insert & update
+        #region query check điều chuyển
+        private string query_check_transfer = @"--check
+declare @err_message varchar(100), @action_state bit, @ds_loai_kho VARCHAR(500)
+select @action_state = 0, @err_message = ''
+--loại giao dịch = 1 (luân chuyển kho trong cửa hàng) => check mã cửa hàng nhập = mã cửa hàng xuất
+if @fnote2 = '1' and @ma_cuahang <> @ma_cuahang_n begin
+	select @action_state = 0, @err_message = 'err_trantype_1_receipt_shop'
+	select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message
+	return
+end
+--check kho xuất thuộc cửa hàng xuất
+if not exists(select 1 from dmkho where ma_kho = @ma_kho and ma_cuahang = @ma_cuahang) begin
+	select @action_state = 0, @err_message = 'err_issue_stock_not_in_shop'
+	select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message
+	return
+end
+--check kho nhập thuộc cửa hàng nhập
+if not exists(select 1 from dmkho where ma_kho = @ma_khon and ma_cuahang = @ma_cuahang_n) begin
+	select @action_state = 0, @err_message = 'err_receipt_stock_not_in_shop'
+	select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message
+	return
+end
+if @fnote2 = '1' or @fnote2 = '2' begin
+	--kho xuất có loại kho là HH: check các loại kho chặn điều chuyển tại trường ma_loai_chandc31 bảng dmloaikho
+	if exists(select 1 from dmkho where ma_kho = @ma_kho and ma_loai = 'HH') begin
+		select @ds_loai_kho = rtrim(ma_loai_chandc31) from dmloaikho where ma_loai = 'HH'
+		if exists(select 1 from dmkho where ma_kho = @ma_khon and dbo.ff_ExactInlist(ma_loai, @ds_loai_kho) = 1) begin
+			select @action_state = 0, @err_message = 'err_prevent_transfer'
+			select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message
+			return
+		end
+	end
+	--kho xuất có loại kho là BH hoặc HL: check các loại kho chặn điều chuyển tại trường ma_loai_chandc32 bảng dmloaikho
+	if exists(select 1 from dmkho where ma_kho = @ma_kho and ma_loai in ('BH', 'HL')) begin
+		select top 1 @ds_loai_kho = rtrim(ma_loai_chandc32) 
+			from dmloaikho where ma_loai in (select ma_loai from dmkho where ma_kho = @ma_kho)
+		if exists(select 1 from dmkho where ma_kho = @ma_khon and dbo.ff_ExactInlist(ma_loai, @ds_loai_kho) = 1) begin
+			select @action_state = 0, @err_message = 'err_prevent_transfer'
+			select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message
+			return
+		end
+	end
+end
+--end check";
+        #endregion
 
         public Service()
         {
@@ -165,16 +215,24 @@ namespace Voucher.ITTran
             //create query
             string query = voucherQuery.Prime;
 
+            //check transfer
+            query += "\n\n";
+            query += this.query_check_transfer;
+
             //Tạo stt_rec (PK)
             query += "\n\n";
             query += VoucherUtils.GetQueryCreateIdentityNumber(this.VoucherCode, this.MasterTable);
+
+            //fix status = 0 => chỉ cho phép thêm mới ở trạng thái lập chứng từ
+            string status = "0";
+            string ma_gd = "1";
 
             //insert prime
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
             query += "\n\n";
-            query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_kh, ma_nt, ty_gia, t_so_luong, t_tien2, t_tien_nt2, t_tt, t_tt_nt, ma_thue, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2) ";
-            query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_kh, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt2, @t_tien_nt2, @t_tt_nt, @t_tt_nt, @ma_thue, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate() ";
+            query += $"insert into {prime_table} (stt_rec, ma_dvcs, ma_ct, loai_ct, ma_gd, ngay_lct, ngay_ct, so_ct, ma_nt, ty_gia, ma_kho, ma_khon, so_buoc, dien_giai, t_so_luong, t_tien_nt, t_tien, status, user_id0, user_id2, datetime0, datetime2, fnote2, ma_ca, ma_cuahang, ma_cuahang_n) ";
+            query += $" select @stt_rec, @ma_dvcs, @ma_ct, '{this.loai_ct}', '{ma_gd}', @ngay_ct, @ngay_ct, @so_ct, @ma_nt, @ty_gia, @ma_kho, @ma_khon, 2, @dien_giai, @t_so_luong, 0, 0, '{status}', {user_id}, {user_id}, getdate(), getdate(), @fnote2, @ma_ca, @ma_cuahang, @ma_cuahang_n ";
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
@@ -189,15 +247,26 @@ namespace Voucher.ITTran
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_kho, ma_khon, so_luong, gia_nt, gia_nt2, tien_nt, tien_nt2) select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, '@{vc_item.ma_kho}', '@{vc_item.ma_khon}', so_luong, gia_nt2, gia_nt2, tien_nt2, tien_nt2 from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, he_so, ma_kho, ma_khon, so_luong, gia_nt, gia, tien_nt, tien, ma_imei) select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, 1, @ma_kho, @ma_khon, so_luong, 0, 0, 0, 0, ma_imei from @{_DETAIL_PARA}";
             }
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += @"select @action_state = 1, @err_message = ''
+select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message";
 
             //thực thi query insert vào bảng prime và detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
+
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            bool action_state = Convert.ToBoolean(ds.Tables[0].Rows[0]["state"]);
+            string err_message = ds.Tables[0].Rows[0]["err_message"].ToString();
+
+            if(!action_state)
+            {
+                model.success = false;
+                model.message = err_message;
+                return model;
+            }
 
             //update stt_rec cho đối tượng đang thực hiện thêm mới
             vc_item.stt_rec = stt_rec;
@@ -219,6 +288,25 @@ namespace Voucher.ITTran
             query = $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
+
+            //loại điều chuyển là 1 hoặc 2 (fnote2) => gọi store tạo phiếu nhập điều chuyển
+            query = "";
+            if (vc_item.status == "2" && (vc_item.fnote2 == "1" || vc_item.fnote2 == "2"))
+            {
+                SqlConnection conn = service.CreateDbConn(ConnectType.Sys);
+                string sys_database = conn.Database;
+
+                query += $"EXEC MokaOnline$Voucher$PXBCreatePNF '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{sys_database}'";
+            }
+
+            //Cập nhật trạng thái đặt hàng cho các imei trong phiếu
+            if (vc_item.status == "0")
+            {
+                query += string.IsNullOrEmpty(query) ? "" : "\n";
+                query += $"exec Genbyte$IMEI$UpdateOutStockOrder '{stt_rec}', '{this.VoucherCode}'";
+            }
+            if(!string.IsNullOrEmpty(query))
+                service.ExecuteNonQuery(query);
 
             model.success = true;
             model.message = "create_voucher_success";
@@ -442,13 +530,17 @@ SELECT is_success, message FROM @check";
             //create query
             string query = voucherQuery.Prime;
 
+            //check transfer
+            query += "\n\n";
+            query += this.query_check_transfer;
+
             //update prime
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
             query += "\n\n";
             query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_nt = @ma_nt," +
                 $" ty_gia = @ty_gia, ma_kho = @ma_kho, ma_khon = @ma_khon, t_so_luong = @t_so_luong, t_tien = @t_tien, t_tien_nt = @t_tien_nt," +
-                $" ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate()";
+                $" ma_gd = @ma_gd, loai_ct = '{this.loai_ct}', user_id2 = {user_id}, datetime2 = getdate()";
             query += $" where stt_rec = @stt_rec";
 
             //xóa và insert lại các bảng chi tiết
@@ -471,12 +563,23 @@ SELECT is_success, message FROM @check";
                 query += $"select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, ma_imei, ma_kho, ma_khon, so_luong, gia_nt, tien_nt, gia_nt, tien_nt, tk_vt, tk_du, ma_nx, px_gia_dd, stt_rec_yc, stt_rec0yc from @{_DETAIL_PARA}";
             }
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += @"select @action_state = 1, @err_message = ''
+select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
+
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            bool action_state = Convert.ToBoolean(ds.Tables[0].Rows[0]["state"]);
+            string err_message = ds.Tables[0].Rows[0]["err_message"].ToString();
+
+            if (!action_state)
+            {
+                model.success = false;
+                model.message = err_message;
+                return model;
+            }
 
             //update stt_rec cho đối tượng đang thực hiện
             vc_item.stt_rec = stt_rec;
@@ -555,21 +658,38 @@ SELECT is_success, message FROM @check";
 
             if (vc_item.status == "0")
             {
-                string json = JsonSerializer.Serialize(list_imei);
-                //create query insert IMEI
-                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
+                //string json = JsonSerializer.Serialize(list_imei);
+                ////create query insert IMEI
+                //queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
+
+                queryIMEI = $"exec Genbyte$IMEI$UpdateOutStockOrder '{stt_rec}', '{this.VoucherCode}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
             else if (vc_item.status == "2")
             {
+                //loại điều chuyển là 1 hoặc 2 (fnote2) => gọi store tạo phiếu nhập điều chuyển
+                if(vc_item.fnote2 == "1" || vc_item.fnote2 == "2")
+                {
+                    SqlConnection conn = service.CreateDbConn(ConnectType.Sys);
+                    string sys_database = conn.Database;
+
+                    queryIMEI = $"EXEC MokaOnline$Voucher$PXBCreatePNF '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{sys_database}'";
+                    service.ExecuteNonQuery(queryIMEI);
+                }
+
                 string json = JsonSerializer.Serialize(list_imei);
                 //create query insert IMEI
                 queryIMEI = $"exec Genbyte$IMEI$PXB$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}'";
                 service.ExecuteNonQuery(queryIMEI);
 
-                queryIMEI = $"EXEC MokaOnline$Voucher$PXBUpdatePNF '{stt_rec}'";
-                service.ExecuteNonQuery(queryIMEI);
+                //Đối với luồng điều chuyển tạo từ các phiếu đề nghị => update lại thông tin phiếu nhập điều chuyển từ phiếu xuất đ/c
+                if (vc_item.fnote2 != "1" && vc_item.fnote2 != "2")
+                {
+                    queryIMEI = $"EXEC MokaOnline$Voucher$PXBUpdatePNF '{stt_rec}'";
+                    service.ExecuteNonQuery(queryIMEI);
+                }
+                    
             }
             if(vc_item.status != "0")
             {
@@ -742,7 +862,7 @@ END";
             };
 
             CoreService core_service = new CoreService();
-            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @ext_filter, @order_fields";
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
@@ -753,12 +873,15 @@ END";
                 new SqlParameter(){ ParameterName = "@so_ct_kt", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_kt },
                 new SqlParameter(){ ParameterName = "@ma_kh", SqlDbType = SqlDbType.VarChar, Value = param.ma_kh?.Trim() },
                 new SqlParameter(){ ParameterName = "@ma_kho", SqlDbType = SqlDbType.VarChar, Value = param.ma_kho?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_kho2", SqlDbType = SqlDbType.VarChar, Value = param.ma_kho2?.Trim() },
                 new SqlParameter(){ ParameterName = "@ma_vt", SqlDbType = SqlDbType.VarChar, Value = param.ma_vt?.Trim() },
                 new SqlParameter(){ ParameterName = "@ma_imei", SqlDbType = SqlDbType.VarChar, Value = param.ma_imei?.Trim() },
                 new SqlParameter(){ ParameterName = "@status", SqlDbType = SqlDbType.VarChar, Value = param.status },
                 new SqlParameter(){ ParameterName = "@whereClause", SqlDbType = SqlDbType.NVarChar, Value = param.where_clause },
                 new SqlParameter(){ ParameterName = "@page_index", SqlDbType = SqlDbType.Int, Value = param.page_index },
                 new SqlParameter(){ ParameterName = "@page_size", SqlDbType = SqlDbType.Int, Value = param.page_size },
+                new SqlParameter(){ ParameterName = "@admin", SqlDbType = SqlDbType.Bit, Value = Startup.Admin == 0 ? false : true },
+                new SqlParameter(){ ParameterName = "@user_id", SqlDbType = SqlDbType.Int, Value = Startup.UserId },
                 new SqlParameter(){ ParameterName = "@ext_filter", SqlDbType = SqlDbType.NVarChar, Value = param.ext_filter },
                 new SqlParameter(){ ParameterName = "@order_fields", SqlDbType = SqlDbType.NVarChar, Value = "status, so_ct desc, ngay_ct desc, stt_rec desc" },
             });
@@ -986,52 +1109,55 @@ END";
         {
             CoreService service = new CoreService();
             string sql = @"declare @exp CHAR(6), @q nvarchar(4000)
-                           declare @count int, @t_duyet int, @t_huy int, @t_hoanthanh int, @status_xh char(1)
-                           select @exp = CONVERT(CHAR(6), ngay_ct, 112) from c106$000000 where stt_rec = @stt_rec_yc
-                           select * into #temp from log_lsgdxhdc where stt_rec_dc = @stt_rec and status_dc = '0'
-                           update #temp set crdate_dc = getdate(), status_dc = @status, status_xh = @status
-                           insert into log_lsgdxhdc select * from #temp
+declare @count int, @t_duyet int, @t_huy int, @t_hoanthanh int, @status_xh char(1)
+if not exists(select 1 from c106$000000 where stt_rec = @stt_rec_yc)
+    return
 
-                           if @status = '5' begin
-                                SET @q = 'update d106$' +@exp+ ' set tag1 = 0, tag2 = 0, ngay_hh_dc = DATEADD(day, 1, GETDATE()), xstatus = '''+@status+''' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
-                                EXEC sp_executesql @q
-                            end
-                            else if @status = '4' begin
-                                SET @q = 'update d106$' +@exp+ ' set ngay_huy = GETDATE(), xstatus = '''+@status+''' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
-                                EXEC sp_executesql @q
-                            end
-                            else if @status = '2' begin
-                                SET @q = 'update d106$' +@exp+ ' set ngay_xuat = GETDATE(), xstatus = ''3'' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
-                                EXEC sp_executesql @q
-                            end
+select @exp = CONVERT(CHAR(6), ngay_ct, 112) from c106$000000 where stt_rec = @stt_rec_yc
+select * into #temp from log_lsgdxhdc where stt_rec_dc = @stt_rec and status_dc = '0'
+update #temp set crdate_dc = getdate(), status_dc = @status, status_xh = @status
+insert into log_lsgdxhdc select * from #temp
+
+if @status = '5' begin
+    SET @q = 'update d106$' +@exp+ ' set tag1 = 0, tag2 = 0, ngay_hh_dc = DATEADD(day, 1, GETDATE()), xstatus = '''+@status+''' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
+    EXEC sp_executesql @q
+end
+else if @status = '4' begin
+    SET @q = 'update d106$' +@exp+ ' set ngay_huy = GETDATE(), xstatus = '''+@status+''' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
+    EXEC sp_executesql @q
+end
+else if @status = '2' begin
+    SET @q = 'update d106$' +@exp+ ' set ngay_xuat = GETDATE(), xstatus = ''3'' where stt_rec = '''+@stt_rec_yc+''' and stt_rec_dc = '''+@stt_rec+''' and xstatus = ''2'' '
+    EXEC sp_executesql @q
+end
                             
-                             select top 0 * into #d106 from d106$000000 
-                             SET @q = 'insert into #d106 select * from d106$' +@exp+ ' where stt_rec = '''+@stt_rec_yc+''' '
-                                EXEC sp_executesql @q
+    select top 0 * into #d106 from d106$000000 
+    SET @q = 'insert into #d106 select * from d106$' +@exp+ ' where stt_rec = '''+@stt_rec_yc+''' '
+    EXEC sp_executesql @q
                             
-                            -- Cập nhật lại trạng thái cho chứng từ
-                            SELECT @count = COUNT(1) FROM #d106
-			                SELECT @t_duyet = COUNT(1) FROM #d106 WHERE tag1 = 1
-			                SELECT @t_hoanthanh = COUNT(1) FROM #d106 WHERE xstatus = '3' or xstatus = '4' or xstatus = '1'
-			                SELECT @t_huy = COUNT(1) FROM #d106 WHERE tag2 = 1
-			                IF @t_huy = @count BEGIN 
-				                SELECT @status_xh = '3'
-			                END
-			                ELSE IF @t_hoanthanh = @count and @t_duyet + @t_huy = @count BEGIN 
-				                SELECT @status_xh = '2'
-			                END
-			                ELSE BEGIN 
-				                SELECT @status_xh = '0'
-			                END
+-- Cập nhật lại trạng thái cho chứng từ
+SELECT @count = COUNT(1) FROM #d106
+SELECT @t_duyet = COUNT(1) FROM #d106 WHERE tag1 = 1
+SELECT @t_hoanthanh = COUNT(1) FROM #d106 WHERE xstatus = '3' or xstatus = '4' or xstatus = '1'
+SELECT @t_huy = COUNT(1) FROM #d106 WHERE tag2 = 1
+IF @t_huy = @count BEGIN 
+	SELECT @status_xh = '3'
+END
+ELSE IF @t_hoanthanh = @count and @t_duyet + @t_huy = @count BEGIN 
+	SELECT @status_xh = '2'
+END
+ELSE BEGIN 
+	SELECT @status_xh = '0'
+END
                             
-                             SET @q = 'update m106$' +@exp+ ' set status = '''+@status_xh+''', t_duyet = '+CAST(@t_duyet AS VARCHAR)+', t_huy = '+CAST(@t_huy AS VARCHAR)+'  where stt_rec = '''+@stt_rec_yc+''' '
-                             SET @q = @q + CHAR(13) + ' update c106$000000 set status = '''+@status_xh+''' where stt_rec = '''+@stt_rec_yc+''' '
-                             SET @q = @q + CHAR(13) + ' update i106$' +@exp+ ' set status = '''+@status_xh+''' where stt_rec = '''+@stt_rec_yc+''' '
+    SET @q = 'update m106$' +@exp+ ' set status = '''+@status_xh+''', t_duyet = '+CAST(@t_duyet AS VARCHAR)+', t_huy = '+CAST(@t_huy AS VARCHAR)+'  where stt_rec = '''+@stt_rec_yc+''' '
+    SET @q = @q + CHAR(13) + ' update c106$000000 set status = '''+@status_xh+''' where stt_rec = '''+@stt_rec_yc+''' '
+    SET @q = @q + CHAR(13) + ' update i106$' +@exp+ ' set status = '''+@status_xh+''' where stt_rec = '''+@stt_rec_yc+''' '
                              
-                             EXEC sp_executesql @q
+    EXEC sp_executesql @q
 
-                            drop table #d106
-                            drop table #temp
+drop table #d106
+drop table #temp
                           ";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
@@ -1044,7 +1170,7 @@ END";
             {
                 ParameterName = "@stt_rec_yc",
                 SqlDbType = SqlDbType.Char,
-                Value = stt_rec_yc
+                Value = string.IsNullOrEmpty(stt_rec_yc) ? "" : stt_rec_yc
             });
             paras.Add(new SqlParameter()
             {

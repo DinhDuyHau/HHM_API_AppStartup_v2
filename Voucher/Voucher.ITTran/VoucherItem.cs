@@ -24,6 +24,10 @@ namespace Voucher.ITTran
         public decimal t_tien { get; set; }
         public string fnote3 { get; set; }
 
+        /// <summary>
+        /// Mã loại giao dịch
+        /// </summary>
+        public string fnote2 { get; set; }
 
     }
 }

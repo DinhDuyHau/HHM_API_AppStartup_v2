@@ -24,5 +24,7 @@ namespace Imei
         public bool ban_hang_yn { get; set; }
         public bool tra_ncc_yn { get; set; }
 
+        public bool in_stock_yn { get; set; }
+
     }
 }

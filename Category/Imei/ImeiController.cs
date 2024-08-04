@@ -244,12 +244,13 @@ namespace Imei
 
         /// <summary>
         /// Lấy thông tin về tình trạng của imei và vật tư
+        /// update 2024-07-29: Nếu có param ma_kho => lấy trạng thái tồn kho theo mã kho chỉ định
         /// </summary>
         /// <param name="imeis">danh sách imei cần truy vấn</param>
         /// <returns></returns>
         [HttpPost("get_state_and_item")]
         #region GetImeiStateAndItem
-        public IActionResult GetImeiStateAndItem([FromBody] List<string> imeis)
+        public IActionResult GetImeiStateAndItem([FromBody] List<string> imeis, [FromQuery] string? ma_kho)
         {
             try
             {
@@ -262,7 +263,7 @@ namespace Imei
                 Service _service = new Service();
 
                 //check injection
-                if (!_service.IsSQLInjectionValid(imeis.ToArray()))
+                if (!_service.IsSQLInjectionValid(imeis.ToArray()) || !_service.IsSQLInjectionValid(ma_kho))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 imeis.ForEach(x => x = HttpUtility.UrlDecode(x));
@@ -276,7 +277,15 @@ namespace Imei
                 */
 
                 //lấy trạng thái & thông tin imei
-                model.result = _service.GetStateAndItemOfImeis(imeis);
+                if(string.IsNullOrEmpty(ma_kho))
+                {
+                    model.result = _service.GetStateAndItemOfImeis(imeis);
+                }
+                else
+                {
+                    model.result = _service.GetStateItemOfImeisInStock(imeis, ma_kho); ;
+                }
+
                 if (model.result != null)
                     model.success = true;
 
@@ -458,6 +467,45 @@ namespace Imei
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"POST -- ImeiController/warranty-out-info", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+
+        [HttpGet("change-gift-promotions")]
+        #region ChangePromotionsForImei
+        public IActionResult ChangePromotionsForImei(string ma_imei, string ma_ck, int rec)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+
+                Service _service = new Service(_configuration);
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_ck))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
+                //lấy trạng thái & thông tin imei
+                List<GiftItem> result = _service.GetAllGiftPromotionsForImei(ma_imei, ma_ck, rec);
+                if(result != null && result.Count > 0)
+                {
+                    model.success = true;
+                    model.result = result;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/ChangePromotionsForImei", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

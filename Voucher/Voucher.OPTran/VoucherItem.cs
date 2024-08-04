@@ -24,5 +24,11 @@ namespace Voucher.OPTran
         public decimal t_tt { get; set; }
         public decimal t_tt_nt { get; set; }
         public DateTime? ngay_lct { get; set; }
+
+        public string fcode1 { get; set; }
+
+        public string fcode2 { get; set;}
+
+        public DateTime? s7 { get; set; }
     }
 }

@@ -17,8 +17,6 @@ namespace Report.RptRetailPrice
         public IMemoryCache MemoryCache { get; set; }
         public string controller { get; set; } = "rptRetailPrice";
 
-        public ConnectType connect_type = ConnectType.Report;
-
         // Bảng hiển thị lên báo cáo.
         public readonly int table_index = 1;
 
@@ -28,7 +26,7 @@ namespace Report.RptRetailPrice
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index, this.connect_type);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
             return raw_model;
         }
 
@@ -38,7 +36,7 @@ namespace Report.RptRetailPrice
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras, this.connect_type);
+            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
             return raw_model;
         }
 
@@ -51,9 +49,7 @@ namespace Report.RptRetailPrice
             {
                 SqlString = sql,
                 Parameters = list_paras,
-                RptTableIndex = this.table_index,
-                ConnectionType = this.connect_type
-                
+                RptTableIndex = this.table_index
             };
         }
 

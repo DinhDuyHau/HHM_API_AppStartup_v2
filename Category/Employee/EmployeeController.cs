@@ -213,6 +213,7 @@ namespace Employee
             }
         }
         #endregion
+
         [HttpGet("get_department_by_name")]
         #region get_employee_by_name
         public IActionResult GetDepartment(string ma_kh, string ma_cuahang)

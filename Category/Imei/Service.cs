@@ -78,6 +78,7 @@ namespace Imei
         /// <param name="shop_id"></param>
         /// <param name="vc_code"></param>
         /// <returns></returns>
+        #region GetImeiInStore
         public DataSet GetImeiInStore(string imei, string shop_id, string vc_code, string ma_kh)
         {
             string sql = "exec Genbyte$IMEI$GetImeiInfo @imei, @shop_id, @vc_code, @ma_kh";
@@ -108,6 +109,7 @@ namespace Imei
             });
             return base.ExecSql2DataSet(sql, paras);
         }
+        #endregion
 
         /// <summary>
         /// Lấy trạng thái tồn tức thời của imei, các trạng thái và thông tin chi tiết imei trong chứng từ thu cũ
@@ -116,6 +118,7 @@ namespace Imei
         /// <param name="shop_id"></param>
         /// <param name="vc_code"></param>
         /// <returns></returns>
+        #region GetPriceRenew
         public DataSet GetPriceRenew(RenewModel renew)
         {
             string sql = "exec Genbyte$IMEI$GetImeiInfoRenew @imei, @shop_id, @ma_ncc, @list_vt, @imei_thu_cu";
@@ -152,12 +155,14 @@ namespace Imei
             });
             return base.ExecSql2DataSet(sql, paras);
         }
+        #endregion
 
         /// <summary>
         /// Lấy thông tin tình trạng của danh sách imei
         /// </summary>
         /// <param name="imei"></param>
         /// <returns></returns>
+        #region GetStateOfImeis
         public List<ImeiState> GetStateOfImeis(List<string> imeis)
         {
             string imei_list = string.Join(",", imeis);
@@ -177,11 +182,14 @@ namespace Imei
             });
             return base.ExecSql2List<ImeiState>(sql, paras);
         }
+        #endregion
+
         /// <summary>
         /// Lấy thông tin tình trạng của danh sách imei
         /// </summary>
         /// <param name="imei"></param>
         /// <returns></returns>
+        #region GetStateAndItemOfImeis
         public List<ImeiInfo> GetStateAndItemOfImeis(List<string> imeis)
         {
             string imei_list = string.Join(",", imeis);
@@ -201,12 +209,47 @@ namespace Imei
             });
             return base.ExecSql2List<ImeiInfo>(sql, paras);
         }
+        #endregion
+
+        /// <summary>
+        /// Lấy thông tin tình trạng của danh sách imei và trạng thái tồn trong kho chỉ định
+        /// </summary>
+        /// <param name="imei"></param>
+        /// <returns></returns>
+        #region GetStateAndItemOfImeis
+        public List<ImeiInfo> GetStateItemOfImeisInStock(List<string> imeis, string ma_kho)
+        {
+            string imei_list = string.Join(",", imeis);
+            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, @ma_kho";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@shop_id",
+                SqlDbType = SqlDbType.Char,
+                Value = Startup.Shop == null ? string.Empty : Startup.Shop
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@imeis",
+                SqlDbType = SqlDbType.Char,
+                Value = imei_list
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_kho",
+                SqlDbType = SqlDbType.Char,
+                Value = ma_kho
+            });
+            return base.ExecSql2List<ImeiInfo>(sql, paras);
+        }
+        #endregion
 
         /// <summary>
         /// Lấy danh sách imei tồn kho tại cửa hàng theo mã vật tư
         /// </summary>
         /// <param name="imei"></param>
         /// <returns></returns>
+        #region GetImeisInStoreByItem
         public EntityCollection<Dictionary<string, object>> GetImeisInStoreByItem(string shop_id, string voucher_code, string ma_vt = "", string ten_vt = "", string ma_imei = "", string ma_kho = "", int page_index = 1, int page_size = 0)
         {
             string sql = "exec Genbyte$IMEI$GetByItem @shop_id, @vc_code, @item, @item_name, @imei, @site, @page_index, @page_size";
@@ -280,12 +323,14 @@ namespace Imei
 
             return entities;
         }
+        #endregion
 
         /// <summary>
         /// Tìm lọc danh sách imei theo key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        #region FindImeisByKey
         public List<Dictionary<string, object>> FindImeisByKey(string shop_id, string key)
         {
             string sql = "exec Genbyte$IMEI$FindByKey @shop_id, @key";
@@ -304,6 +349,7 @@ namespace Imei
             });
             return base.ExecSql2Dictionary(sql, paras);
         }
+        #endregion
 
         /// <summary>
         /// Cập nhật trạng thái đặt hàng cho imei
@@ -312,6 +358,7 @@ namespace Imei
         /// <param name="imeis"></param>
         /// <param name="state"></param>
         /// <returns></returns>
+        #region UpdateImeiOrderState
         public List<ImeiState> UpdateImeiOrderState(string shop_id, List<string> imeis, bool state, string? ma_ct, int? nxt)
         {
             string imei_list = string.Join(",", imeis);
@@ -353,13 +400,14 @@ namespace Imei
             });
             return base.ExecSql2List<ImeiState>(sql, paras);
         }
-
+        #endregion
 
         /// <summary>
         /// Lấy danh sách hàng khuyến mại theo imei
         /// </summary>
         /// <param name="imei"></param>
         /// <returns></returns>
+        #region GetPromotionByImei
         public List<Dictionary<string, object>> GetPromotionByImei(string shop_id, string ma_imei)
         {
             string sql = "exec fs_Calc$Discount$PromotionItems @shop_id, @ma_imei";
@@ -378,12 +426,15 @@ namespace Imei
             });
             return base.ExecSql2Dictionary(sql, paras);
         }
+        #endregion
+
         /// <summary>
         /// GetImeiSoldInfo
         /// </summary>
         /// <param name="imeiId"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
+        #region GetImeiSoldInfo
         public CommonObjectModel GetImeiSoldInfo(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "")
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -543,7 +594,16 @@ namespace Imei
             }
             return model;
         }
+        #endregion
 
+
+        /// <summary>
+        /// Lấy thông tin bảo hành của imei bán ra
+        /// </summary>
+        /// <param name="imeiId"></param>
+        /// <param name="ma_cuahang"></param>
+        /// <returns></returns>
+        #region GetImeiWarrantyOutInfo
         public CommonObjectModel GetImeiWarrantyOutInfo(string imeiId, string ma_cuahang)
         {
             CommonObjectModel model = new CommonObjectModel()
@@ -577,6 +637,50 @@ namespace Imei
                 model.success = true;
             }
             return model;
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy danh sách tất cả hàng tặng của imei
+        /// </summary>
+        /// <param name="imeiId"></param>
+        /// <param name="ma_ck"></param>
+        /// <param name="rec"></param>
+        /// <returns></returns>
+        public List<GiftItem> GetAllGiftPromotionsForImei(string imeiId, string ma_ck, int rec)
+        {
+            CoreService core_service = new CoreService();
+
+            string sql = @"exec Genbyte$IMEI$GiftPromotionsForImei @ma_imei, @ma_ck, @rec, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_imei",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = imeiId.Trim()
+                },
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_ck",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_ck.Trim()
+                },
+                new SqlParameter()
+                {
+                    ParameterName = "@rec",
+                    SqlDbType = SqlDbType.Int,
+                    Value = rec
+                },
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = Startup.Shop
+                }
+            });
+            List<GiftItem> gifts = core_service.ExecSql2List<GiftItem>(sql, paras);
+            return gifts;
         }
 
     }

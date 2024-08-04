@@ -97,9 +97,9 @@ namespace Employee
             return false;
         }
 
-        public EmployeeModel GetEmployee(string name, string ma_cuahang)
+        public EmployeeModel GetEmployee(string name, string ma_cuahang = "")
         {
-            string sql = @"select top 1 * from dmnvbh where m_username = @name and (ma_cuahang is null or ma_cuahang = '' or ma_cuahang = @ma_cuahang) order by ma_cuahang desc, datetime2 desc";
+            string sql = @"select top 1 * from dmnvbh where m_username = @name order by datetime2 desc";
 
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
@@ -107,12 +107,6 @@ namespace Employee
                 ParameterName = $"@name",
                 SqlDbType = SqlDbType.VarChar,
                 Value = name
-            });
-            paras.Add(new SqlParameter()
-            {
-                ParameterName = $"@ma_cuahang",
-                SqlDbType = SqlDbType.VarChar,
-                Value = ma_cuahang
             });
 
             List<EmployeeModel> raw_data = base.ExecSql2List<EmployeeModel>(sql, paras, ConnectType.Accounting);
@@ -122,6 +116,7 @@ namespace Employee
             }
             return null;
         }
+
         public DepartmentModel GetDepartment(string ma_kh, string ma_cuahang)
         {
             string sql = @"select top 1 * from dmnvls a left join dmbp b on a.ma_bp = b.ma_bp where ma_nvbh = @ma_kh and ngay_bd <= GETDATE() and (a.ma_cuahang is null or a.ma_cuahang = '' or a.ma_cuahang = @ma_cuahang) order by ngay_bd desc, a.ma_cuahang desc, a.datetime2 desc";

@@ -19,5 +19,14 @@ namespace Voucher.SVTran_DXA
         public DateTime? ngay_lo { get; set; }
         public string s1 { get; set; }
 
+        public string ma_tt { get; set; }
+
+        public string ht_tt { get; set; }
+
+        public string tt_tt { get; set; }
+
+        public string ht_ban { get; set; }
+
+
     }
 }
