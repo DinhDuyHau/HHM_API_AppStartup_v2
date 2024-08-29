@@ -103,5 +103,28 @@ namespace Voucher.SVTran_BHC
         public bool no_km_yn { get; set; }
 
         public decimal gia_vat { get; set; }
+
+        public decimal phi_san_01 { get; set; }
+
+        public decimal phi_san_02 { get; set; }
+
+        public decimal phi_san_03 { get; set; }
+
+        public decimal phi_san_04 { get; set; }
+
+        public decimal phi_san_05 { get; set; }
+
+        public decimal phi_san_06 { get; set; }
+
+        public decimal phi_san_07 { get; set; }
+
+        public decimal phi_san_08 { get; set; }
+
+        public decimal phi_san_09 { get; set; }
+
+        public decimal phi_san_10 { get; set; }
+
+        public decimal phi_san_hhm { get; set; }
+
     }
 }

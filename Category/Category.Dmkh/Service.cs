@@ -57,7 +57,7 @@ namespace Category.Dmkh
             {
                 ParameterName = "@ma_kh",
                 SqlDbType = SqlDbType.Char,
-                Value = entity_item.ma_kh
+                Value = entity_item.ma_kh.Trim()
             });
             DataSet ds = data_service.ExecSql2DataSet(sql, paras);
             if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)

@@ -836,6 +836,10 @@ SELECT is_success, message FROM @check";
                             , transporst_table = this.TransportTable.Trim() + expression;
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
+                //2024-08-10: bổ sung query gọi store reset trạng thái đặt hàng của các imei có trong phiếu trước khi update
+                query += "\n\n";
+                query += "exec Genbyte$Imei$ClearOrderStateForSaleInvoice @stt_rec, @ma_ct";
+
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
                 detail_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
 

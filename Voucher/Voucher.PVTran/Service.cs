@@ -433,6 +433,10 @@ SELECT is_success, message FROM @check";
             /**
              * Lấy thông tin chứng từ cũ trước khi thực hiện update
              */
+
+            /* 2024-08-15: comment by tuananhnl
+             * code của sonnnt => không hiểu để làm gì ở đoạn này
+             * -------
             sql = "EXEC Genbyte$System$GetVoucherPrimeInfo @vc_id, @vc_code";
             paras = new List<SqlParameter>();
             #region add parameters
@@ -449,6 +453,11 @@ SELECT is_success, message FROM @check";
                 Value = this.VoucherCode
             });
             #endregion
+
+            * ---------
+            * 2024-08-15: end
+            */
+
             BaseModel res = (BaseModel)this.GetById(vc_item.stt_rec.Replace("'", "''")).result;
             VoucherItem old_voucher = (VoucherItem)res.masterInfo;
             if (old_voucher != null)
@@ -1014,11 +1023,13 @@ END";
         {
             var listImei = new List<string>();
             var ma_cuahang = "";
+
+            //tách chuỗi imei nhập mới của từng vật tư (string: 001,002,003) để tạo mảng danh sách imei
             if (vc_item.details.Any(x => x.Id == 1))
             {
                 VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
 
-                if (item_detail != null)
+                if (item_detail != null && item_detail.Data != null)
                 {
                     foreach (var item in item_detail.Data)
                     {
@@ -1038,27 +1049,26 @@ END";
                 }
             }
 
+            //tách chuỗi imei đã có ở phiếu cũ (lập chứng từ) của từng vật tư (string: 001,002,003) để tạo mảng danh sách imei
             var listImei_old = new List<string>();
             var ma_cuahang_old = "";
             if (vc_item_old.details.Any(x => x.Id == 1))
             {
                 DetailItemModel? item_detail = vc_item_old.details.FirstOrDefault(x => x.Id == 1);
 
-                if (item_detail != null)
+                if (item_detail != null && item_detail.Data != null)
                 {
-
-                    foreach (var item in item_detail.Data as List<PVDetail>)
+                    foreach (PVDetail item in (item_detail.Data as List<PVDetail>))
                     {
-                        var svDetail = item as PVDetail;
-                        if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
+                        if (item != null && !string.IsNullOrEmpty(item.ma_imei))
                         {
-                            var lst_imei = svDetail.ma_imei.Split(",").ToList();
+                            var lst_imei = item.ma_imei.Split(",").ToList();
                             for (int i = 0; i < lst_imei.Count; i++)
                             {
                                 lst_imei[i] = lst_imei[i].Trim();
                             }
                             listImei_old.AddRange(lst_imei);
-                            ma_cuahang_old = svDetail.ma_cuahang;
+                            ma_cuahang_old = item.ma_cuahang;
                         }
                     }
 
@@ -1071,10 +1081,18 @@ END";
                 message = "",
                 result = null
             };
-            var imeiService = new Imei.Service();
+
+            //lấy trạng thái imei của danh sách imei nhập mới
+            Imei.Service imeiService = new Imei.Service();
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
+
+            //danh sách tình trạng tồn tại imei trong hệ thống của các imei
             List<string> exists = state_imei.Where(x => x.exists_yn == true).Select(x => x.ma_imei).ToList();
+
+            //danh sách tình trạng đặt hàng của các imei
             List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
+            
+            //Nếu trong phiếu nhập mua NCC có imei đã tồn tại trong hệ thống => trả về cảnh báo
             if (exists != null && exists.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -1087,11 +1105,14 @@ END";
                 result_model.message = "exists_yn_yes";
                 result_model.result = list_result_error;
             }
+
             listImei_old.Except(listImei).ToList().ForEach(x =>
             {
                 list_imei_delete.Add(new ImeiItem { ma_imei = x });
             });
             dat_hang = dat_hang.Except(listImei_old).ToList();
+
+            //Nếu trong phiếu nhập mua NCC có imei đang ở trạng thái đặt hàng => trả về cảnh báo
             if (dat_hang != null && dat_hang.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();

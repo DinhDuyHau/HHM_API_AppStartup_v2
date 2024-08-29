@@ -290,12 +290,17 @@ namespace Voucher.SVTran_MHA
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
+
+            //Tạm bỏ qua đoạn check ngày hiện tại
+            /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";
                 return result_model;
             }
+            */
+
             vc_item.ma_ct = this.VoucherCode;
 
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
@@ -532,6 +537,10 @@ SELECT is_success, message FROM @check";
             string detail_table = "", paid_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
+                //2024-08-10: bổ sung query gọi store reset trạng thái đặt hàng của các imei có trong phiếu trước khi update
+                query += "\n\n";
+                query += "exec Genbyte$Imei$ClearOrderStateForSaleInvoice @stt_rec, @ma_ct";
+
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
                 detail_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
 

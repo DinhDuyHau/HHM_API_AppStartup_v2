@@ -274,6 +274,7 @@ namespace Voucher.DRTran
             query += "\n";
             query += $"set @tk = (select tk from #gdtien where 1 = 1)";
 
+            query += "\n\n";
             query += $"{insert_prime_table_query}";
 
             //insert các bảng chi tiết

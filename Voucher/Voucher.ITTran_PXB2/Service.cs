@@ -802,12 +802,12 @@ END";
             };
 
             CoreService core_service = new CoreService();
-            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @prime_ext_filter";
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId, @prime_ext_filter";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
                 new SqlParameter(){ ParameterName = "@ngay_kt", SqlDbType = SqlDbType.DateTime, Value = param.ngay_kt },
-                new SqlParameter(){ ParameterName = "@ma_cuahang", SqlDbType = SqlDbType.VarChar, Value = param.ma_cuahang?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_cuahang", SqlDbType = SqlDbType.VarChar, Value = Startup.Shop },
                 new SqlParameter(){ ParameterName = "@ma_ct", SqlDbType = SqlDbType.VarChar, Value = param.ma_ct?.Trim() },
                 new SqlParameter(){ ParameterName = "@so_ct_bd", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_bd },
                 new SqlParameter(){ ParameterName = "@so_ct_kt", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_kt },
@@ -824,6 +824,7 @@ END";
                 new SqlParameter(){ ParameterName = "@user_id", SqlDbType = SqlDbType.Int, Value = Startup.UserId },
                 new SqlParameter(){ ParameterName = "@ext_filter", SqlDbType = SqlDbType.NVarChar, Value = param.ext_filter },
                 new SqlParameter(){ ParameterName = "@order_fields", SqlDbType = SqlDbType.NVarChar, Value = "status, so_ct desc, ngay_ct desc, stt_rec desc" },
+                new SqlParameter(){ ParameterName = "@filterShopId", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang?.Trim() },
                 //lọc trường fnote2 tại bảng m585 với giá trị 1 hoặc 2
                 //(1: luân chuyển kho tại cửa hàng, 2: điều chuyển hàng lỗi về cty)
                 new SqlParameter(){ ParameterName = "@prime_ext_filter", SqlDbType = SqlDbType.NVarChar, Value = "1,2" },

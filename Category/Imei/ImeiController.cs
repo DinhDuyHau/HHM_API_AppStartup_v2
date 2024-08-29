@@ -99,6 +99,14 @@ namespace Imei
                             List<Dictionary<string, object>> promotion = _service.GetPromotionByImei(ma_cuahang, ma_imei);
                             item_info[0].Add("promotions", promotion);
 
+                            //add danh sách phí sàn đối với chứng từ bán hàng TMĐT (BHC)
+                            if((ma_ct == "BHC" || ma_ct == "bhc") 
+                                && ds.Tables.Count >= 3 && ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            {
+                                IList<ECommFee> list_fee = ds.Tables[2].ToList<ECommFee>();
+                                item_info[0].Add("ecomm_fee", list_fee);
+                            }
+
                             model.result = item_info;
                         }                            
                     }

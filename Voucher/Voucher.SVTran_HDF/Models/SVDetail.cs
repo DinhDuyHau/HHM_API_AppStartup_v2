@@ -105,5 +105,7 @@ namespace Voucher.SVTran_HDF
         public string ten_asm_duyet { get; set; }
         public decimal gia_tra_lai { get; set; }
 
+        public decimal gia_vat { get; set; }
+
     }
 }

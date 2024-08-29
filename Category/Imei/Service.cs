@@ -447,6 +447,7 @@ namespace Imei
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
             string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai";
+
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()

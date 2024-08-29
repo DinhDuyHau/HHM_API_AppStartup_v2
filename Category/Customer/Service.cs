@@ -14,6 +14,7 @@ namespace Customer
 {
     public class Service : CoreService
     {
+        #region GetPaymentDebit
         public List<PaymentDebtModel> GetPaymentDebit(string ma_kh, string ma_dvcs, DateTime ngay_ct)
         {
             string sql = "exec Genbyte$Customer$GetPaymentDebit @ma_kh, @ma_dvcs, @ngay_ct";
@@ -39,6 +40,9 @@ namespace Customer
             List<PaymentDebtModel> entities = base.ExecSql2List<PaymentDebtModel>(sql, paras, ConnectType.Report);
             return entities;
         }
+        #endregion
+
+        #region GetPaymentDeposit
         public List<PaymentDepositModel> GetPaymentDeposit(string ma_kh, string ma_dvcs, string ma_ctr, string ten_ctr, string ma_vt, string ten_vt, DateTime ngay_ct)
         {
             string sql = "exec Genbyte$Customer$GetPaymentDeposit @ma_kh, @ma_dvcs, @ma_ctr, @ten_ctr, @ma_vt, @ten_vt, @ngay_ct";
@@ -88,6 +92,9 @@ namespace Customer
             List<PaymentDepositModel> entities = base.ExecSql2List<PaymentDepositModel>(sql, paras, ConnectType.Report);
             return entities;
         }
+        #endregion
+
+        #region GetConversionPoint
         public decimal GetConversionPoint(string ma_kh, DateTime ngay_ct)
         {
             string sql = "EXEC Genbyte$Customer$GetConversionPoint @ma_kh, @ngay_ct";
@@ -107,6 +114,9 @@ namespace Customer
             decimal conversionPoint = (decimal)base.ExecSql2DataSet(sql, paras, ConnectType.Report).Tables[0].Rows[0]["diem_qd"];
             return conversionPoint;
         }
+        #endregion
+
+        #region GetCustomerInfoByTax
         public CustomerInfoByTax GetCustomerInfoByTax(string service_url, string ma_so_thue)
         {
             var res = this.GetCustomerInfo(service_url, ma_so_thue).Result.ToString();
@@ -124,6 +134,9 @@ namespace Customer
                 return customer;
             }
         }
+        #endregion
+
+        #region GetCustomerInfo
         private async Task<object> GetCustomerInfo(string service_url, string ma_so_thue)
         {
             using (HttpClient httpClient = new HttpClient())
@@ -150,6 +163,7 @@ namespace Customer
                 }
             }
         }
+        #endregion
 
     }
 }
