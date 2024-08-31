@@ -1,4 +1,4 @@
-﻿using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher;
 using Genbyte.Component.Voucher.Model;
 
 namespace Voucher.SVTran_BHC
@@ -125,6 +125,12 @@ namespace Voucher.SVTran_BHC
         public decimal phi_san_10 { get; set; }
 
         public decimal phi_san_hhm { get; set; }
+
+        public decimal tong_phi { get; set; }
+
+        public decimal gia_tmdt { get; set; }
+
+        public decimal gia_tmdt_vat { get; set; }
 
     }
 }
