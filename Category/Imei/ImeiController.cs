@@ -74,6 +74,10 @@ namespace Imei
                                         && !imei_state.tra_ncc_yn
                                         && !imei_state.dat_hang_yn;
 
+                        //check vật tư được đánh dấu cho phép xuất bán liên kết
+                        if (ma_ct == "BHD")
+                            model.success = imei_state.ban_lk_yn;
+
                         if (!imei_state.exists_yn)
                             model.message = "exists_yn_no";
                         else if (!imei_state.in_store_yn)
@@ -90,6 +94,8 @@ namespace Imei
                             model.message = "ban_hang_yn_yes";
                         else if (imei_state.tra_ncc_yn)
                             model.message = "tra_ncc_yn_yes";
+                        else if (ma_ct == "BHD" && !imei_state.ban_lk_yn)
+                            model.message = "ban_lk_yn_fail";
 
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {

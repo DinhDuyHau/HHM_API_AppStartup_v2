@@ -476,10 +476,15 @@ namespace Voucher.SVTran_BHD
             List<ServiceDetailBase> serviceModels = new List<ServiceDetailBase>();
             List<PaidDetailBase> paidDetails = new List<PaidDetailBase>();
             List<string> list_vt = new List<string>();
+
+            //Bỏ qua check status & trạng thái lập đơn liên kết => sẽ xử lý call api của mobifone ngay phía cuối của updating
+            /*
             if (!string.IsNullOrEmpty(vc_item.status) && vc_item.status.Trim() == "2" && vc_item.lap_dh_lk == 0)
             {
                 throw new Exception(ApiReponseMessage.Error_InputData);
             }
+            */
+
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
             int index_value = 1;
@@ -731,6 +736,19 @@ SELECT is_success, message FROM @check";
             {
                 return result_model;
             }
+
+            /**
+             * GỬI DỮ LIỆU SANG API CỦA MOBIFONE (SỬ DỤNG await)
+             * ==================================================
+             */
+            if(vc_item.status == "2")
+            {
+                // check trạng thái liên kết = "0" (chưa lập đơn liên kết) mới cho gửi request đến api của mobifone
+                // field: lap_dh_lk
+
+            }
+            /**==================================================*/
+
             //return voucher object
             result_model.result = vc_item;
             return result_model;

@@ -263,6 +263,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.IPTran_PNF2", "..\V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voucher.KKTran", "..\Voucher\Voucher.KKTran\Voucher.KKTran.csproj", "{3160BEFD-CE38-41C5-A3CF-9B3098FDFA51}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmnganhhang", "..\Category\Category.Dmnganhhang\Category.Dmnganhhang.csproj", "{C53D1E57-20D0-4CE0-99BF-33F7F750FB70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -777,6 +779,10 @@ Global
 		{3160BEFD-CE38-41C5-A3CF-9B3098FDFA51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3160BEFD-CE38-41C5-A3CF-9B3098FDFA51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3160BEFD-CE38-41C5-A3CF-9B3098FDFA51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C53D1E57-20D0-4CE0-99BF-33F7F750FB70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C53D1E57-20D0-4CE0-99BF-33F7F750FB70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C53D1E57-20D0-4CE0-99BF-33F7F750FB70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C53D1E57-20D0-4CE0-99BF-33F7F750FB70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -898,6 +904,7 @@ Global
 		{1D6C9599-1871-4BC4-AB55-24B374BAE63A} = {5B528E59-011A-4B15-B331-273D9C39BC11}
 		{4041FF35-3DE1-47D6-9E04-AD46C1BF2E73} = {5B528E59-011A-4B15-B331-273D9C39BC11}
 		{3160BEFD-CE38-41C5-A3CF-9B3098FDFA51} = {5B528E59-011A-4B15-B331-273D9C39BC11}
+		{C53D1E57-20D0-4CE0-99BF-33F7F750FB70} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}

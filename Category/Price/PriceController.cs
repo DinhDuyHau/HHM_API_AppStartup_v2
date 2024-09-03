@@ -111,6 +111,33 @@ namespace Price
         #endregion
 
         /// <summary>
+        /// Check giá điều chỉnh và lấy tiền hỗ trợ từ vật tư thu cũ
+        /// </summary>
+        [HttpGet("renew_adjust_buy_price")]
+        #region GetRenewAdjustBuyPrice
+        public IActionResult GetRenewAdjustBuyPrice(string ma_ncc, string loai_hang_mua, string ma_vt_mua, decimal gia_ban, decimal gia_dc)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetRenewAdjustBuyPrice", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
         /// Lấy giá bán của hàng bán trả lại
         /// </summary>
         /// <param name="ma_vt">mã hàng cần lấy thông tin</param>

@@ -26,5 +26,7 @@ namespace Imei
 
         public bool in_stock_yn { get; set; }
 
+        public bool ban_lk_yn { get; set; }
+
     }
 }

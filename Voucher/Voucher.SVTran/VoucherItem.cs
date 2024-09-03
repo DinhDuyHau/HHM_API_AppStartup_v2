@@ -18,5 +18,15 @@ namespace Voucher.SVTran
         public decimal t_cp_khac_nt { get; set; }
 
         public decimal fqty1 { get; set; }
+
+        public string ma_loaivc { get; set; }
+
+        public string so_dh_vc { get; set; }
+
+        public string ma_van_don { get; set; }
+
+        public decimal tien_phi_cod { get; set; }
+
+        public string ghi_chu_gh { get; set; }
     }
 }
