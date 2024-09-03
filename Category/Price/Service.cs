@@ -71,6 +71,62 @@ namespace Price
             return entities;
         }
 
+        public List<AdjustPriceModel> GetRenewAdjustBuyPrice(DateTime ngay_ct, string ma_cttc, string ma_ncc, string ma_loai, string ma_vt_mua, string ma_vt_ban, decimal gia_mua, decimal gia_dc)
+        {
+            string sql = "exec Genbyte$Voucher$BHK$AdjustBuyPrice @ngay_ct, @ma_cttc, @ma_ncc, @ma_loai, @ma_vt_mua, @ma_vt_ban, @gia_mua, @gia_dc";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_cttc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cttc
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ncc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_ncc ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_loai",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_loai
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt_mua",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt_mua
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt_ban",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt_ban
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@gia_mua",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_mua
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@gia_dc",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_dc
+            });
+            List<AdjustPriceModel> entities = base.ExecSql2List<AdjustPriceModel>(sql, paras);
+            return entities;
+        }
+
         public ReturnPriceModel GetReturnPrice(string ma_vt, string ma_imei, string ma_cuahang, DateTime ngay_ct, decimal gia_nt, decimal rate, decimal tien_giam)
         {
             string sql = "exec Genbyte$Item$GetReturnPrice @ma_vt, @ma_imei, @ma_cuahang, @ngay_ct, @gia_nt, @rate, @tien_giam";
