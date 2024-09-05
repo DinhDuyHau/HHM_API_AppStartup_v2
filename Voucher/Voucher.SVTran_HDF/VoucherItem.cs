@@ -1,4 +1,4 @@
-﻿using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher;
 
 namespace Voucher.SVTran_HDF
 {
@@ -11,5 +11,6 @@ namespace Voucher.SVTran_HDF
         public decimal tien_dat_coc { get; set; }
         public decimal t_tien_tnk { get; set; }
         public string ma_nvvc { get; set; }
+        public DateTime? fdate2 { get; set; }
     }
 }
