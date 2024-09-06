@@ -14,5 +14,7 @@ namespace Imei.Models
         public List<string> list_vt { get; set; }
 
         public string imei_thu_cu { get; set; }
+
+        public DateTime? ngay_ct { get; set; }
     }
 }

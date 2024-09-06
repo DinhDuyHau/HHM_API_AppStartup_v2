@@ -17,5 +17,7 @@ namespace Customer.Model
         public string ma_nt { get; set; }
         public decimal tt_nt { get; set; }
         public string dien_giai { get; set; }
+
+        public string ma_cuahang { get; set; }
     }
 }

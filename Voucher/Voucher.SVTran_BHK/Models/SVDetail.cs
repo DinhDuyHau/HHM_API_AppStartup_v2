@@ -104,5 +104,14 @@ namespace Voucher.SVTran_BHK
         public string imei_mua { get; set; }
 
         public decimal gia_vat { get; set; }
+
+        public string ma_gd_tcdm { get; set; }
+
+        public decimal gia_bl { get; set; }
+
+        public decimal gia_bl_vat { get; set; }
+
+        public decimal tien_ht { get; set; }
+
     }
 }

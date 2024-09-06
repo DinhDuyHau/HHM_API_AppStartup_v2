@@ -85,7 +85,7 @@ namespace Price
             {
                 ParameterName = "@ma_cttc",
                 SqlDbType = SqlDbType.VarChar,
-                Value = ma_cttc
+                Value = string.IsNullOrEmpty(ma_cttc) ? "" : ma_cttc
             });
             paras.Add(new SqlParameter()
             {
