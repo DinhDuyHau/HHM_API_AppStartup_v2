@@ -1,4 +1,4 @@
-﻿using Genbyte.Base.CoreLib;
+using Genbyte.Base.CoreLib;
 using Genbyte.Base.Security;
 using Genbyte.Component.Voucher;
 using Genbyte.Component.Voucher.Model;
