@@ -1,4 +1,4 @@
-﻿using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,5 +41,11 @@ namespace Voucher.ITNTran
         public string hddt_ma_so_thue { get; set; }
         public string hddt_ma_tra_cuu { get; set; }
         public string fnote3 { get; set; }
+
+        public string fcode1 { get; set; }
+
+        public string fcode2 { get; set; }
+
+        public string fcode3 { get; set; }
     }
 }
