@@ -169,7 +169,9 @@ namespace Voucher.SVTran_BHG
                         detail_list.ForEach(x =>
                         {
                             x.ngay_ct = vc_item.ngay_ct;
-                            x.stt_rec_dh = APIService.DecryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                            //2024-09-08: lưu stt_rec đơn hàng bán vào trường stt_rec_dh
+                            x.stt_rec_dh = string.IsNullOrEmpty(x.stt_rec_dh) ? "" : 
+                                APIService.DecryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                         });
 
                         item_detail.Data = new List<DetailEntity>();
@@ -612,7 +614,9 @@ namespace Voucher.SVTran_BHG
                         detail_list.ForEach(x =>
                         {
                             x.ngay_ct = vc_item.ngay_ct;
-                            x.stt_rec_dh = APIService.DecryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                            //2024-09-08: lưu stt_rec đơn hàng bán vào trường stt_rec_dh
+                            x.stt_rec_dh = string.IsNullOrEmpty(x.stt_rec_dh) ? "" : 
+                                APIService.DecryptForWebApp(x.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                         });
 
                         item_detail.Data = new List<DetailEntity>();

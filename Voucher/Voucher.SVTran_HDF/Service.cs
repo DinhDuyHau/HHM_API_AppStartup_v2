@@ -5,14 +5,18 @@ using Genbyte.Sys.Common.Models;
 using System.Data.SqlClient;
 using System.Data;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Genbyte.Sys.AppAuth;
 using System.Text.Json;
+using Genbyte.Base.Security;
 using Genbyte.Component.Voucher.Model;
 
 namespace Voucher.SVTran_HDF
 {
     public class Service : IVoucherService
     {
+        private readonly IConfiguration _configuration;
+
         //Mã chứng từ
         public string VoucherCode { get; } = "HDF";
 
@@ -61,14 +65,20 @@ namespace Voucher.SVTran_HDF
         // Lấy danh sách imei xóa khỏi grid
         List<string> list_imei_delete = new List<string>();
 
-        public Service()
+        private readonly string aes_key = "";
+        private readonly string aes_iv = "";
+
+        public Service(IConfiguration _configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
+            this._configuration = _configuration;
 
+            this.aes_key = _configuration["Security:KeyAES"];
+            this.aes_iv = _configuration["Security:IVAES"];
         }
 
         #region Inserting
@@ -100,6 +110,10 @@ namespace Voucher.SVTran_HDF
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
+
+            //Cập nhật lại stt_rec của phiếu xuất bán
+            vc_item.stt_rec_hd = string.IsNullOrEmpty(vc_item.stt_rec_hd) ? "" :
+                                APIService.DecryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -372,6 +386,10 @@ namespace Voucher.SVTran_HDF
 
             // cập nhật ma_gd = 2
             vc_item.ma_gd = VoucherUtils.MA_GD;
+
+            //Cập nhật lại stt_rec của phiếu xuất bán
+            vc_item.stt_rec_hd = string.IsNullOrEmpty(vc_item.stt_rec_hd) ? "" :
+                                APIService.DecryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -875,6 +893,9 @@ END";
                 IList<SVBillModel> pr_bill = ds.Tables[2].ToList<SVBillModel>();
                 IList<SVPaidModel> pr_paid = ds.Tables[3].ToList<SVPaidModel>();
                 IList<SVServiceModel> pr_service = ds.Tables[4].ToList<SVServiceModel>();
+
+                //xử lý mã hóa stt_rec_hd trước khi response
+                vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;

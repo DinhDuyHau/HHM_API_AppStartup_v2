@@ -12,5 +12,9 @@ namespace Voucher.SVTran_HDF
         public decimal t_tien_tnk { get; set; }
         public string ma_nvvc { get; set; }
         public DateTime? fdate2 { get; set; }
+
+        public string stt_rec_hd { get; set; }
+
+        public bool tra_lai_cod { get; set; }
     }
 }
