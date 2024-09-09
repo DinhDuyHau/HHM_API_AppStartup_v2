@@ -1,4 +1,4 @@
-﻿using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +28,12 @@ namespace Voucher.ITTran_PXB2
         /// Mã loại giao dịch
         /// </summary>
         public string fnote2 { get; set; }
+
+        public string fcode1 { get; set; }
+
+        public string fcode2 { get; set; }
+
+        public string fcode3 { get; set; }
 
     }
 }
