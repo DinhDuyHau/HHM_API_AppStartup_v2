@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Genbyte.Component.Category;
 using Genbyte.Sys.Common;
@@ -49,6 +50,10 @@ namespace Category.Dmkh
             //check sql injection
             if (!data_service.IsSQLInjectionValid(entity_item.ma_kh))
                 throw new Exception(ApiReponseMessage.Error_InputData);
+            // Check ký tự đặc biệt
+            if (ContainsSpecialCharacters(entity_item.ma_kh))
+                throw new Exception(ApiReponseMessage.Error_InputData);
+
 
             //check tồn tại dữ liệu trong db theo khóa chính
             string sql = "select 1 from dmkh where ma_kh = @ma_kh";
@@ -65,6 +70,16 @@ namespace Category.Dmkh
 
             //hợp lệ => trả về true
             return true;
+        }
+        // Phương thức kiểm tra ký tự đặc biệt
+        private bool ContainsSpecialCharacters(string input)
+        {
+            // Biểu thức chính quy để kiểm tra ký tự đặc biệt
+            string pattern = @"[^a-zA-Z0-9\s]";
+            Regex regex = new Regex(pattern);
+
+            // Kiểm tra xem chuỗi có chứa ký tự đặc biệt không
+            return regex.IsMatch(input);
         }
 
         /// <summary>
