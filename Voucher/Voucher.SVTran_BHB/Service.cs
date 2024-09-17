@@ -15,6 +15,8 @@ using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Component.Voucher.Model;
+using Microsoft.Extensions.Configuration;
+using Genbyte.Base.Security;
 
 namespace Voucher.SVTran_BHB
 {
@@ -48,6 +50,10 @@ namespace Voucher.SVTran_BHB
         //Bảng lưu dữ liệu ảnh
         public string ImageTable { get; } = "m592img$";
 
+        private readonly IConfiguration _configuration;
+        private readonly string aes_key = "";
+        private readonly string aes_iv = "";
+
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d592,d592,d592";
@@ -70,14 +76,17 @@ namespace Voucher.SVTran_BHB
         // Lấy danh sách imei xóa khỏi grid
         List<string> list_imei_delete = new List<string>();
 
-        public Service()
+        public Service(IConfiguration _configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
+            this._configuration = _configuration;
 
+            this.aes_key = _configuration["Security:KeyAES"];
+            this.aes_iv = _configuration["Security:IVAES"];
         }
 
         #region Inserting
@@ -167,9 +176,15 @@ namespace Voucher.SVTran_BHB
                             case 4:
                                 List<SVTransModel>? trans_list = JsonSerializer.Deserialize<List<SVTransModel>>((JsonElement)item_model.Data);
                                 if (trans_list != null && trans_list.Count > 0)
-                                {
-                                    //cập nhật ngày chứng từ
-                                    trans_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                {                                    
+                                    trans_list.ForEach(item => {
+                                        //cập nhật ngày chứng từ
+                                        item.ngay_ct = vc_item.ngay_ct;
+
+                                        //Cập nhật lại stt_rec_hd
+                                        item.stt_rec_hd = string.IsNullOrEmpty(item.stt_rec_hd) ? "" :
+                                                            APIService.DecryptForWebApp(item.stt_rec_hd, this.aes_key, this.aes_iv);
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(trans_list);
@@ -330,8 +345,6 @@ namespace Voucher.SVTran_BHB
                 query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
             if (!string.IsNullOrEmpty(paid_table))
                 query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if (!string.IsNullOrEmpty(trans_table))
-                query += $"exec fs_UpdateNullToTable '{trans_table}', '{trans_table}', 'stt_rec = ''{stt_rec}''' \n";
             if (!string.IsNullOrEmpty(warranty_table))
                 query += $"exec fs_UpdateNullToTable '{warranty_table}', '{warranty_table}', 'stt_rec = ''{stt_rec}''' \n";
             if (!string.IsNullOrEmpty(trans_table))
@@ -441,6 +454,12 @@ namespace Voucher.SVTran_BHB
                                 List<SVTransModel>? trans_list = JsonSerializer.Deserialize<List<SVTransModel>>((JsonElement)item_model.Data);
                                 if (trans_list != null && trans_list.Count > 0)
                                 {
+                                    trans_list.ForEach(item => {
+                                        //Cập nhật lại stt_rec_hd
+                                        item.stt_rec_hd = string.IsNullOrEmpty(item.stt_rec_hd) ? "" :
+                                                            APIService.DecryptForWebApp(item.stt_rec_hd, this.aes_key, this.aes_iv);
+                                    });
+
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(trans_list);
                                 }
@@ -901,6 +920,15 @@ END";
                 IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[3].ToList<SVWarrantyModel>();
                 IList<SVTransModel> pr_trans = ds.Tables[4].ToList<SVTransModel>();
+
+                foreach (SVTransModel item in pr_trans)
+                {
+                    //Cập nhật lại stt_rec & stt_rec_hd
+                    item.stt_rec = string.IsNullOrEmpty(item.stt_rec) ? "" :
+                                        APIService.EncryptForWebApp(item.stt_rec, this.aes_key, this.aes_iv);
+                    item.stt_rec_hd = string.IsNullOrEmpty(item.stt_rec_hd) ? "" :
+                                        APIService.EncryptForWebApp(item.stt_rec_hd, this.aes_key, this.aes_iv);
+                }
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;

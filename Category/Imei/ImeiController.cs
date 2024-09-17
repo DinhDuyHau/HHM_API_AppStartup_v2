@@ -435,7 +435,7 @@ namespace Imei
 
         [HttpGet("soldinfo/")]
         #region GetImeiSoldInfo
-        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "")
+        public IActionResult GetImeiSoldInfo(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "", bool? tra_lai_cod = false)
         {
             try
             {
@@ -446,7 +446,7 @@ namespace Imei
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0, loai_tra_lai ?? "");
+                CommonObjectModel model = _service.GetImeiSoldInfo(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0, loai_tra_lai ?? "", tra_lai_cod ?? false);
                 if (model.result != null)
                     model.success = true;
 
