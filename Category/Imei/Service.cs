@@ -121,7 +121,7 @@ namespace Imei
         #region GetPriceRenew
         public DataSet GetPriceRenew(RenewModel renew)
         {
-            string sql = "exec Genbyte$IMEI$GetImeiInfoRenew @imei, @shop_id, @ma_ncc, @list_vt, @imei_thu_cu, @ngay_ct";
+            string sql = "exec Genbyte$IMEI$GetImeiInfoRenew @imei, @shop_id, @ma_ncc, @list_vt, @imei_thu_cu, @ngay_ct, @tong_tien_ht, @tien_thu_cu";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -158,6 +158,18 @@ namespace Imei
                 ParameterName = $"@ngay_ct",
                 SqlDbType = SqlDbType.DateTime,
                 Value = renew.ngay_ct == null ? DBNull.Value : renew.ngay_ct.Value
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@tong_tien_ht",
+                SqlDbType = SqlDbType.Decimal,
+                Value = renew.tong_tien_ht.HasValue ? renew.tong_tien_ht : 0
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@tien_thu_cu",
+                SqlDbType = SqlDbType.Decimal,
+                Value = renew.tien_thu_cu.HasValue ? renew.tien_thu_cu : 0
             });
             return base.ExecSql2DataSet(sql, paras);
         }

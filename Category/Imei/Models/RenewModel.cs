@@ -16,5 +16,9 @@ namespace Imei.Models
         public string imei_thu_cu { get; set; }
 
         public DateTime? ngay_ct { get; set; }
+
+        public decimal? tong_tien_ht { get; set; }
+
+        public decimal? tien_thu_cu { get; set; }
     }
 }

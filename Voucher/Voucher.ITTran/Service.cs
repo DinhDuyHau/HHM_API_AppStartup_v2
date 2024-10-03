@@ -556,6 +556,7 @@ SELECT is_success, message FROM @check";
                 query += detail_query?.QueryString;
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
+                query += $"update @{_DETAIL_PARA} set stt_rec0 = right(row_id$ + 1000, 3) where stt_rec0 is null or stt_rec0 = ''";
                 query += "\n\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
@@ -863,7 +864,7 @@ END";
             };
 
             CoreService core_service = new CoreService();
-            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId";
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId, @filterShopId_in, '', @status2";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
@@ -886,6 +887,8 @@ END";
                 new SqlParameter(){ ParameterName = "@ext_filter", SqlDbType = SqlDbType.NVarChar, Value = param.ext_filter },
                 new SqlParameter(){ ParameterName = "@order_fields", SqlDbType = SqlDbType.NVarChar, Value = "status, so_ct desc, ngay_ct desc, stt_rec desc" },
                 new SqlParameter(){ ParameterName = "@filterShopId", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang?.Trim() },
+                new SqlParameter(){ ParameterName = "@filterShopId_in", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang2?.Trim() },
+                new SqlParameter(){ ParameterName = "@status2", SqlDbType = SqlDbType.VarChar, Value = param.status2 },
             });
             DataSet dataSet = core_service.ExecSql2DataSet(sql, paras);
             if (dataSet != null && dataSet.Tables.Count > 1)

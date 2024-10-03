@@ -8,15 +8,31 @@ namespace Report.RptSaleByImei
 
         public DateTime den_ngay { get; set; }
 
-
-        public string ma_ca { get; set; } = "";
+        public string ma_kh { get; set; } = "";
 
         public string ma_kho { get; set; } = "";
 
         public string ma_vt { get; set; } = "";
 
+        public string ma_dv { get; set; } = "";
+
+        public string ma_cuahang { get; set; } = "";
+
+        public string ma_ca { get; set; } = "";
 
         public string ma_nvbh { get; set; } = "";
+
+        public string nh_vt1 { get; set; } = "";
+
+        public string nh_vt2 { get; set; } = "";
+
+        public string nh_vt3 { get; set; } = "";
+
+        public string nh_vt4 { get; set; } = "";
+
+        public string nh_vt5 { get; set; } = "";
+
+        public string ma_nganh { get; set; } = "";
 
     }
 }

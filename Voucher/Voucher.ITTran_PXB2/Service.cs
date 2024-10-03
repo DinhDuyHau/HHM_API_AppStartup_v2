@@ -802,7 +802,7 @@ END";
             };
 
             CoreService core_service = new CoreService();
-            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId, @prime_ext_filter";
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_PXB @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId, @filterShopId_in, @prime_ext_filter, @status2";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
@@ -825,9 +825,11 @@ END";
                 new SqlParameter(){ ParameterName = "@ext_filter", SqlDbType = SqlDbType.NVarChar, Value = param.ext_filter },
                 new SqlParameter(){ ParameterName = "@order_fields", SqlDbType = SqlDbType.NVarChar, Value = "status, so_ct desc, ngay_ct desc, stt_rec desc" },
                 new SqlParameter(){ ParameterName = "@filterShopId", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang?.Trim() },
+                new SqlParameter(){ ParameterName = "@filterShopId_in", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang2?.Trim() },
                 //lọc trường fnote2 tại bảng m585 với giá trị 1 hoặc 2
                 //(1: luân chuyển kho tại cửa hàng, 2: điều chuyển hàng lỗi về cty)
                 new SqlParameter(){ ParameterName = "@prime_ext_filter", SqlDbType = SqlDbType.NVarChar, Value = "1,2" },
+                new SqlParameter(){ ParameterName = "@status2", SqlDbType = SqlDbType.VarChar, Value = param.status2 },
             });
             DataSet dataSet = core_service.ExecSql2DataSet(sql, paras);
             if (dataSet != null && dataSet.Tables.Count > 1)

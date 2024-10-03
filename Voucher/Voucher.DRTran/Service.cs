@@ -768,18 +768,66 @@ END";
                 IList<PRDetail> pr_detail = ds.Tables[1].ToList<PRDetail>();
                 IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
                 List<PaymentDebtModel> paymentDebtModels = new Customer.Service().GetPaymentDebit(vc_item.ma_kh, vc_item.ma_dvcs, (DateTime)vc_item.ngay_ct);
-                
-                List<ORDetailFinding> or_detail_finding = 
-                    pr_detail.Join(paymentDebtModels, d => d.stt_rec_tt, e => e.stt_rec,
-                    (d, e) => new ORDetailFinding 
-                    { 
-                        stt_rec = d.stt_rec, stt_rec0 = d.stt_rec0, ma_ct = d.ma_ct, ngay_ct = d.ngay_ct, so_ct = d.so_ct, dien_giai = d.dien_giai,
-                        tien = d.tien, tien_nt = d.tien_nt,
-                        stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]), 
-                        so_hd_tt = d.so_hd_tt, ngay_hd_tt = d.ngay_hd_tt, tt = d.tt,
-                        tt_nt = d.tt_nt, line_nbr = d.line_nbr, ma_ca = d.ma_ca, ma_cuahang = d.ma_cuahang, tien_hd = e.t_tt_nt, da_tt = e.da_tt_nt, 
-                        tien_cl = e.cl_nt, con_lai = 0
+
+                List<ORDetailFinding> or_detail_finding = null;
+                if(paymentDebtModels != null)
+                {
+                    or_detail_finding = pr_detail.Join(paymentDebtModels, d => d.stt_rec_tt, e => e.stt_rec,
+                    (d, e) => new ORDetailFinding
+                    {
+                        stt_rec = d.stt_rec,
+                        stt_rec0 = d.stt_rec0,
+                        ma_ct = d.ma_ct,
+                        ngay_ct = d.ngay_ct,
+                        so_ct = d.so_ct,
+                        dien_giai = d.dien_giai,
+                        tien = d.tien,
+                        tien_nt = d.tien_nt,
+                        stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]),
+                        so_hd_tt = d.so_hd_tt,
+                        ngay_hd_tt = d.ngay_hd_tt,
+                        tt = d.tt,
+                        tt_nt = d.tt_nt,
+                        line_nbr = d.line_nbr,
+                        ma_ca = d.ma_ca,
+                        ma_cuahang = d.ma_cuahang,
+                        tien_hd = e.t_tt_nt,
+                        da_tt = e.da_tt_nt,
+                        tien_cl = e.cl_nt,
+                        con_lai = 0
                     }).ToList();
+                }
+                else
+                {
+                    or_detail_finding = new List<ORDetailFinding>();
+                    foreach(PRDetail d in pr_detail)
+                    {
+                        or_detail_finding.Add(new ORDetailFinding()
+                        {
+                            stt_rec = d.stt_rec,
+                            stt_rec0 = d.stt_rec0,
+                            ma_ct = d.ma_ct,
+                            ngay_ct = d.ngay_ct,
+                            so_ct = d.so_ct,
+                            dien_giai = d.dien_giai,
+                            tien = d.tien,
+                            tien_nt = d.tien_nt,
+                            stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]),
+                            so_hd_tt = d.so_hd_tt,
+                            ngay_hd_tt = d.ngay_hd_tt,
+                            tt = d.tt,
+                            tt_nt = d.tt_nt,
+                            line_nbr = d.line_nbr,
+                            ma_ca = d.ma_ca,
+                            ma_cuahang = d.ma_cuahang,
+                            tien_hd = 0,
+                            da_tt = 0,
+                            tien_cl = 0,
+                            con_lai = 0
+                        });
+                    }
+                }
+                    
                 or_detail_finding.ForEach(item =>
                 {
                     item.con_lai = item.tien_cl - item.tien_nt;

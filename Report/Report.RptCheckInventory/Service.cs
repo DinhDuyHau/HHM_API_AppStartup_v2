@@ -1,5 +1,4 @@
 ﻿using Genbyte.Component.Report;
-using Genbyte.Component.Report.Model;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,14 +10,11 @@ using System.Reflection.Metadata;
 
 namespace Report.RptCheckInventory
 {
-    public class Service : IReportService
+    public class Service : IComponentService
     {
         public IMemoryCache MemoryCache { get; set; }
         public IConfiguration Configuration { get; set; }
         public string controller { get; set; } = "rptCheckInventory";
-
-        // Bảng hiển thị lên báo cáo.
-        public readonly int table_index = 1;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
         {
@@ -26,7 +22,7 @@ namespace Report.RptCheckInventory
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, 1);
             return raw_model;
         }
 
@@ -40,21 +36,11 @@ namespace Report.RptCheckInventory
             return raw_model;
         }
 
-        public Query InitExport(string controller, Dictionary<string, object> param)
-        {
-            string sql = "";
-            ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
-            List<SqlParameter> list_paras = init(obj_param, out sql);
-            return new Query()
-            {
-                SqlString = sql,
-                Parameters = list_paras,
-                RptTableIndex = this.table_index
-            };
-        }
-
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
+            int user_id = Startup.UserId;
+            int admin = Startup.Admin;
+
             sql = @"declare @c varchar(1024)
                 select @c = case @nh_theo when '0' then '' when '1' then 'loai_vt' when '2' then 'nh_vt1' else '' end
                 if (@c = 'nh_vt1') and (cast(@tt_sx1 as tinyint) + cast(@tt_sx2 as tinyint) + cast(@tt_sx3 as tinyint) <> 0) begin
@@ -72,7 +58,7 @@ namespace Report.RptCheckInventory
                     select @SiteName = N'', @SiteName2 = N''
     
                 select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, @SiteName as ten_kho, @SiteName2 as ten_kho2
-                exec rs_rptCheckInventory @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, @language, @userID, @admin
+                exec rs_rptCheckInventory @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, 'v', @user_id, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -173,21 +159,22 @@ namespace Report.RptCheckInventory
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@language",
-                SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.language
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@userID",
+                ParameterName = "@user_id",
                 SqlDbType = SqlDbType.Int,
-                SqlValue = obj_param.userId
+                SqlValue = user_id
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
-                SqlValue = obj_param.admin
+                SqlValue = admin
+            });
+
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
             return list_paras;
         }

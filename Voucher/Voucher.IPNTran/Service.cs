@@ -708,7 +708,7 @@ END";
             };
 
             CoreService core_service = new CoreService();
-            string sql = "EXEC Genbyte$SalesVoucher$Finding_PNN @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId";
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_PNN @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_kho2, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @ext_filter, @order_fields, @filterShopId, @filterShopId_out, @status2";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
@@ -731,6 +731,8 @@ END";
                 new SqlParameter(){ ParameterName = "@ext_filter", SqlDbType = SqlDbType.NVarChar, Value = param.ext_filter },
                 new SqlParameter(){ ParameterName = "@order_fields", SqlDbType = SqlDbType.NVarChar, Value = "status, so_ct desc, ngay_ct desc, stt_rec desc" },
                 new SqlParameter(){ ParameterName = "@filterShopId", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang?.Trim() },
+                new SqlParameter(){ ParameterName = "@filterShopId_out", SqlDbType = SqlDbType.NVarChar, Value = param.ma_cuahang2?.Trim() },
+                new SqlParameter(){ ParameterName = "@status2", SqlDbType = SqlDbType.VarChar, Value = param.status2 },
             });
             DataSet dataSet = core_service.ExecSql2DataSet(sql, paras);
             if (dataSet != null && dataSet.Tables.Count > 1)

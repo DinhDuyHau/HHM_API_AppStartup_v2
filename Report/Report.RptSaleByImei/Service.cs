@@ -19,6 +19,8 @@ namespace Report.RptSaleByImei
 
         public string controller { get; set; } = "rptSaleByImei";
 
+        private ConnectType connectType = ConnectType.Report;
+
         // Bảng hiển thị lên báo cáo.
         public readonly int table_index = 1;
 
@@ -29,7 +31,7 @@ namespace Report.RptSaleByImei
 
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index, connectType);
             return raw_model;
         }
 
@@ -59,34 +61,71 @@ namespace Report.RptSaleByImei
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
+
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            string ma_dvcs = Startup.Unit;
+            string ma_dvcs = "";
 
-            sql = @"select @tu_ngay as tu_ngay, @den_ngay as den_ngay
-exec rs_rptSaleByImei @tu_ngay, @den_ngay, '', '', @ma_nvbh, '', @ma_kho, @ma_vt, '', '', '',
-  @nh_vt1, @nh_vt2, @nh_vt3, '', '', '', '', @ma_dvcs, '', '', '', '', '', 'HDA, E01, DX1, DXA', '1',
-  '2', 12, N'a.ngay_ct, a.ma_ct, a.so_ct', 1, @ma_cuahang, @ma_ca, @nh_vt4, @nh_vt5, @nh_vt6, 'v', @user_id, @admin
-            ";
+            string so_ct1 = "";
+            string so_ct2 = "";
+            string ma_imei = "";
+            string tk_dt = "";
+            string tk_vt = "";
+            string ma_nx = "";
+            string ma_vv = "";
+            string ma_hd = "";
+            string ma_bp = "";
+            string ma_lo = "";
+            string ma_td1 = "";
+            string ma_td2 = "";
+            string ma_td3 = "";
+            string ds_ma_gd = "";
+            int maxLength = 12;
+            int loai_du_lieu = 1;
+            string ma_nh_kho = "";
+
+            sql = @"declare @voucherList varchar(512)
+                    select @voucherList = 'HDA, E01, DX1, DXA'
+                    select @ngay_ct1 as tu_ngay, @ngay_ct2 as den_ngay
+                    exec rs_rptSaleByImei @ngay_ct1, @ngay_ct2, @so_ct1, @so_ct2, @ma_nvbh, @ma_kh, @ma_kho, @ma_vt, @ma_dv, @ma_imei, @tk_dt, @tk_vt,
+                        @nh_vt1, @nh_vt2, @nh_vt3, @ma_nx, @ma_vv, @ma_hd, @ma_bp, @ma_dvcs, @ma_lo, @ma_td1, @ma_td2, @ma_td3, @ds_ma_gd, @voucherList, 
+                        '2', @maxLength, N'a.ngay_ct, a.ma_ct, a.so_ct', @loai_du_lieu, @ma_cuahang, @ma_ca, @nh_vt4, @nh_vt5, @ma_nganh, 'v', @user_id, @admin, @ma_nh_kho";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@tu_ngay",
+                ParameterName = "@ngay_ct1",
                 SqlDbType = SqlDbType.DateTime,
                 SqlValue = obj_param.tu_ngay
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@den_ngay",
+                ParameterName = "@ngay_ct2",
                 SqlDbType = SqlDbType.DateTime,
                 SqlValue = obj_param.den_ngay
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@so_ct1",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = so_ct1
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@so_ct2",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = so_ct2
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_nvbh",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_nvbh
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_kh
             });
             list_paras.Add(new SqlParameter
             {
@@ -100,45 +139,72 @@ exec rs_rptSaleByImei @tu_ngay, @den_ngay, '', '', @ma_nvbh, '', @ma_kho, @ma_vt
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_vt
             });
-
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_dv",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_dv
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_imei",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_imei
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@tk_dt",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = tk_dt
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@tk_vt",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = tk_vt
+            });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@nh_vt1",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ""
+                SqlValue = obj_param.nh_vt1
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@nh_vt2",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ""
+                SqlValue = obj_param.nh_vt2
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@nh_vt3",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ""
+                SqlValue = obj_param.nh_vt3
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_vt4",
+                ParameterName = "@ma_nx",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ""
+                SqlValue = ma_nx
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_vt5",
+                ParameterName = "@ma_vv",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ""
+                SqlValue = ma_vv
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_vt6",
+                ParameterName = "@ma_hd",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ""
+                SqlValue = ma_hd
             });
-
-
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_bp",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_bp
+            });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_dvcs",
@@ -147,15 +213,75 @@ exec rs_rptSaleByImei @tu_ngay, @den_ngay, '', '', @ma_nvbh, '', @ma_kho, @ma_vt
             });
             list_paras.Add(new SqlParameter
             {
+                ParameterName = "@ma_lo",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_lo
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_td1",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_td1
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_td2",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_td2
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_td3",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_td3
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ds_ma_gd",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ds_ma_gd
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@maxLength",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = maxLength
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loai_du_lieu",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = loai_du_lieu
+            });
+            list_paras.Add(new SqlParameter
+            {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_cuahang
+                SqlValue = obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_ca",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_ca
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt4",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt4
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt5",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt5
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nganh",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_nganh
             });
             list_paras.Add(new SqlParameter
             {
@@ -169,7 +295,18 @@ exec rs_rptSaleByImei @tu_ngay, @den_ngay, '', '', @ma_nvbh, '', @ma_kho, @ma_vt
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
             });
-
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nh_kho",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_nh_kho
+            });
             return list_paras;
         }
 

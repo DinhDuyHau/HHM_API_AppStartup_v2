@@ -689,7 +689,8 @@ end";
                     DataRow dr = ds_post.Tables[0].Rows[0];
                     model.success = Convert.ToBoolean(dr["is_success"]);
                     model.message = dr["msg"].ToString();
-                    model.result = new List<VoucherItem>() { vc_item };
+                    //model.result = new List<VoucherItem>() { vc_item };
+                    model.result = vc_item;
 
                     return model;
                 }
