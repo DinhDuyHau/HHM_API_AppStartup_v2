@@ -19,7 +19,6 @@ namespace Report.RptReceiptTransactionListByImei
 
         public string controller { get; set; } = "rptReceiptTransactionListByImei";
 
-        // Bảng hiển thị lên báo cáo.
         public readonly int table_index = 1;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
@@ -66,9 +65,11 @@ namespace Report.RptReceiptTransactionListByImei
             string ma_nx = "";
             string tk_vt = "";
             string ma_loai_vt = "";
-            string ma_nh = "";
-            string ma_nh2 = "";
-            string ma_nh3 = "";
+            //string ma_nh = "";
+            //string ma_nh2 = "";
+            //string ma_nh3 = "";
+            string ma_nh4 = "";
+            string ma_nh5 = "";
             string ma_hd = "";
             string ma_bp = "";
             string lenh_sx = "";
@@ -80,8 +81,8 @@ namespace Report.RptReceiptTransactionListByImei
 
         sql = @"
                 select cast(@tu_ngay as smalldatetime) as tu_ngay, cast(@den_ngay as smalldatetime) as den_ngay
-                exec rs_rptReceiptTransactionListByImei @tu_ngay, @den_ngay, @ma_vt, @ma_imei, @ma_kh, @ma_kho, @kho_hang_dc, @ma_vv, @ma_nx,
-                     @tk_vt, @ma_loai_vt, @ma_nh, @ma_nh2, @ma_nh3, 2, 'PNF', @so_ct1, @so_ct2, @ma_hd, @ma_bp, @lenh_sx, @ma_sp,
+                exec rs_rptReceiptTransactionListByImei @tu_ngay, @den_ngay, @loginShop, @ma_cuahang, @ma_vt, @ma_imei, @ma_kh, @ma_kho, @kho_hang_dc, @ma_vv, @ma_nx,
+                     @tk_vt, @ma_loai_vt, @ma_nh, @ma_nh2, @ma_nh3, @ma_nh4, @ma_nh5, '', 2, 'PNF', @so_ct1, @so_ct2, @ma_hd, @ma_bp, @lenh_sx, @ma_sp,
                      @ma_dvcs, @maxLength, @maxLength_mo, 1, 'a.ma_kh', @loai_du_lieu, 'v', @user_id, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
@@ -155,19 +156,31 @@ namespace Report.RptReceiptTransactionListByImei
             {
                 ParameterName = "@ma_nh",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_nh
+                SqlValue = obj_param.nh_vt1
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_nh2",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_nh2
+                SqlValue = obj_param.nh_vt2
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_nh3",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_nh3
+                SqlValue = obj_param.nh_vt3
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nh4",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_nh4
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nh5",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_nh5
             });
             list_paras.Add(new SqlParameter
             {
@@ -241,7 +254,18 @@ namespace Report.RptReceiptTransactionListByImei
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
             });
-
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_cuahang ?? ""
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
+            });
             return list_paras;
         }
 

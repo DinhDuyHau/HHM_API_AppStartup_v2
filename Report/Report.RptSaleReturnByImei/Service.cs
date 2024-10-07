@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 
 namespace Report.RptSaleReturnByImei
 {
-    public class Service : IComponentService
+    public class Service : IReportService
     {
         public IMemoryCache MemoryCache { get; set; }
 
@@ -25,7 +25,7 @@ namespace Report.RptSaleReturnByImei
 
         public string controller { get; set; } = "rptSaleReturnByImei";
 
-        private const int M_TABLE_VIEW_INDEX = 1;
+        private readonly int table_index = 1;
 
         private ConnectType connectType = ConnectType.Report;
         public CommonObjectModel Execute(Dictionary<string, object> param)
@@ -34,7 +34,7 @@ namespace Report.RptSaleReturnByImei
             string sql = "";
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);        
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, M_TABLE_VIEW_INDEX, connectType);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index, connectType);
             return raw_model;
         }
 
@@ -48,13 +48,26 @@ namespace Report.RptSaleReturnByImei
             return raw_model;
         }
 
+        public Query InitExport(string controller, Dictionary<string, object> param)
+        {
+            string sql = "";
+            ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
+            List<SqlParameter> list_paras = init(obj_param, out sql);
+            return new Query()
+            {
+                SqlString = sql,
+                Parameters = list_paras,
+                RptTableIndex = this.table_index
+            };
+        }
+
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
            
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            string ma_dvcs = "";
+            string ma_dvcs = Startup.Unit;
 
             string ma_imei = "";
             string ma_vv = "";
@@ -79,7 +92,7 @@ namespace Report.RptSaleReturnByImei
                 select @date_from as date_from, @date_to as date_to
                 exec rs_rptSaleReturnByImei @date_from, @date_to, @ma_vt, @ma_dv, @ma_imei, @ma_kh, @ma_kho, @ma_vv, @ma_nx, @tk_dt,
                       @tk_vt, @ma_hd, @ma_bp, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @nh_vt5, @ma_nganh, @ds_ma_gd, @voucherList, @voucher_from, @voucher_to,
-                      @ma_dvcs,@ma_cuahang,@ma_ca, @ma_lo, @ma_td1, @ma_td2, @ma_td3, @maxLength, 'a.ngay_ct, a.ma_ct, a.so_ct', @loai_du_lieu, 'v', @user_id, @admin, @ma_nh_kho";
+                      @ma_dvcs,@loginShop,@ma_cuahang,@ma_ca, @ma_lo, @ma_td1, @ma_td2, @ma_td3, @maxLength, 'a.ngay_ct, a.ma_ct, a.so_ct', @loai_du_lieu, 'v', @user_id, @admin, @ma_nh_kho";
 
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -286,6 +299,12 @@ namespace Report.RptSaleReturnByImei
                 ParameterName = "@ma_nh_kho",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = ma_nh_kho
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
             return list_paras;
         }

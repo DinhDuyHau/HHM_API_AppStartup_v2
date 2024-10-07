@@ -17,6 +17,33 @@ namespace Report.RptSuppliesOnTheRoadReport
 
         public string den_so { get; set; } = "";
 
+        public string ma_cuahang_x { get; set; } = "";
+
+        public string ma_cuahang_n { get; set; } = "";
+
+        public string ma_kho_x { get; set; } = "";
+
+        public string ma_kho_n { get; set; } = "";
+
+        public string ma_ca { get; set; } = "";
+
         public string ma_vt { get; set; } = "";
+
+        public string nh_vt1 { get; set; } = "";
+
+        public string nh_vt2 { get; set; } = "";
+
+        public string nh_vt3{ get; set; } = "";
+
+        public string nh_vt4 { get; set; } = "";
+
+        public string nh_vt5 { get; set; } = "";
+
+        public string nh_vt6 { get; set; } = "";
+
+        public string ma_nganh { get; set; } = "";
+
+        public string loai { get; set; } = "1";
+
     }
 }

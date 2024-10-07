@@ -1,21 +1,28 @@
-﻿using Genbyte.Component.Report;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Component.Report;
 using Genbyte.Component.Report.Model;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Report.RptRetailPrice;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection.Metadata;
+
 
 namespace Report.RptRetailPrice
 {
     public class Service : IReportService
     {
-        public IConfiguration Configuration { get; set; }
         public IMemoryCache MemoryCache { get; set; }
+
+        public IConfiguration Configuration { get; set; }
         public string controller { get; set; } = "rptRetailPrice";
+
+        private ConnectType connectType = ConnectType.Accounting;
 
         // Bảng hiển thị lên báo cáo.
         public readonly int table_index = 1;
@@ -26,7 +33,7 @@ namespace Report.RptRetailPrice
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index, connectType);
             return raw_model;
         }
 
@@ -36,7 +43,7 @@ namespace Report.RptRetailPrice
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
+            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras, connectType);
             return raw_model;
         }
 
