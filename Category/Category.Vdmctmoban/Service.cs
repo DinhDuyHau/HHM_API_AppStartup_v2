@@ -25,7 +25,7 @@ namespace Category.Vdmctmoban
             CateRight.AllowCreate = false;
             CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
-
+            CateRight.ConnectionType = ConnectType.Accounting;
         }
 
         #region CREATE

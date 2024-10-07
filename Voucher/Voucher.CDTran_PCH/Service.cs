@@ -728,10 +728,51 @@ END";
 
                 List<PaymentDepositModel> paymentDebtModels = new Customer.Service().GetPaymentDeposit(vc_item.ma_kh, vc_item.ma_dvcs,"","","","", (DateTime)vc_item.ngay_ct);
 
-                List<PCHDetailFinding> pth_detail_finding =
-                    pr_detail.Join(paymentDebtModels,
-                        d => new { d.stt_rec_tt, ma_ctr = d.ma_ctr.Trim(), ma_vt = d.ma_vt.Trim() }, 
-                        e => new { stt_rec_tt = e.stt_rec, ma_ctr = e.ma_ctr.Trim(), ma_vt = e.ma_vt.Trim() }, 
+                List<PCHDetailFinding> pth_detail_finding;
+                if(paymentDebtModels == null || paymentDebtModels.Count == 0)
+                {
+                    pth_detail_finding = new List<PCHDetailFinding>();
+                    foreach (PRDetail d in pr_detail)
+                    {
+                        pth_detail_finding.Add(new PCHDetailFinding()
+                        {
+                            // Các trường từ pr_detail
+                            stt_rec = d.stt_rec,
+                            stt_rec0 = d.stt_rec0,
+                            ma_ct = d.ma_ct,
+                            ngay_ct = d.ngay_ct,
+                            so_ct = d.so_ct,
+                            dien_giai = d.dien_giai,
+                            tien = d.tien,
+                            tien_nt = d.tien_nt,
+                            stt_rec_tt = APIService.EncryptForWebApp(d.stt_rec_tt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]),
+                            //so_hd_tt = d.so_hd_tt,
+                            //ngay_hd_tt = d.ngay_hd_tt,
+                            ma_ctr = d.ma_ctr,
+                            ma_vt = d.ma_vt,
+                            tt = d.tt,
+                            tt_nt = d.tt_nt,
+                            line_nbr = d.line_nbr,
+                            ma_ca = d.ma_ca,
+                            ma_cuahang = d.ma_cuahang,
+                            t_tt_nt = 0,
+                            da_tt_nt = 0,
+                            cl_nt = 0,
+                            tien_hd = 0,
+                            da_tt = 0,
+                            tien_cl = 0,
+                            con_lai = 0,
+                            ten_ctr = d.ten_ctr,
+                            ten_vt = d.ten_vt,
+                            tien_coc = d.tien_coc
+                        });
+                    }
+                }
+                else
+                {
+                    pth_detail_finding = pr_detail.Join(paymentDebtModels,
+                        d => new { d.stt_rec_tt, ma_ctr = d.ma_ctr.Trim(), ma_vt = d.ma_vt.Trim() },
+                        e => new { stt_rec_tt = e.stt_rec, ma_ctr = e.ma_ctr.Trim(), ma_vt = e.ma_vt.Trim() },
                         (d, e) => new PCHDetailFinding
                         {
                             // Các trường từ pr_detail
@@ -765,6 +806,7 @@ END";
                             tien_coc = d.tien_coc,
                         })
                     .ToList();
+                }
                 pth_detail_finding.ForEach(item =>
                     {
                         item.con_lai = item.tien_nt - item.tien_cl;

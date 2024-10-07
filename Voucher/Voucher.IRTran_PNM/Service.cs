@@ -17,6 +17,7 @@ using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
 using Voucher.IRTran_PNM.Models;
 using Genbyte.Component.Voucher.Model;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.IRTran_PNM
 {
@@ -56,17 +57,19 @@ namespace Voucher.IRTran_PNM
         /// </summary>
         public AccessRight VoucherRight { get; set; }
 
+        private readonly IConfiguration _configuration;
+
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
 
-        public Service()
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            _configuration = configuration;
         }
 
         #region Inserting
@@ -170,10 +173,12 @@ namespace Voucher.IRTran_PNM
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-                        detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
-                        detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
-
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.ma_cuahang = vc_item.ma_cuahang;
+                            x.ma_ca = vc_item.ma_ca;
+                            x.stt_rec_px = Genbyte.Base.Security. APIService.DecryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);

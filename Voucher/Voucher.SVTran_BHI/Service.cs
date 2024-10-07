@@ -255,12 +255,16 @@ namespace Voucher.SVTran_BHI
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
+            
+            //tạm sửa cho phép cập nhật chứng từ ngày quá khứ (comment đoạn if)
+            /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";
                 return result_model;
             }
+            */
             vc_item.ma_ct = this.VoucherCode;
 
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
@@ -533,6 +537,13 @@ SELECT is_success, message FROM @check";
                 string imei = string.Join(", ", list_imei_delete);
                 queryIMEI = $"exec Genbyte$IMEI$UpdateState '{vc_item.ma_cuahang}', '{imei}', '0', 0";
                 service.ExecuteNonQuery(queryIMEI);
+            }
+
+            //post xử lý gạch nợ quà trên các đơn hàng bán
+            if(vc_item.status == "2")
+            {
+                query = $"exec Genbyte$Promotion$PostRepayGift '{stt_rec}'";
+                service.ExecuteNonQuery(query);
             }
 
             model.success = true;

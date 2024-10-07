@@ -154,7 +154,10 @@ namespace Voucher.SVTran_BHB
                                 if (paid_list != null && paid_list.Count > 0)
                                 {
                                     //cập nhật ngày chứng từ
-                                    paid_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    paid_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
