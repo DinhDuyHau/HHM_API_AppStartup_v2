@@ -177,7 +177,7 @@ namespace Voucher.IRTran_PNM
                             x.ngay_ct = vc_item.ngay_ct;
                             x.ma_cuahang = vc_item.ma_cuahang;
                             x.ma_ca = vc_item.ma_ca;
-                            x.stt_rec_px = Genbyte.Base.Security. APIService.DecryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                            x.stt_rec_px = Genbyte.Base.Security.APIService.DecryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                         });
 
                         item_detail.Data = new List<DetailEntity>();
@@ -260,7 +260,7 @@ namespace Voucher.IRTran_PNM
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,so_ct_px,ngay_ct_px) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,so_ct_px,ngay_ct_px from @{_DETAIL_PARA}";
             }
 
             query += "\n\n";
@@ -587,7 +587,7 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,so_ct_px,ngay_ct_px) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,so_ct_px,ngay_ct_px from @{_DETAIL_PARA}";
             }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
