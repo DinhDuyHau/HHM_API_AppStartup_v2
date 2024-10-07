@@ -25,7 +25,7 @@ namespace Category.Dmkh
             CateRight.AllowRead = true;
             CateRight.AllowCreate = true;
             CateRight.AllowUpdate = true;
-            CateRight.AllowDelete = true;
+            CateRight.AllowDelete = false;
             CateRight.ConnectionType = ConnectType.Accounting;
         }
 
