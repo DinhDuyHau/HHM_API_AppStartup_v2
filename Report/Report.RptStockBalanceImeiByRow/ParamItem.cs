@@ -10,11 +10,15 @@ namespace Report.RptStockBalanceImeiByRow
     public class ParamItem : ParamItemBase
     {
         public DateTime den_ngay { get; set; }
-
+        public string ma_cuahang { get; set; } = "";
         public string ma_kho { get; set; } = "";
+        public string ma_loai { get; set; } = "";
         public string ma_vt { get; set; } = "";
         public string ma_dvcs { get; set; } = "";
         public string loai_ky { get; set; } = "2";
+        public string tt_sx1 { get; set; } = "0";
+        public string tt_sx2 { get; set; } = "0";
+        public string tt_sx3 { get; set; } = "0";
 
         public string nh_vt1 { get; set; } = "";
         public string nh_vt2 { get; set; } = "";
@@ -23,5 +27,6 @@ namespace Report.RptStockBalanceImeiByRow
         public string tinh_ps { get; set; } = "";
         public string group { get; set; } = "";
         public int dataType { get; set; } = 0;
+
     }
 }

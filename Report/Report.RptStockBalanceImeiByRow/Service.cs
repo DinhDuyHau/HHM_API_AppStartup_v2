@@ -57,13 +57,12 @@ namespace Report.RptStockBalanceImeiByRow
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            string ma_ca = Startup.Shift;
-
+            string ma_dvcs = Startup.Unit;
             sql = @"
-exec rs_rptStockReportImeiByRow @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, '', @ma_dvcs, @loai_ky, 'ma_vt',  '2', 'v', @userID, @admin
+                exec rs_rptStockReportImeiByRow @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, 
+                                                '', @ma_dvcs, @loai_ky, 'ma_vt',  '2', 'v', @user_id, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -76,7 +75,7 @@ exec rs_rptStockReportImeiByRow @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @n
             {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_cuahang
+                SqlValue = obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
@@ -84,7 +83,7 @@ exec rs_rptStockReportImeiByRow @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @n
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_kho
             });
-            
+
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_vt",
@@ -129,15 +128,21 @@ exec rs_rptStockReportImeiByRow @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @n
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@userID",
+                ParameterName = "@user_id",
                 SqlDbType = SqlDbType.Int,
-                SqlValue = Startup.UserId
+                SqlValue = user_id
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
-                SqlValue = Startup.Admin
+                SqlValue = admin
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
             return list_paras;
         }

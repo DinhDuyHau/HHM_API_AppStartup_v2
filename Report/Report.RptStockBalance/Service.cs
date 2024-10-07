@@ -56,14 +56,13 @@ namespace Report.RptStockBalance
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
             int loai_ky = 2;    //1: đầu kỳ, 2: cuối kỳ
             int loai_du_lieu = 2; //1: thực tế, 2: hóa đơn
 
             sql = $"select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, '' as ten_kho, '' as ten_kho2 \n" +
-                $"exec rs_rptStockReport @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, '', @ma_dvcs, {loai_ky}, 'ma_vt',  {loai_du_lieu}, 'v', @userID, @admin, @ma_loai";
+                $"exec rs_rptStockReport @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, '', @ma_dvcs, {loai_ky}, 'ma_vt',  {loai_du_lieu}, 'v', @user_id, @admin, @ma_loai";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -75,7 +74,7 @@ namespace Report.RptStockBalance
             {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = ma_cuahang
+                SqlValue = obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
@@ -115,7 +114,7 @@ namespace Report.RptStockBalance
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@userID",
+                ParameterName = "@user_id",
                 SqlDbType = SqlDbType.Int,
                 SqlValue = user_id
             });

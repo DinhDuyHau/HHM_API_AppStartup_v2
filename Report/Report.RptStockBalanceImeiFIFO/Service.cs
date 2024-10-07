@@ -17,7 +17,6 @@ namespace Report.RptStockBalanceImeiFIFO
         public IConfiguration Configuration { get; set; }
         public string controller { get; set; } = "rptStockBalanceImeiFIFO";
 
-        // Bảng hiển thị lên báo cáo.
         public readonly int table_index = 1;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
@@ -26,7 +25,7 @@ namespace Report.RptStockBalanceImeiFIFO
             string sql;
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, 1);
             return raw_model;
         }
 
@@ -55,6 +54,10 @@ namespace Report.RptStockBalanceImeiFIFO
 
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
+            int user_id = Startup.UserId;
+            int admin = Startup.Admin;
+            string ma_dvcs = Startup.Unit;
+
             sql = @"declare @SiteName nvarchar(1024), @SiteName2 nvarchar(1024)
 if exists (select ma_kho from dmkho where ma_kho = @ma_kho)	
 	  select @SiteName = ten_kho, @SiteName2 = ten_kho2 from dmkho where ma_kho = @ma_kho
@@ -64,8 +67,8 @@ else
     select @SiteName = N'', @SiteName2 = N''
     
 select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, @SiteName as ten_kho, @SiteName2 as ten_kho2
-exec rs_rptStockReportImeiFIFO @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_theo, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, @language, @userID, @admin
-            ";
+exec rs_rptStockReportImeiFIFO @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_theo, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, 'v', @userID, @admin
+";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -83,7 +86,7 @@ exec rs_rptStockReportImeiFIFO @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh
             {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_cuahang == null ? Startup.Shop : obj_param.ma_cuahang
+                SqlValue = obj_param.ma_cuahang ?? ""
             });
             list_paras.Add(new SqlParameter
             {
@@ -95,7 +98,7 @@ exec rs_rptStockReportImeiFIFO @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh
             {
                 ParameterName = "@ma_dvcs",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_dvcs
+                SqlValue = ma_dvcs
             });
             list_paras.Add(new SqlParameter
             {
@@ -167,14 +170,21 @@ exec rs_rptStockReportImeiFIFO @ngay, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh
             {
                 ParameterName = "@userID",
                 SqlDbType = SqlDbType.Int,
-                SqlValue = obj_param.userId
+                SqlValue = user_id
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
-                SqlValue = obj_param.admin
+                SqlValue = admin
             });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
+            });
+
             return list_paras;
         }
     }

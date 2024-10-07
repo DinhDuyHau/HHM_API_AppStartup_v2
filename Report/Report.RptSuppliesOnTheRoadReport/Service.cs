@@ -20,7 +20,7 @@ namespace Report.RptSuppliesOnTheRoadReport
         public string controller { get; set; } = "rptSuppliesOnTheRoadReport";
 
         // Bảng hiển thị lên báo cáo.
-        public readonly int table_index = 0;
+        public readonly int table_index = 1;
 
         public CommonObjectModel Execute(Dictionary<string, object> param)
         {
@@ -59,13 +59,15 @@ namespace Report.RptSuppliesOnTheRoadReport
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            string ma_ca = "";
+            int maxLength = 12;
 
-            sql = @"exec rs_rptSuppliesOnTheRoadReport @tu_ngay, @den_ngay, @tu_so, @den_so, @ma_cuahang, @ma_ca, @ma_vt, '', 12, 'v', @user_id, @admin
-            ";
+            sql = @"select @tu_ngay as tu_ngay, @den_ngay as den_ngay, @ma_cuahang_x as ma_cuahang_x, @ma_cuahang_n as ma_cuahang_n,
+                            @ma_kho_x as ma_kho_x, @ma_kho_n as ma_kho_n
+		            exec rs_rptSuppliesOnTheRoadReport @tu_ngay, @den_ngay, @tu_so, @den_so, @ma_cuahang_x, @ma_cuahang_n, @ma_kho_x,
+                        @ma_kho_n, @ma_ca, @ma_vt, '', @maxLength, 'v', @user_id, @admin, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4,
+                        @nh_vt5, @nh_vt6, @ma_nganh, @loai, @loginShop";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -93,21 +95,93 @@ namespace Report.RptSuppliesOnTheRoadReport
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_cuahang",
+                ParameterName = "@ma_cuahang_x",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_cuahang
+                SqlValue = obj_param.ma_cuahang_x
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_cuahang_n",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_cuahang_n
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_kho_x",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_kho_x
+            });
+            list_paras.Add(new SqlParameter
+            {
+                 ParameterName = "@ma_kho_n",
+                 SqlDbType = SqlDbType.VarChar,
+                 SqlValue = obj_param.ma_kho_n
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_ca",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_ca
+                SqlValue = obj_param.ma_ca
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_vt",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_vt
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt1",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt1
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt2",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt2
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt3",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt3
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt4",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt4
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt5",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt5
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@nh_vt6",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.nh_vt6
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nganh",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_nganh
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loai",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.loai
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@maxLength",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = maxLength
             });
             list_paras.Add(new SqlParameter
             {
@@ -120,6 +194,12 @@ namespace Report.RptSuppliesOnTheRoadReport
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Int,
                 SqlValue = admin
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
 
             return list_paras;
