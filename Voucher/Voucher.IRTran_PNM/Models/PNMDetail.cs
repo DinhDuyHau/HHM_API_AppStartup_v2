@@ -50,5 +50,7 @@ namespace Voucher.IRTran_PNM
         public DateTime? s9 { get; set; }
         public string ma_imei { get; set; }
         public string ten_vt { get; set; }
+        public string so_ct_px { get; set; }
+        public DateTime? ngay_ct_px { get; set; }
     }
 }
