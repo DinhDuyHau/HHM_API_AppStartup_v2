@@ -1,17 +1,23 @@
-﻿using Genbyte.Component.Report;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Component.Report;
 using Genbyte.Component.Report.Model;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
+
 
 namespace Report.RptSaleByImei
 {
-    public class Service : IReportService
+    public class Service : IComponentService
     {
         public IMemoryCache MemoryCache { get; set; }
 
@@ -19,19 +25,16 @@ namespace Report.RptSaleByImei
 
         public string controller { get; set; } = "rptSaleByImei";
 
+        private const int M_TABLE_VIEW_INDEX = 1;
+
         private ConnectType connectType = ConnectType.Report;
-
-        // Bảng hiển thị lên báo cáo.
-        public readonly int table_index = 1;
-
         public CommonObjectModel Execute(Dictionary<string, object> param)
         {
             ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
             string sql = "";
-
             List<SqlParameter> list_paras = init(obj_param, out sql);
-            DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index, connectType);
+            DataUtils data_utis = new DataUtils(MemoryCache, Configuration);        
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, M_TABLE_VIEW_INDEX, connectType);
             return raw_model;
         }
 
@@ -41,27 +44,14 @@ namespace Report.RptSaleByImei
             string sql = "";
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
+            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras, connectType);
             return raw_model;
-        }
-
-        public Query InitExport(string controller, Dictionary<string, object> param)
-        {
-            string sql = "";
-            ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
-            List<SqlParameter> list_paras = init(obj_param, out sql);
-            return new Query()
-            {
-                SqlString = sql,
-                Parameters = list_paras,
-                RptTableIndex = this.table_index
-            };
         }
 
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-
+           
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
             string ma_dvcs = "";
@@ -89,7 +79,7 @@ namespace Report.RptSaleByImei
                     select @ngay_ct1 as tu_ngay, @ngay_ct2 as den_ngay
                     exec rs_rptSaleByImei @ngay_ct1, @ngay_ct2, @so_ct1, @so_ct2, @ma_nvbh, @ma_kh, @ma_kho, @ma_vt, @ma_dv, @ma_imei, @tk_dt, @tk_vt,
                         @nh_vt1, @nh_vt2, @nh_vt3, @ma_nx, @ma_vv, @ma_hd, @ma_bp, @ma_dvcs, @ma_lo, @ma_td1, @ma_td2, @ma_td3, @ds_ma_gd, @voucherList, 
-                        '2', @maxLength, N'a.ngay_ct, a.ma_ct, a.so_ct', @loai_du_lieu, @ma_cuahang, @ma_ca, @nh_vt4, @nh_vt5, @ma_nganh, 'v', @user_id, @admin, @ma_nh_kho";
+                        '2', @maxLength, N'a.ngay_ct, a.ma_ct, a.so_ct', @loai_du_lieu, @ma_cuahang, @ma_ca, @nh_vt4, @nh_vt5, @ma_nganh, 'v', @user_id, @admin, @loginShop, @ma_nh_kho";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -297,15 +287,15 @@ namespace Report.RptSaleByImei
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@loginShop",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = Startup.Shop
-            });
-            list_paras.Add(new SqlParameter
-            {
                 ParameterName = "@ma_nh_kho",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = ma_nh_kho
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
             return list_paras;
         }
