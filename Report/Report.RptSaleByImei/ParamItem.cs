@@ -20,7 +20,7 @@ namespace Report.RptSaleByImei
 
         public string ma_ca { get; set; } = "";
 
-        public string ma_nvbh { get; set; } = "";
+        public string ma_nvbh{ get; set; } = "";
 
         public string nh_vt1 { get; set; } = "";
 
@@ -33,6 +33,5 @@ namespace Report.RptSaleByImei
         public string nh_vt5 { get; set; } = "";
 
         public string ma_nganh { get; set; } = "";
-
     }
 }
