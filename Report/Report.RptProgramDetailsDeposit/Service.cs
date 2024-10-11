@@ -75,14 +75,14 @@ namespace Report.RptProgramDetailsDeposit
             string so_ct2 = "";
             int maxLength = 12;
             int loai_du_lieu = 2;
-            string mau_bc = "";
+            string mau_bc = "10";
 
             sql = @"declare @voucherList varchar(512)
-                    select @voucherList = 'PT1,PC1,HDA';	
+                    select @voucherList = 'PTC,PC1,HDA';	
                     select @ngay_ct1 as date_from, @ngay_ct2 as date_to
                     exec rs_rptProgramDetailsDeposit @ngay_ct1, @ngay_ct2, @ma_vt, @ma_kh, 
                       @tk_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @nh_vt5, @ma_nganh, @ds_ma_gd, @voucherList,
-                      @so_ct1, @so_ct2, @ma_dvcs, @ma_cuahang, @ma_ca, @maxLength, '1', 'ngay_ct', @loai_du_lieu, 'v', @user_id, @admin, @mau_bc, @loginShop";
+                      @so_ct1, @so_ct2, @ma_dvcs, @ma_cuahang, @ma_ca, @maxLength, '1', 'ngay_ct', @loai_du_lieu, 'v', @user_id, @admin, @mau_bc, @loginShop, @ma_ctr";
 
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -223,6 +223,12 @@ namespace Report.RptProgramDetailsDeposit
                 ParameterName = "@loginShop",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_ctr",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_ctr
             });
             return list_paras;
         }

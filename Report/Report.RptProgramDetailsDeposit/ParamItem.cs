@@ -27,5 +27,7 @@ namespace Report.RptProgramDetailsDeposit
         public string ma_nganh { get; set; } = "";
 
         public string ma_cuahang { get; set; } = "";
+
+        public string ma_ctr { get; set; } = "";
     }
 }
