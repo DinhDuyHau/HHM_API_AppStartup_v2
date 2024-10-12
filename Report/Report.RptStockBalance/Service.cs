@@ -62,7 +62,7 @@ namespace Report.RptStockBalance
             int loai_du_lieu = 2; //1: thực tế, 2: hóa đơn
 
             sql = $"select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, '' as ten_kho, '' as ten_kho2 \n" +
-                $"exec rs_rptStockReport @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, '', @ma_dvcs, {loai_ky}, 'ma_vt',  {loai_du_lieu}, 'v', @user_id, @admin, @ma_loai";
+                $"exec rs_rptStockReport @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, '', @ma_dvcs, {loai_ky}, 'ma_vt',  {loai_du_lieu}, 'v', @user_id, @admin, @ma_loai, @ma_nganh";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -136,7 +136,12 @@ namespace Report.RptStockBalance
                 SqlDbType = SqlDbType.Char,
                 SqlValue = Startup.Shop
             });
-
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nganh",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_nganh
+            });
             return list_paras;
         }
     }

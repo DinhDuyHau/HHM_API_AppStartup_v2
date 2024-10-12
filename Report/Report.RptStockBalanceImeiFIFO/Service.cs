@@ -67,7 +67,7 @@ else
     select @SiteName = N'', @SiteName2 = N''
     
 select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, @SiteName as ten_kho, @SiteName2 as ten_kho2
-exec rs_rptStockReportImeiFIFO @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_theo, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, 'v', @userID, @admin
+exec rs_rptStockReportImeiFIFO @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_theo, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, 'v', @userID, @admin, @ma_nganh
 ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -183,6 +183,12 @@ exec rs_rptStockReportImeiFIFO @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, 
                 ParameterName = "@loginShop",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nganh",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_nganh
             });
 
             return list_paras;

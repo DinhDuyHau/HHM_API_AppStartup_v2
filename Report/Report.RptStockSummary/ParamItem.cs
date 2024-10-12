@@ -29,5 +29,6 @@ namespace Report.RptStockSummary
         public string showItem { get; set; } = "";
         public int dataType { get; set; } = 0;
         public string in_sl { get; set; } = "1";
+        public string ma_nganh { get; set; } = "";
     }
 }
