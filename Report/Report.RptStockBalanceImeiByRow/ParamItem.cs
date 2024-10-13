@@ -27,6 +27,7 @@ namespace Report.RptStockBalanceImeiByRow
         public string tinh_ps { get; set; } = "";
         public string group { get; set; } = "";
         public int dataType { get; set; } = 0;
+        public string ma_nganh { get; set; } = "";
 
     }
 }
