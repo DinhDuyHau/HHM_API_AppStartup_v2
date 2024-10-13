@@ -62,7 +62,7 @@ namespace Report.RptStockBalanceImeiByRow
             string ma_dvcs = Startup.Unit;
             sql = @"
                 exec rs_rptStockReportImeiByRow @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, 
-                                                '', @ma_dvcs, @loai_ky, 'ma_vt',  '2', 'v', @user_id, @admin
+                                                '', @ma_dvcs, @loai_ky, 'ma_vt',  '2', 'v', @user_id, @admin, @ma_nganh
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -143,6 +143,12 @@ namespace Report.RptStockBalanceImeiByRow
                 ParameterName = "@loginShop",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nganh",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_nganh
             });
             return list_paras;
         }
