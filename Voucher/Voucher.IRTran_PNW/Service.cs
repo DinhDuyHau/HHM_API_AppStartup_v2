@@ -17,6 +17,8 @@ using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
 using Voucher.IRTran_PNW.Models;
 using Genbyte.Component.Voucher.Model;
+using Genbyte.Base.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.IRTran_PNW
 {
@@ -59,14 +61,16 @@ namespace Voucher.IRTran_PNW
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
 
-        public Service()
+        private readonly IConfiguration _configuration;
+
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            _configuration = configuration;
         }
 
         #region Inserting
@@ -170,10 +174,12 @@ namespace Voucher.IRTran_PNW
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-                        detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
-                        detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
-
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                            x.ma_cuahang = vc_item.ma_cuahang;
+                            x.ma_ca = vc_item.ma_ca;
+                            x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -367,6 +373,7 @@ namespace Voucher.IRTran_PNW
             int index_value = 1;
             // Lấy danh sách tất cả các imei
             List<string> imeis = new List<string>();
+            List<string> imei_tra_bh = new List<string>();
             if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
             {
                 DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
@@ -384,9 +391,17 @@ namespace Voucher.IRTran_PNW
                             {
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                             }
+                            item.stt_rec_px = APIService.DecryptForWebApp(item.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                         });
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
+
+                        //Lấy danh sách các imei bảo hành không đổi imei khác (xuất bảo hành imei nào nhập về đúng imei đó)
+                        foreach (string imei_item in imeis)
+                        {
+                            if (detail_list.Any(x => x.ma_imei.Trim() == imei_item.Trim() && !x.doi_bh_yn))
+                                imei_tra_bh.Add(imei_item.Trim());
+                        }
                     }
                     item_detail.Detail_Type = typeof(PNWDetail).Name;
                 }
@@ -457,8 +472,8 @@ SELECT is_success, message FROM @check";
             }
             if (vc_item.status == "2")
             {
-                var imeiService = new Imei.Service();
-                List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imeis);
+                Imei.Service imeiService = new Imei.Service();
+                List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imei_tra_bh);
                 Imei.ImeiState? exists = state_imei.FirstOrDefault(x => x.exists_yn == false);
                 if (exists != null)
                 {
@@ -786,6 +801,10 @@ END";
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PNWDetail> pr_detail = ds.Tables[1].ToList<PNWDetail>();
 
+                pr_detail.ToList().ForEach(x => {
+                    x.stt_rec_px = APIService.EncryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();
@@ -919,6 +938,7 @@ END";
             return new List<ImeiState>();
         }
         #endregion
+
         CommonObjectModel checkImeiInsert(VoucherItem vc_item)
         {
             var listImei = new List<string>();
@@ -1002,6 +1022,10 @@ END";
 
             var listImei_old = new List<string>();
             var ma_cuahang_old = "";
+
+            //lấy danh sách imei trả bảo hành loại trừ imei đổi (xuất bảo hành 1 imei, hãng trả bảo hành cho 1 imei khác)
+            List<string> imei_tra_bh = new List<string>();
+
             if (vc_item_old.details.Any(x => x.Id == 1))
             {
                 DetailItemModel? item_detail = vc_item_old.details.FirstOrDefault(x => x.Id == 1);
@@ -1024,6 +1048,11 @@ END";
                         }
                     }
 
+                    foreach (string imei_item in listImei)
+                    {
+                        if ((item_detail.Data as List<PNWDetail>).Any(x => x.ma_imei.Trim() == imei_item.Trim() && !x.doi_bh_yn))
+                            imei_tra_bh.Add(imei_item.Trim());
+                    }
                 }
             }
 
@@ -1033,8 +1062,11 @@ END";
                 message = "",
                 result = null
             };
-            var imeiService = new Imei.Service();
-            List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
+
+                         
+
+            Imei.Service imeiService = new Imei.Service();
+            List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imei_tra_bh);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
             List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
             if (exists != null && exists.Count > 0)

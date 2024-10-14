@@ -629,14 +629,8 @@ namespace Imei
         /// <param name="ma_cuahang"></param>
         /// <returns></returns>
         #region GetImeiWarrantyOutInfo
-        public CommonObjectModel GetImeiWarrantyOutInfo(string imeiId, string ma_cuahang)
+        public List<ImeiWarrantyOut> GetImeiWarrantyOutInfo(string imeiId, string ma_cuahang)
         {
-            CommonObjectModel model = new CommonObjectModel()
-            {
-                success = false,
-                message = "",
-                result = null
-            };
             CoreService core_service = new CoreService();
 
             string sql = @"exec Genbyte$Imei$CheckWarrantyOut @ma_imei, @ma_cuahang";
@@ -655,13 +649,8 @@ namespace Imei
                 }
             });
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
-
-            if (ds != null && ds.Tables.Count >= 1 && ds.Tables[0].Rows.Count > 0)
-            {               
-                model.result = ds.Tables[0].ToList<ImeiWarrantyOut>();
-                model.success = true;
-            }
-            return model;
+            return ds != null && ds.Tables.Count >= 1 && ds.Tables[0].Rows.Count > 0 ? 
+                ds.Tables[0].ToList<ImeiWarrantyOut>().ToList() : null;
         }
         #endregion
 

@@ -14,6 +14,7 @@ using System.Data;
 using System.Web;
 using Imei.Models;
 using Microsoft.Extensions.Configuration;
+using Genbyte.Base.Security;
 
 namespace Imei
 {
@@ -466,6 +467,13 @@ namespace Imei
         {
             try
             {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+
                 Service _service = new Service(_configuration);
 
                 //check injection
@@ -474,8 +482,17 @@ namespace Imei
 
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                CommonObjectModel model = _service.GetImeiWarrantyOutInfo(ma_imei, ma_cuahang);
+                List<ImeiWarrantyOut> entities = _service.GetImeiWarrantyOutInfo(ma_imei, ma_cuahang);
+                if (entities != null && entities.Count > 0)
+                {
+                    entities.ForEach(x =>
+                    {
+                        x.stt_rec_px = APIService.EncryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    });
 
+                    model.success = true;
+                    model.result = entities;
+                }
                 return Ok(model);
             }
             catch (Exception ex)
