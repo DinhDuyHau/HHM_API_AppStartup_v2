@@ -25,6 +25,7 @@ namespace Report.RptLookupInventory
         public string nh_vt5 { get; set; } = "";
         public string nh_vt6 { get; set; } = "";
         public string ma_nganh { get; set; } = "";
+        public string ma_loai { get; set; } = "";
         public string tinh_ps { get; set; } = "";
         public string group { get; set; } = "";
         public int dataType { get; set; } = 2;
