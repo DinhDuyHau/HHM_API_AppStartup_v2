@@ -794,7 +794,8 @@ END";
                         tien_hd = e.t_tt_nt,
                         da_tt = e.da_tt_nt,
                         tien_cl = e.cl_nt,
-                        con_lai = 0
+                        con_lai = 0,
+                        ma_td3 = d.ma_td3
                     }).ToList();
                 }
                 else
@@ -823,7 +824,8 @@ END";
                             tien_hd = 0,
                             da_tt = 0,
                             tien_cl = 0,
-                            con_lai = 0
+                            con_lai = 0,
+                            ma_td3 = d.ma_td3
                         });
                     }
                 }
