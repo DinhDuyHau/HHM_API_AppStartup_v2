@@ -19,5 +19,9 @@ namespace Imei.Models
         public string dvt { get; set; }
 
         public decimal gia { get; set; }
+
+        public string stt_rec_px { get; set; }
+
+        public DateTime ngay_ct_px { get; set; }
     }
 }
