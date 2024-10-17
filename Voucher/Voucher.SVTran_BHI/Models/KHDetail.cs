@@ -15,6 +15,7 @@
         public string ten_vt { get; set; }
         public string ten_vt2 { get; set; }
         public string ten_ct { get; set; }
+        public string ma_td3 { get; set; }
 
 
     }
