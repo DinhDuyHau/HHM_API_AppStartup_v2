@@ -1,13 +1,18 @@
-﻿using Genbyte.Component.Report;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Component.Report;
 using Genbyte.Component.Report.Model;
 using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection.Metadata;
+
 
 namespace Report.RptDCCustomers
 {
@@ -19,17 +24,16 @@ namespace Report.RptDCCustomers
 
         public string controller { get; set; } = "rptDCCustomers";
 
-        // Bảng hiển thị lên báo cáo.
-        public readonly int table_index = 0;
+        public readonly int table_index = 1;
 
+        private ConnectType connectType = ConnectType.Accounting;
         public CommonObjectModel Execute(Dictionary<string, object> param)
         {
             ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
             string sql = "";
-
             List<SqlParameter> list_paras = init(obj_param, out sql);
-            DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index);
+            DataUtils data_utis = new DataUtils(MemoryCache, Configuration);        
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, table_index, connectType);
             return raw_model;
         }
 
@@ -39,10 +43,9 @@ namespace Report.RptDCCustomers
             string sql = "";
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
-            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
+            CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras, connectType);
             return raw_model;
         }
-
         public Query InitExport(string controller, Dictionary<string, object> param)
         {
             string sql = "";
@@ -55,22 +58,25 @@ namespace Report.RptDCCustomers
                 RptTableIndex = this.table_index
             };
         }
-
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
+           
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            //string ma_nvbh = "";
             string ma_dvcs = Startup.Unit;
-            string tk = "131";
-            string nh_kh1 = "";
-            string nh_kh2 = "";
-            string nh_kh3 = "";
 
-            sql = @"exec rs_rptCustomersDebtComparisonBook @tu_ngay, @den_ngay, null, null, @tk, @ma_kh, @nh_kh1, @nh_kh2, @nh_kh3, @ma_dvcs, 'v', @user_id, @admin
-            ";
+            string tk = "131";
+            int isbalance = 0;
+            int isdetail = 0;
+
+
+            sql = @"declare @accountName nvarchar(1024), @accountName2 nvarchar(1024), @customerName nvarchar(1024), @customerName2 nvarchar(1024)
+                    select @accountName = ten_tk, @accountName2 = ten_tk2 from dmtk where tk = @tk
+                    select @customerName = N'', @customerName2 = N''
+                    select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to,
+		                    N'' as ma_kh, @customerName as ten_kh, @customerName2 as ten_kh2, @tk as tk, @accountName as ten_tk, @accountName2 as ten_tk2 
+                    exec rs_rptDCCustomer @tu_ngay, @den_ngay, @ma_dvcs, @ma_cuahang, @tk, @ma_kh, 'v', @isbalance, @isdetail, 1, @user_id, @admin";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -86,6 +92,12 @@ namespace Report.RptDCCustomers
             });
             list_paras.Add(new SqlParameter
             {
+                ParameterName = "@ma_dvcs",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_dvcs
+            });
+            list_paras.Add(new SqlParameter
+            {
                 ParameterName = "@tk",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = tk
@@ -98,28 +110,16 @@ namespace Report.RptDCCustomers
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_kh1",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = nh_kh1
+                ParameterName = "@isbalance",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = isbalance
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_kh2",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = nh_kh2
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@nh_kh3",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = nh_kh3
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@ma_dvcs",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_dvcs
-            });
+                ParameterName = "@isdetail",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = isdetail
+            });           
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@user_id",
@@ -132,7 +132,12 @@ namespace Report.RptDCCustomers
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
             });
-
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_cuahang
+            });
             return list_paras;
         }
 

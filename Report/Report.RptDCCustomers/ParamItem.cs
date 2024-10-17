@@ -10,5 +10,7 @@ namespace Report.RptDCCustomers
 
         public string ma_kh { get; set; } = "";
 
+        public string ma_cuahang { get; set; } = "";
+
     }
 }
