@@ -27,7 +27,7 @@ namespace MenuRight
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
             });
-            List<MenuModal> menus = base.ExecSql2List<MenuModal>(sql, paras, ConnectType.Accounting);
+            List<MenuModal> menus = base.ExecSql2List<MenuModal>(sql, paras);
             return menus;
         }
     }
