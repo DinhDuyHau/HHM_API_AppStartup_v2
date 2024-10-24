@@ -30,5 +30,7 @@ namespace Voucher.PVTran
         public decimal t_ck_nt { get; set; }
 
         public decimal t_ck { get; set; }
+
+        public decimal s4 { get; set; }
     }
 }

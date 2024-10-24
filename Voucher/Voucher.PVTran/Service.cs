@@ -528,7 +528,7 @@ SELECT is_success, message FROM @check";
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
             query += "\n\n";
-            query += $"update {prime_table} set ma_ca = @ma_ca, ma_tt = @ma_tt, ma_gd = @ma_gd, ma_kh = @ma_kh, dien_giai = @dien_giai, status = @status, user_id2 = {user_id}, datetime2 = getdate(), t_ck = @t_ck_nt, t_ck_nt = @t_ck_nt, t_tt = @t_tt_nt, t_tt_nt = @t_tt_nt";
+            query += $"update {prime_table} set ma_ca = @ma_ca, ma_tt = @ma_tt, ma_gd = @ma_gd, ma_kh = @ma_kh, dien_giai = @dien_giai, status = @status, user_id2 = {user_id}, datetime2 = getdate(), t_ck = @t_ck_nt, t_ck_nt = @t_ck_nt, t_tt = @t_tt_nt, t_tt_nt = @t_tt_nt, s4 = @s4";
             query += $" where stt_rec = @stt_rec";
 
             //xóa và insert lại các bảng chi tiết
