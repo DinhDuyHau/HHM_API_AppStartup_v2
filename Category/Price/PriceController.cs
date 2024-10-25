@@ -115,7 +115,7 @@ namespace Price
         /// </summary>
         [HttpGet("renew_adjust_buy_price")]
         #region GetRenewAdjustBuyPrice
-        public IActionResult GetRenewAdjustBuyPrice(DateTime ngay_ct, string? ma_cttc, string ma_ncc, string loai_hang_mua, string ma_vt_mua, string ma_vt_ban, decimal gia_ban, decimal gia_dc)
+        public IActionResult GetRenewAdjustBuyPrice(DateTime ngay_ct, string? ma_cttc, string ma_ncc, string loai_hang_mua, string ma_vt_mua, string ma_vt_ban, decimal gia_ban, decimal gia_dc, string ma_td3)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace Price
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy giá dịch vụ
-                List<AdjustPriceModel> entity = _service.GetRenewAdjustBuyPrice(ngay_ct, ma_cttc, ma_ncc, loai_hang_mua, ma_vt_mua, ma_vt_ban, gia_ban, gia_dc);
+                List<AdjustPriceModel> entity = _service.GetRenewAdjustBuyPrice(ngay_ct, ma_cttc, ma_ncc, loai_hang_mua, ma_vt_mua, ma_vt_ban, gia_ban, gia_dc, ma_td3);
                 if (entity != null)
                 {
                     model.success = true;

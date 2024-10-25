@@ -17,5 +17,7 @@ namespace Price.Model
         public decimal tien_dc_min { get; set; }
 
         public decimal tien_ht { get; set; }
+
+        public decimal ma_td3 { get; set; }
     }
 }
