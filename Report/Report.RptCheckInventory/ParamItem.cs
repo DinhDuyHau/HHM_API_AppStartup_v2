@@ -28,5 +28,5 @@ namespace Report.RptCheckInventory
         public int dataType { get; set; } = 0;
         public string ma_nganh { get; set; } = "";
     }
-}
+
 }

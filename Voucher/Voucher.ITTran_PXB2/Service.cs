@@ -617,8 +617,8 @@ else begin
     select @state as [state], @err_message as err_message, @ngay_ct as ngay_ct
     return
 end
-if not exists(select 1 from c575$000000 where status = '0' and stt_rec = @stt_rec_pnf) begin
-    select @state = 0, @err_message = 'err_pnf_not_exists_or_status_changed'
+if exists(select 1 from c575$000000 where status <> '0' and stt_rec = @stt_rec_pnf) begin
+    select @state = 0, @err_message = 'err_delete_pnf_status_changed'
     select @state as [state], @err_message as err_message, @ngay_ct as ngay_ct
     return
 end
@@ -654,19 +654,6 @@ select @state as [state], @err_message as err_message, @ngay_ct as ngay_ct
                 Value = voucherId.Replace("'", "''")
             });
             service.ExecTransactionNonQuery(sql, paras);
-
-            //update trạng thái 'treo' cho phiếu đề nghị điều chuyển tương ứng với phiếu xuất/nhập điều chuyển
-            /*
-            sql = $"EXEC MokaOnline$Voucher$TO1_UpdateAfterDeletePXB @pxb_voucher_id";
-            paras = new List<SqlParameter>();
-            paras.Add(new SqlParameter()
-            {
-                ParameterName = "@pxb_voucher_id",
-                SqlDbType = SqlDbType.Char,
-                Value = voucherId.Replace("'", "''")
-            });
-            service.ExecuteNonQuery(sql, paras, ConnectType.Accounting);
-            */
 
             //return
             model.success = true;
