@@ -559,6 +559,7 @@ namespace Voucher.SVTran_BHK
             int index_value = 1;
             // Lấy danh sách tất cả các imei
             List<string> imeis = new List<string>();
+            List<string> imeis_hang_thucu = new List<string>();
             if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
             {
                 DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
@@ -692,13 +693,45 @@ namespace Voucher.SVTran_BHK
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x => {
+                            if (x.ma_imei != null && x.ma_imei != "")
+                            {
+                                imeis_hang_thucu.AddRange(x.ma_imei.Split(",").ToList().Select(x => x.Trim()));
+                            }
+
+                            x.ngay_ct = vc_item.ngay_ct;
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
                     item_detail.Detail_Type = typeof(HtcDetail).Name;
                 }
+            }
+
+            //2024-10-28: kiểm tra imei duplicate hàng hóa
+            Dictionary<string, int> imei_group_count = imeis.GroupBy(x => x).Select(y => new
+            {
+                y.Key,
+                Count = y.Count()
+            }).OrderByDescending(x => x.Count).ToDictionary(z => z.Key, z => z.Count);
+            if (imei_group_count.Any(x => x.Value > 1))
+            {
+                result_model.success = false;
+                result_model.message = "err_imei_duplicate";
+                return result_model;
+            }
+            //2024-10-28: kiểm tra imei duplicate hàng thu cũ
+            Dictionary<string, int> imei_group_count_tc = imeis_hang_thucu.GroupBy(x => x).Select(y => new
+            {
+                y.Key,
+                Count = y.Count()
+            }).OrderByDescending(x => x.Count).ToDictionary(z => z.Key, z => z.Count);
+            if (imei_group_count_tc.Any(x => x.Value > 1))
+            {
+                result_model.success = false;
+                result_model.message = "err_imei_duplicate";
+                return result_model;
             }
 
             //Check tồn tại chứng từ & trạng thái chứng từ thuộc danh sách trạng thái được phép sửa

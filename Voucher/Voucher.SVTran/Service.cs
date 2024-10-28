@@ -604,6 +604,18 @@ namespace Voucher.SVTran
                 index_value++;
             }
 
+            //2024-10-28: kiểm tra imei duplicate
+            Dictionary<string, int> imei_group_count = imeis.GroupBy(x => x).Select(y => new
+            {
+                y.Key,
+                Count = y.Count()
+            }).OrderByDescending(x => x.Count).ToDictionary(z => z.Key, z => z.Count);
+            if (imei_group_count.Any(x => x.Value > 1))
+            {
+                result_model.success = false;
+                result_model.message = "err_imei_duplicate";
+                return result_model;
+            }
 
             //Check tồn tại chứng từ & trạng thái chứng từ thuộc danh sách trạng thái được phép sửa
             string sql = @"DECLARE @check TABLE (
