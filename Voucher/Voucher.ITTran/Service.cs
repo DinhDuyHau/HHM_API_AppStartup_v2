@@ -93,9 +93,19 @@ if @fnote2 = '1' or @fnote2 = '2' begin
 			return
 		end
 	end
-	--kho xuất có loại kho là BH hoặc HL: check các loại kho chặn điều chuyển tại trường ma_loai_chandc32 bảng dmloaikho
-	if exists(select 1 from dmkho where ma_kho = @ma_kho and ma_loai in ('BH', 'HL')) begin
+	--fnote2 = '2' và kho xuất có loại kho là BH hoặc HL: check các loại kho chặn điều chuyển tại trường ma_loai_chandc32 bảng dmloaikho
+	if @fnote2 = '2' and exists(select 1 from dmkho where ma_kho = @ma_kho and ma_loai in ('BH', 'HL')) begin
 		select top 1 @ds_loai_kho = rtrim(ma_loai_chandc32) 
+			from dmloaikho where ma_loai in (select ma_loai from dmkho where ma_kho = @ma_kho)
+		if exists(select 1 from dmkho where ma_kho = @ma_khon and dbo.ff_ExactInlist(ma_loai, @ds_loai_kho) = 1) begin
+			select @action_state = 0, @err_message = 'err_prevent_transfer'
+			select @stt_rec as stt_rec, @action_state as [state], @err_message as err_message
+			return
+		end
+	end
+    --fnote2 = '1' và kho xuất có loại kho là BH hoặc HL: check các loại kho chặn điều chuyển tại trường ma_loai_chandc31 bảng dmloaikho
+	if @fnote2 = '1' and exists(select 1 from dmkho where ma_kho = @ma_kho and ma_loai in ('BH', 'HL')) begin
+		select top 1 @ds_loai_kho = rtrim(ma_loai_chandc31) 
 			from dmloaikho where ma_loai in (select ma_loai from dmkho where ma_kho = @ma_kho)
 		if exists(select 1 from dmkho where ma_kho = @ma_khon and dbo.ff_ExactInlist(ma_loai, @ds_loai_kho) = 1) begin
 			select @action_state = 0, @err_message = 'err_prevent_transfer'
@@ -224,7 +234,9 @@ end
             query += VoucherUtils.GetQueryCreateIdentityNumber(this.VoucherCode, this.MasterTable);
 
             //fix status = 0 => chỉ cho phép thêm mới ở trạng thái lập chứng từ
-            string status = "0";
+            //2024-10-21: cho phép tạo phiếu ở trạng thái LCT hoặc 'hoàn thành' => do user chủ động chọn trên form
+            //string status = "0";
+            string status = vc_item.status;
             string ma_gd = "1";
 
             //insert prime
@@ -296,7 +308,62 @@ select @stt_rec as stt_rec, @action_state as [state], @err_message as err_messag
                 SqlConnection conn = service.CreateDbConn(ConnectType.Sys);
                 string sys_database = conn.Database;
 
-                query += $"EXEC MokaOnline$Voucher$PXBCreatePNF '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{sys_database}'";
+                query += $"EXEC MokaOnline$Voucher$PXBCreatePNF '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{sys_database}' \n";
+
+                // Lấy danh sách IMEI (xử lý tách chuỗi từ danh sách imei tại mỗi row của chứng từ)
+                List<ImeiItem> list_imei = new List<ImeiItem>();
+                string stt_rec_yc = "";
+                // id = 1 ==> type: ITDetail
+                int index_value = 1;
+                if (vc_item.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+                {
+                    VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+
+                    if (item_detail != null)
+                    {
+                        List<ITDetail> detail_list = item_detail.Data.Cast<ITDetail>().ToList();
+                        if (detail_list != null && detail_list.Count > 0)
+                        {
+                            foreach (var item in detail_list)
+                            {
+                                stt_rec_yc = item.stt_rec_yc;
+                                if (!string.IsNullOrEmpty(item.ma_imei))
+                                {
+                                    List<string> imei = item.ma_imei.Split(',').ToList();
+                                    foreach (var imei_item in imei)
+                                    {
+                                        list_imei.Add(new ImeiItem
+                                        {
+                                            ma_imei = imei_item.Trim(),
+                                            ma_vt = item.ma_vt,
+                                            ma_kho = vc_item.ma_kho,
+                                            gia_nt0 = item.gia_nt,
+                                            ghi_chu = vc_item.dien_giai
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                list_imei.ForEach(item =>
+                {
+                    item.ma_vt = item.ma_vt.Trim();
+                    item.ma_kho = item.ma_kho.Trim();
+                });
+
+                /* cập nhật trạng thái cho các imei có trong phiếu xuất điều chuyển */
+                string json = JsonSerializer.Serialize(list_imei);
+                //create query insert IMEI
+                query += $"exec Genbyte$IMEI$PXB$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', '{json}' \n";
+
+                /** NOTE QUAN TRỌNG:
+                 *  - đoạn code trên bắt đầu từ xử lý lấy danh sách IMEI cho đến hết đoạn gọi store Genbyte$IMEI$PXB$Update là code do sonnnt viết chưa lường đến tình huống bug
+                 *  - bug có thể phát sinh: khi danh sách imei có số lượng imei lớn vượt quá độ rộng cho phép của param sql
+                 *  => giải pháp: cần thay thế bằng xử lý trong store lấy dữ liệu phiếu xuất từ stt_rec, sau đó xử lý tách chuỗi từng imei cho từng dòng của chứng từ
+                 *  và cập nhật trạng thái cho từng imei đã tách ngay trong store
+                 */
             }
 
             //Cập nhật trạng thái đặt hàng cho các imei trong phiếu

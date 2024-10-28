@@ -29,6 +29,8 @@ namespace Voucher.OPTran
 
         public string fcode2 { get; set;}
 
+        public string fcode3 { get; set; }
+
         public DateTime? s7 { get; set; }
     }
 }

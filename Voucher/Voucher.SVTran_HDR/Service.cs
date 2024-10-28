@@ -60,6 +60,9 @@ namespace Voucher.SVTran_HDR
         public AccessRight VoucherRight { get; set; }
         private readonly IConfiguration _configuration;
 
+        private readonly string aes_key = "";
+        private readonly string aes_iv = "";
+
         public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
@@ -68,6 +71,9 @@ namespace Voucher.SVTran_HDR
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
             _configuration = configuration;
+
+            this.aes_key = _configuration["Security:KeyAES"];
+            this.aes_iv = _configuration["Security:IVAES"];
         }
 
         #region Inserting
@@ -99,7 +105,10 @@ namespace Voucher.SVTran_HDR
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
-            vc_item.stt_rec_hd = APIService.DecryptForWebApp(vc_item.stt_rec_hd, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+            
+            //Cập nhật lại stt_rec của phiếu xuất bán
+            vc_item.stt_rec_hd = string.IsNullOrEmpty(vc_item.stt_rec_hd) ? "" :
+                                APIService.DecryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -356,7 +365,10 @@ namespace Voucher.SVTran_HDR
 
             // cập nhật ma_gd = 2
             vc_item.ma_gd = VoucherUtils.MA_GD;
-            vc_item.stt_rec_hd = APIService.DecryptForWebApp(vc_item.stt_rec_hd, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+
+            //Cập nhật lại stt_rec của phiếu xuất bán
+            vc_item.stt_rec_hd = string.IsNullOrEmpty(vc_item.stt_rec_hd) ? "" :
+                                APIService.DecryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -823,7 +835,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
     SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_dv, b.vt_ton_kho from {5}' + @exp + ' a left join dmdichvu b on a.ma_dv = b.ma_dv where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.BillTable, this.PaidTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.BillTable, this.PaidTable, this.ServiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -837,11 +849,14 @@ END";
             if (ds != null && ds.Tables.Count >= 2)
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
-                vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<SVBillModel> pr_bill = ds.Tables[2].ToList<SVBillModel>();
                 IList<SVPaidModel> pr_paid = ds.Tables[3].ToList<SVPaidModel>();
                 IList<SVServiceModel> pr_service = ds.Tables[4].ToList<SVServiceModel>();
+
+                //xử lý mã hóa stt_rec_hd trước khi response
+                vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;

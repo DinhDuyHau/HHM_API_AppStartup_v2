@@ -318,12 +318,16 @@ namespace Voucher.SVTran_DV1
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
+            
+            //TẠM MỞ CHO PHÉP CẬP NHẬT NGÀY QUÁ KHỨ TRONG GIAI ĐOẠN CHẠY PILOT
+            /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
                 result_model.success = false;
                 result_model.message = "voucher_cannot_edit";
                 return result_model;
             }
+            */
             vc_item.ma_ct = this.VoucherCode;
 
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
