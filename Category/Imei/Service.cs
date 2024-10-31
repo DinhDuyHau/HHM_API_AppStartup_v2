@@ -697,5 +697,36 @@ namespace Imei
             return gifts;
         }
 
+        /// <summary>
+        /// Tìm kiếm imei bảo hành theo imei và mã cửa hàng
+        /// </summary>
+        /// <param name="imeiId"></param>
+        /// <param name="ma_cuahang"></param>
+        /// <returns></returns>
+        #region SearchImeiWarranty
+        public List<ImeiWarrantyOut> SearchImeiWarranty(string imeiId, string ma_cuahang)
+        {
+            CoreService core_service = new CoreService();
+
+            string sql = @"exec Genbyte$Imei$SearchImeiWarranty @ma_imei, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_imei",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Value = imeiId.Trim()
+                },new SqlParameter()
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Value = ma_cuahang.Trim()
+                }
+            });
+            DataSet ds = core_service.ExecSql2DataSet(sql, paras);
+            return ds != null && ds.Tables.Count >= 1 && ds.Tables[0].Rows.Count > 0 ?
+                ds.Tables[0].ToList<ImeiWarrantyOut>().ToList() : null;
+        }
+        #endregion
     }
 }

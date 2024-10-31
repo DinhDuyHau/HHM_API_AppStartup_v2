@@ -503,7 +503,6 @@ namespace Imei
         }
         #endregion
 
-
         [HttpGet("change-gift-promotions")]
         #region ChangePromotionsForImei
         public IActionResult ChangePromotionsForImei(string ma_imei, string ma_ck, int rec)
@@ -542,5 +541,47 @@ namespace Imei
         }
         #endregion
 
+        [HttpGet("search-imei-warranty")]
+        #region SearchImeiWarranty
+        public IActionResult SearchImeiWarranty(string ma_imei, string ma_cuahang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+
+                Service _service = new Service(_configuration);
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
+
+                //tìm kiếm imei bảo hành
+                List<ImeiWarrantyOut> entities = _service.SearchImeiWarranty(ma_imei, ma_cuahang);
+                if (entities != null && entities.Count > 0)
+                {
+                    entities.ForEach(x =>
+                    {
+                        x.stt_rec_px = APIService.EncryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    });
+
+                    model.success = true;
+                    model.result = entities;
+                }
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/search-imei-warranty", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }
