@@ -569,6 +569,7 @@ namespace Voucher.SVTran_BHG
             int index_value = 1;
             // Lấy danh sách tất cả các imei
             List<string> imeis = new List<string>();
+            List<string> imei_hang_tra = new List<string>();
             List<string> hang_doi = new List<string>();
             List<string> hang_tra = new List<string>();
 
@@ -613,6 +614,11 @@ namespace Voucher.SVTran_BHG
                         //cập nhật ngày chứng từ
                         detail_list.ForEach(x =>
                         {
+                            if (x.ma_imei != null && x.ma_imei != "")
+                            {
+                                imei_hang_tra.AddRange(x.ma_imei.Split(",").ToList().Select(x => x.Trim()));
+                            }
+
                             x.ngay_ct = vc_item.ngay_ct;
                             //2024-09-08: lưu stt_rec đơn hàng bán vào trường stt_rec_dh
                             x.stt_rec_dh = string.IsNullOrEmpty(x.stt_rec_dh) ? "" : 
@@ -626,7 +632,32 @@ namespace Voucher.SVTran_BHG
                     item_detail.Detail_Type = typeof(TLDetail).Name;
                 }
             }
-            
+
+            //2024-10-28: kiểm tra imei duplicate hàng đổi
+            Dictionary<string, int> imei_group_count_doi = imeis.GroupBy(x => x).Select(y => new
+            {
+                y.Key,
+                Count = y.Count()
+            }).OrderByDescending(x => x.Count).ToDictionary(z => z.Key, z => z.Count);
+            if (imei_group_count_doi.Any(x => x.Value > 1))
+            {
+                result_model.success = false;
+                result_model.message = "err_imei_duplicate";
+                return result_model;
+            }
+            //2024-10-28: kiểm tra imei duplicate hàng đổi
+            Dictionary<string, int> imei_group_count_tl = imei_hang_tra.GroupBy(x => x).Select(y => new
+            {
+                y.Key,
+                Count = y.Count()
+            }).OrderByDescending(x => x.Count).ToDictionary(z => z.Key, z => z.Count);
+            if (imei_group_count_tl.Any(x => x.Value > 1))
+            {
+                result_model.success = false;
+                result_model.message = "err_imei_duplicate";
+                return result_model;
+            }
+
             //convert dữ liệu chi tiết chứng từ TT
             // id = 3 ==> type: TTDetail
             var index_tt_value = 3;
