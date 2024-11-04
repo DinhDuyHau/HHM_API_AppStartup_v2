@@ -11,6 +11,7 @@ namespace Voucher.IRTran_PNW
         public string dvt { get; set; }
         public decimal he_so { get; set; }
         public string ma_kho { get; set; }
+        public string ten_kho { get; set; }
         public string ma_vi_tri { get; set; }
         public string ma_lo { get; set; }
         public string ma_vv { get; set; }
