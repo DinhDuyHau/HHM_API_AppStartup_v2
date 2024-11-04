@@ -257,7 +257,7 @@ end
                 query += "\n\n";
                 query += detail_query?.QueryString;
                 query += "\n";
-                query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
+                query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca, ma_kho = @ma_kho, ma_khon = @ma_khon where 1=1";
                 query += "\n\n";
                 query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, he_so, ma_kho, ma_khon, so_luong, gia_nt, gia, tien_nt, tien, ma_imei) select stt_rec, stt_rec0, ma_cuahang, ma_ca, ma_ct, ngay_ct, so_ct, line_nbr, ma_vt, dvt, 1, @ma_kho, @ma_khon, so_luong, 0, 0, 0, 0, ma_imei from @{_DETAIL_PARA}";
             }
@@ -622,7 +622,7 @@ SELECT is_success, message FROM @check";
                 query += "\n\n";
                 query += detail_query?.QueryString;
                 query += "\n";
-                query += $"update @{_DETAIL_PARA} set stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
+                query += $"update @{_DETAIL_PARA} set stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca, ma_kho = @ma_kho, ma_khon = @ma_khon where 1=1 \n";
                 query += $"update @{_DETAIL_PARA} set stt_rec0 = right(row_id$ + 1000, 3) where stt_rec0 is null or stt_rec0 = ''";
                 query += "\n\n";
 

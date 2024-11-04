@@ -24,6 +24,9 @@
         public decimal t_tien_nt2 { get; set; }
         public decimal t_thue_nt { get; set; }
         public decimal t_tt_nt { get; set; }
+
+        public bool cod_yn { get; set; }
+
         public IList<VoucherDetail> details { get; set; }
     }
 }

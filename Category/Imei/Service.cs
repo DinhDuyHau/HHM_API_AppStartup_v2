@@ -208,10 +208,10 @@ namespace Imei
         /// <param name="imei"></param>
         /// <returns></returns>
         #region GetStateAndItemOfImeis
-        public List<ImeiInfo> GetStateAndItemOfImeis(List<string> imeis)
+        public List<ImeiInfo> GetStateAndItemOfImeis(List<string> imeis, char seperator = ',')
         {
-            string imei_list = string.Join(",", imeis);
-            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis";
+            string imei_list = string.Join(seperator, imeis);
+            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, '', @seperator";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -225,6 +225,12 @@ namespace Imei
                 SqlDbType = SqlDbType.Char,
                 Value = imei_list
             });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@seperator",
+                SqlDbType = SqlDbType.Char,
+                Value = seperator
+            });
             return base.ExecSql2List<ImeiInfo>(sql, paras);
         }
         #endregion
@@ -235,10 +241,11 @@ namespace Imei
         /// <param name="imei"></param>
         /// <returns></returns>
         #region GetStateAndItemOfImeis
-        public List<ImeiInfo> GetStateItemOfImeisInStock(List<string> imeis, string ma_kho)
+        public List<ImeiInfo> GetStateItemOfImeisInStock(List<string> imeis, string ma_kho, char seperator = ',')
         {
-            string imei_list = string.Join(",", imeis);
-            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, @ma_kho";
+            
+            string imei_list = string.Join(seperator, imeis);
+            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, @ma_kho, @seperator";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -257,6 +264,12 @@ namespace Imei
                 ParameterName = $"@ma_kho",
                 SqlDbType = SqlDbType.Char,
                 Value = ma_kho
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@seperator",
+                SqlDbType = SqlDbType.Char,
+                Value = seperator
             });
             return base.ExecSql2List<ImeiInfo>(sql, paras);
         }

@@ -15,33 +15,29 @@ using Genbyte.Component.Voucher;
 using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
-using Voucher.PTHTran.Models;
+using Voucher.CDTran_PCF.Models;
 
-namespace Voucher.PTHTran
+namespace Voucher.CDTran_PCF
 {
     public class Service : IVoucherService
     {
         //Mã chứng từ
-        public string VoucherCode { get; } = "PTH";
+        public string VoucherCode { get; } = "PCF";
 
         //Bảng gốc dữ liệu không phân kỳ
-        public string MasterTable { get; } = "c546$000000";
+        public string MasterTable { get; } = "c557$000000";
 
         //Bảng chính chứa dữ liệu phân kỳ
-        public string PrimeTable { get; } = "m546$";
+        public string PrimeTable { get; } = "m557$";
 
         //Bảng lưu thông tin tìm kiếm
-        public string InquiryTable { get; } = "i546$";
+        public string InquiryTable { get; } = "i557$";
 
         //Bảng lưu dữ liệu chi tiết của chứng từ
-        public string DetailTable { get; } = "d546$";
-        private const string _DETAIL_PARA = "d546";
+        public string DetailTable { get; } = "d557$";
+        private const string _DETAIL_PARA = "d557";
 
-        // bảng lưu dữ liệu chi tiết của thanh toán
-        public string PaidTable { get; } = "d546tt$";
-        private const string _PAID_PARA = "d546tt";
-
-        public string ma_ct_goc { get; } = "PT1";
+        public string ma_ct_goc { get; } = "PC1";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :;;";
@@ -149,16 +145,21 @@ namespace Voucher.PTHTran
                 vc_item.ty_gia = 1;
             }
 
+            //Tạm xử lý lấy ngày chứng từ từ client trong giai đoạn triển khai
+            /*
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
-            vc_item.ma_gd = "8";
-            vc_item.loai_ct = "8";
-            vc_item.ma_loaigd = "8";
+            */
+            //set ngày lct = ngày ct gửi lên từ client
+            vc_item.ngay_lct = vc_item.ngay_ct;
+
+            vc_item.ma_gd = "9";
+            vc_item.loai_ct = "9";
+            vc_item.ma_loaigd = "15";
             vc_item.tk = "      ";
             vc_item.t_tien = vc_item.t_tien_nt;
             vc_item.t_tt = vc_item.t_tt_nt;
-            vc_item.t_tien_hoa_hong = vc_item.t_tien_hoa_hong_nt;
 
             vc_item.ma_cuahang = Startup.Shop;
             vc_item.ma_ca = Startup.Shift;
@@ -185,27 +186,6 @@ namespace Voucher.PTHTran
                         item_detail.Data.AddRange(detail_list);
                     }
                     item_detail.Detail_Type = typeof(PRDetail).Name;
-                }
-            }
-            // id = 2 ==> type: PaidDetail
-            index_value = 2;
-            if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
-            {
-                DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
-                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
-
-                if (item_model != null && item_detail != null)
-                {
-                    List<ORPaidModel>? paid_list = JsonSerializer.Deserialize<List<ORPaidModel>>((JsonElement)item_model.Data);
-                    if (paid_list != null && paid_list.Count > 0)
-                    {
-                        //cập nhật ngày chứng từ
-                        paid_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-
-                        item_detail.Data = new List<DetailEntity>();
-                        item_detail.Data.AddRange(paid_list);
-                    }
-                    item_detail.Detail_Type = typeof(ORPaidModel).Name;
                 }
             }
 
@@ -266,14 +246,14 @@ namespace Voucher.PTHTran
             // update trường tài khoản theo danh mục giao dịch xử lý
             query += $"select * into #gdtien FROM dmgdtien WHERE ma_ct = '{ma_ct_goc}' AND loai_ct = @loai_ct AND ma_loaigd = @ma_loaigd";
             query += "\n";
-            query += $"set @tk = (select tk from #gdtien where 1 = 1) \n";
-
+            query += $"IF @ma_thanhtoan = 'TM' set @tk = (select tk from #gdtien where 1 = 1)";
+            query += $"ELSE set @tk = (select tk from dmtknh where tknh = @tknh and ma_dvcs = @ma_dvcs )";
+            query += "\n\n";
             query += $"{insert_prime_table_query}";
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
             string detail_table = "";
-            string paid_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -284,24 +264,11 @@ namespace Voucher.PTHTran
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += $"update @{_DETAIL_PARA} SET tk_no = (select tk_du from #gdtien) ";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_no,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt, ma_thue, tk_thue, thue_suat, loai_hd, thue, thue_nt, tt,tt_nt, ngay_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, ghi_chu, ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_no,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt, ma_thue, tk_thue, thue_suat, loai_hd, thue_nt, thue_nt, tt_nt,tt_nt, ngay_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, ghi_chu, ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9 from @{_DETAIL_PARA}";
             }
-            if (voucherQuery.Details.Any(x => x.ParaName == _PAID_PARA))
-            {
-                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _PAID_PARA);
-                paid_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
-                string insert_paid_query = VoucherUtils.getPaidQuery(new ORPaidModel(), paid_table, _PAID_PARA, 1);
 
-                query += "\n\n";
-                query += detail_query?.QueryString;
-                query += "\n";
-                //query += $"update @{_PAID_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct where 1=1";
-                //query += "\n\n";
-                //query += $"insert into {paid_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, line_nbr, ma_thanhtoan, ma_nvbh_i, tien, tien_nt, so_the_nh, ma_chuan_chi, ma_may_pos, tk_nh_nhan, so_hd_vnpay, vi_dien_tu, so_hd_tragop, tien_phi_bh, ma_dv_tragop) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, line_nbr, ma_thanhtoan, ma_nvbh_i, tien, tien_nt, so_the_nh, ma_chuan_chi, ma_may_pos, tk_nh_nhan, so_hd_vnpay, vi_dien_tu, so_hd_tragop, tien_phi_bh, ma_dv_tragop from @{_PAID_PARA}";
-                query += $"{insert_paid_query}";
-            }
             query += "\n\n";
             query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
@@ -324,8 +291,6 @@ namespace Voucher.PTHTran
             //update các trường null
             query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
             query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if(!string.IsNullOrEmpty(paid_table))
-                query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
 
             //insert bảng master (c) & inquiry (i)
@@ -382,27 +347,6 @@ namespace Voucher.PTHTran
                         item_detail.Data.AddRange(detail_list);
                     }
                     item_detail.Detail_Type = typeof(PRDetail).Name;
-                }
-            }
-            // id = 2 ==> type: PaidDetail
-            index_value = 2;
-            if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
-            {
-                DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
-                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
-
-                if (item_model != null && item_detail != null)
-                {
-                    List<ORPaidModel>? paid_list = JsonSerializer.Deserialize<List<ORPaidModel>>((JsonElement)item_model.Data);
-                    if (paid_list != null && paid_list.Count > 0)
-                    {
-                        //cập nhật ngày chứng từ
-                        paid_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-
-                        item_detail.Data = new List<DetailEntity>();
-                        item_detail.Data.AddRange(paid_list);
-                    }
-                    item_detail.Detail_Type = typeof(ORPaidModel).Name;
                 }
             }
 
@@ -501,7 +445,6 @@ SELECT is_success, message FROM @check";
                 vc_item.ngay_ct = old_voucher.ngay_ct;
                 vc_item.t_tien = vc_item.t_tien_nt;
                 vc_item.t_tt = vc_item.t_tt_nt;
-                vc_item.t_tien_hoa_hong = vc_item.t_tien_hoa_hong_nt;
 
                 foreach (VoucherDetail item in vc_item.details)
                 {
@@ -564,14 +507,15 @@ SELECT is_success, message FROM @check";
             //query += $" where stt_rec = @stt_rec";
             query += $"select * into #gdtien FROM dmgdtien WHERE ma_ct = '{ma_ct_goc}' AND loai_ct = @loai_ct AND ma_loaigd = @ma_loaigd";
             query += "\n";
-            query += $"set @tk = (select tk from #gdtien where 1 = 1)";
+
+            query += $"IF @ma_thanhtoan = 'TM' set @tk = (select tk from #gdtien where 1 = 1) ";
+            query += $"ELSE set @tk = (select tk from dmtknh where tknh = @tknh and ma_dvcs = @ma_dvcs )";
 
             query += $"{update_prime_table_query}";
 
             //xóa và insert lại các bảng chi tiết
             DetailQuery? detail_query = null;
             string detail_table = "";
-            string paid_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -582,26 +526,11 @@ SELECT is_success, message FROM @check";
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += $"update @{_DETAIL_PARA} SET tk_no = (select tk_du from #gdtien) ";
                 query += "\n\n";
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong_nt, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho from @{_DETAIL_PARA}";
-            }
-            if (voucherQuery.Details.Any(x => x.ParaName == _PAID_PARA))
-            {
-                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _PAID_PARA);
-                paid_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
-                string update_paid_query = VoucherUtils.getPaidQuery(new ORPaidModel(), paid_table, _PAID_PARA, 2);
-
-                query += "\n\n";
-                query += detail_query?.QueryString;
-                query += "\n";
-                query += $"{update_paid_query}";
-            }
-            else
-            {
-                query += VoucherUtils.getDeleteQuery(this.PaidTable + expression);
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_no,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt, ma_thue, tk_thue, thue_suat, loai_hd, thue, thue_nt, tt,tt_nt, ngay_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, ghi_chu, ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_no,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt, ma_thue, tk_thue, thue_suat, loai_hd, thue_nt, thue_nt, tt_nt,tt_nt, ngay_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, ghi_chu, ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9 from @{_DETAIL_PARA}";
             }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
@@ -624,8 +553,6 @@ SELECT is_success, message FROM @check";
             //update các trường null
             query = $"exec fs_UpdateNullToTable '{prime_table}', '{prime_table}', 'stt_rec = ''{stt_rec}''' \n";
             query += $"exec fs_UpdateNullToTable '{detail_table}', '{detail_table}', 'stt_rec = ''{stt_rec}''' \n";
-            if (!string.IsNullOrEmpty(paid_table))
-                query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             service.ExecuteNonQuery(query);
 
             //insert lại dữ liệu tại bảng inquiry (i)
@@ -680,7 +607,6 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.PrimeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.InquiryTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
-            sql += $"delete from {this.PaidTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -738,11 +664,10 @@ SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join vdmkh_acc b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_td as ten_loai_thu_ho, c.ten_dvth, d.ten_kh as ten_kh_thuho from {2}' + @exp + ' a left join dmtd2 b on a.ma_loai_thu_ho = b.ma_td left join dmdvthuho c on a.ma_dvth = c.ma_dvth left join dmkh d on a.ma_kh_thuho = d.ma_kh where stt_rec = @stt_rec'
-    SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select * from {2}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -757,7 +682,6 @@ END";
             {
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PRDetail> pr_detail = ds.Tables[1].ToList<PRDetail>();
-                IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
@@ -767,12 +691,6 @@ END";
                     Id = 1,
                     Name = _DETAIL_PARA,
                     Data = pr_detail
-                });
-                invoice_model.details.Add(new DetailItemModel()
-                {
-                    Id = 2,
-                    Name = _PAID_PARA,
-                    Data = pr_paid
                 });
                 model.result = invoice_model;
             }

@@ -314,6 +314,64 @@ namespace Imei
         }
         #endregion
 
+        [HttpGet("get_single_imei_state")]
+        #region GetSingleImeiStateAndItem
+        public IActionResult GetSingleImeiStateAndItem([FromQuery] string imei, [FromQuery] string? ma_kho)
+        {
+            try
+            {
+                char seperator = '\x00ff';  //char(255)
+                List<string> imeis = new List<string>();
+                imeis.Add(imei);
+
+                /*
+                 * ĐOẠN DƯỚI COPY CODE TỪ METHOD GetImeiStateAndItem SỬA THÊM param seperator
+                 */
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(imeis.ToArray()) || !_service.IsSQLInjectionValid(ma_kho))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                imeis.ForEach(x => x = HttpUtility.UrlDecode(x));
+
+                //2024-06-15: tạm bỏ qua đoạn code dưới để cho phép imei có chứa ký tự đặc biệt
+                /*
+                for (int i = 0; i < imeis.Count; i++)
+                {
+                    imeis[i] = HttpUtility.UrlDecode(imeis[i]);
+                }
+                */
+
+                //lấy trạng thái & thông tin imei
+                if (string.IsNullOrEmpty(ma_kho))
+                {
+                    model.result = _service.GetStateAndItemOfImeis(imeis, seperator);
+                }
+                else
+                {
+                    model.result = _service.GetStateItemOfImeisInStock(imeis, ma_kho, seperator); ;
+                }
+
+                if (model.result != null)
+                    model.success = true;
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ImeiController/GetSingleImeiStateAndItem", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Lấy danh sách imei có tồn kho theo mã vật tư tại cửa hàng (mã cửa hàng hiện thời lấy từ thông tin đăng nhập)
         /// </summary>

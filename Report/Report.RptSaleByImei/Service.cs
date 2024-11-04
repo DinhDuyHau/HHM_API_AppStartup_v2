@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 
 namespace Report.RptSaleByImei
 {
-    public class Service : IComponentService
+    public class Service : IReportService
     {
         public IMemoryCache MemoryCache { get; set; }
 
@@ -36,6 +36,19 @@ namespace Report.RptSaleByImei
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);        
             CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, M_TABLE_VIEW_INDEX, connectType);
             return raw_model;
+        }
+
+        public Query InitExport(string controller, Dictionary<string, object> param)
+        {
+            string sql = "";
+            ParamItem obj_param = Converter.DictionaryToObject<ParamItem>(param);
+            List<SqlParameter> list_paras = init(obj_param, out sql);
+            return new Query()
+            {
+                SqlString = sql,
+                Parameters = list_paras,
+                RptTableIndex = M_TABLE_VIEW_INDEX
+            };
         }
 
         public CommonObjectModel GetPdfReport(string sysid, string service_url, string controllerReport, string form_id, Dictionary<string, object> param)
