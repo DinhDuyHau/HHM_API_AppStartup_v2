@@ -1597,6 +1597,10 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+
+            // 2024-11-04: tuananhnl sửa comment code dưới => bỏ qua check tồn tại imei thu cũ
+            // (cho phép nhập thu cũ các imei đã tồn tại trong hệ thống)
+            /*
             if (exists_htc != null && exists_htc.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -1609,6 +1613,9 @@ END";
                 result_model.message = "imei_exists";
                 result_model.result = list_result_error;
             }
+            */
+            // 2024-11-04: end
+
             if (dat_hang != null && dat_hang.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -1623,6 +1630,7 @@ END";
             }
             return result_model;
         }
+
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
             var listImei = new List<string>();
@@ -1730,6 +1738,10 @@ END";
                 result_model.message = "imei_not_exists";
                 result_model.result = list_result_error;
             }
+
+            // 2024-11-04: tuananhnl sửa comment code dưới => bỏ qua check tồn tại imei thu cũ
+            // (cho phép nhập thu cũ các imei đã tồn tại trong hệ thống)
+            /*
             if (exists_htc != null && exists_htc.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
@@ -1742,6 +1754,8 @@ END";
                 result_model.message = "imei_exists";
                 result_model.result = list_result_error;
             }
+            */
+            
             listImei_old.Except(listImei).ToList().ForEach(x =>
             {
                 list_imei_delete.Add(x);
