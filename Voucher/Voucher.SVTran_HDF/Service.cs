@@ -344,18 +344,7 @@ namespace Voucher.SVTran_HDF
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
 
-            /*
-             * Kiểm tra xem có bảng detail hàng hóa ko trước khi chạy store
-             */
-            if (string.IsNullOrEmpty(detail_table))
-            {
-                detail_table = this.DetailTable.Trim() + expression;
-
-                query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
-            } else
-            {
-                query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
-            }
+            query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
@@ -779,20 +768,7 @@ SELECT is_success, message FROM @check";
             query = $"delete from {inquiry_table} where stt_rec = '{stt_rec}' \n";
             query += $"delete from {this.MasterTable} where stt_rec = '{stt_rec}' \n";
 
-            /*
-             * Kiểm tra xem có bảng detail hàng hóa ko trước khi chạy store
-             */
-            if (string.IsNullOrEmpty(detail_table))
-            {
-                detail_table = this.DetailTable.Trim() + expression;
-
-                query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
-            }
-            else
-            {
-               query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
-            }
-
+            query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
 
@@ -1053,7 +1029,7 @@ END";
             {
                 VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
 
-                if (item_detail != null && item_detail.Data != null)
+                if (item_detail != null)
                 {
                     foreach (var item in item_detail.Data)
                     {
@@ -1124,7 +1100,7 @@ END";
             {
                 VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
 
-                if (item_detail != null && item_detail.Data != null)
+                if (item_detail != null)
                 {
                     foreach (var item in item_detail.Data)
                     {
