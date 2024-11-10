@@ -57,5 +57,6 @@ namespace Voucher.IRTran_PNW
         public string so_ct_px { get; set; }
 
         public bool doi_bh_yn { get; set; }
+        public bool hang_moi_yn { get; set; }
     }
 }
