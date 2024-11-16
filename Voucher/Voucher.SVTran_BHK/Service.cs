@@ -1179,6 +1179,16 @@ SELECT is_success, message FROM @check";
             if (ds == null || ds.Tables.Count <= 0 || ds.Tables[0].Rows.Count <= 0)
                 throw new Exception(ApiReponseMessage.Error_notExist);
 
+            //reset trạng thái imei trước khi thực hiện xóa
+            sql = "exec Genbyte$Voucher$BHK$BeforeDeleting @voucherId";
+            paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@voucherId",
+                SqlDbType = SqlDbType.Char,
+                Value = voucherId.Replace("'", "''")
+            });
+            service.ExecuteNonQuery(sql, paras);
 
             //Thực hiện xóa có sử dụng transaction
             DateTime ngay_ct = Convert.ToDateTime(ds.Tables[0].Rows[0]["ngay_ct"]);
