@@ -6,7 +6,8 @@ namespace Voucher.SVTran
     public class SVDetail : MerchandiseDetailBase
     {
         public string ten_vt { get; set; }
-        public int km_yn { get; set; } 
+        public string nh_vt1 { get; set; }
+        public int km_yn { get; set; }
         public string ma_sp { get; set; }
         public string ma_bp { get; set; }
         public string so_lsx { get; set; }
