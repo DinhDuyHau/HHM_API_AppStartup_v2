@@ -211,7 +211,7 @@ namespace Imei
         public List<ImeiInfo> GetStateAndItemOfImeis(List<string> imeis, char seperator = ',')
         {
             string imei_list = string.Join(seperator, imeis);
-            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, @seperator";
+            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, '', @seperator";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
