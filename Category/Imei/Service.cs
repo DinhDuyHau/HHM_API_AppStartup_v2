@@ -211,7 +211,7 @@ namespace Imei
         public List<ImeiInfo> GetStateAndItemOfImeis(List<string> imeis, char seperator = ',')
         {
             string imei_list = string.Join(seperator, imeis);
-            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, '', @seperator";
+            string sql = "exec Genbyte$IMEI$GetStateAndItem @shop_id, @imeis, @seperator";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -739,6 +739,85 @@ namespace Imei
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
             return ds != null && ds.Tables.Count >= 1 && ds.Tables[0].Rows.Count > 0 ?
                 ds.Tables[0].ToList<ImeiWarrantyOut>().ToList() : null;
+        }
+        #endregion
+
+        /// <summary>
+        /// Tìm danh sách imei theo ma_imei gần đúng
+        /// </summary>
+        /// <param name="ma_imei"></param>
+        /// <returns></returns>
+        #region FindImeiByPrefix
+        public EntityCollection<Dictionary<string, object>> FindImeiByPrefix(string ma_imei, string ma_cuahang, bool isCheckInventory = true, int page_index = 1, int page_size = 0)
+        {
+            string sql = "exec Genbyte$IMEI$FindByPrefix @ma_imei, @ma_cuahang, @isCheckInventory, @page_index, @page_size";
+            List<SqlParameter> paras = new List<SqlParameter>();
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_imei",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_imei
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@isCheckInventory",
+                SqlDbType = SqlDbType.Bit,
+                Value = isCheckInventory
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@page_index",
+                SqlDbType = SqlDbType.Int,
+                Value = page_index
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@page_size",
+                SqlDbType = SqlDbType.Int,
+                Value = page_size
+            });
+
+            if (!string.IsNullOrEmpty(ma_cuahang))
+            {
+
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_cuahang
+                });
+            }
+            else
+            {
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.Char,
+                    Value = DBNull.Value
+                });
+            }
+
+            DataSet ds = base.ExecSql2DataSet(sql, paras);
+
+            if (ds == null || ds.Tables.Count <= 0)
+                return null;
+            EntityCollection<Dictionary<string, object>> entities = new EntityCollection<Dictionary<string, object>>();
+
+            //paging information (lấy từ bảng đầu tiên trong danh sách dataset)
+            if (ds.Tables.Count >= 2)
+            {
+                if (ds.Tables[0].Columns.Contains("TotalPage"))
+                    entities.PageCount = Convert.ToInt32(ds.Tables[0].Rows[0]["TotalPage"]);
+                if (ds.Tables[0].Columns.Contains("PageSize"))
+                    entities.PageSize = Convert.ToInt32(ds.Tables[0].Rows[0]["PageSize"]);
+                if (ds.Tables[0].Columns.Contains("TotalRecordCount"))
+                    entities.RecordCount = Convert.ToInt32(ds.Tables[0].Rows[0]["TotalRecordCount"]);
+
+                entities.Items = Converter.TableToDictionary(ds.Tables[1]);
+            }
+
+            return entities;
         }
         #endregion
     }

@@ -641,5 +641,46 @@ namespace Imei
             }
         }
         #endregion
+
+        /// <summary>
+        /// Tìm danh sách imei theo ma_imei hoặc cửa hàng nếu truyền vào (cho phép tìm gần đúng)
+        /// </summary>
+        /// <param name="ma_imei">Mã imei cần tìm</param>
+        /// <param name="ma_cuahang">Mã cửa hàng cần tìm cùng imei</param>
+        /// <returns></returns>
+        [HttpGet("find_by_prefix")]
+        #region FindByPrefix
+        public IActionResult FindByPrefix(string ma_imei, string? ma_cuahang = null, bool isCheckInventory = true, int page_index = 1, int page_size = 0)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_imei))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                if (!_service.IsSQLInjectionValid(ma_cuahang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //thông tin imei: kho, vật tư
+                model.result = _service.FindImeiByPrefix(ma_imei, ma_cuahang, isCheckInventory, page_index, page_size);
+                if (model.result != null)
+                    model.success = true;
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ImeiController/FindByPrefix", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }
