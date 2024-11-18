@@ -280,6 +280,21 @@ namespace Voucher.IPTran
                 }
             }
 
+            //2024-11-12: kiểm tra trùng imei từ danh sách nhập vào chi tiết chứng từ
+            if(imeis != null && imeis.Count > 0)
+            {
+                IEnumerable<string> duplicate_imeis = imeis.GroupBy(x => x.ToUpper())
+                        .Where(group => group.Count() > 1)
+                        .Select(group => group.Key);
+
+                if(duplicate_imeis != null && duplicate_imeis.Count() > 0)
+                {
+                    result_model.success = false;
+                    result_model.message = "err_imei_duplicate";
+                    return result_model;
+                }
+            }
+
             //Check tồn tại chứng từ & trạng thái chứng từ thuộc danh sách trạng thái được phép sửa
             string sql = @"DECLARE @check TABLE (
 	is_success BIT,
