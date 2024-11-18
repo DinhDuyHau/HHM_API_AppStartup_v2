@@ -314,6 +314,22 @@ namespace Imei
         }
         #endregion
 
+        /**
+         * call method GetSingleImeiStateAndItem thay đổi từ GET sang POST
+         * param imeis sử dụng List vì nếu để string khi gửi request từ client sẽ bị lỗi 415
+         */
+        [HttpPost("single_imei_state")]
+        #region SingleImeiStateAndItemWithPost
+        public IActionResult SingleImeiStateAndItemWithPost([FromBody] List<string> imeis, [FromQuery] string? ma_kho)
+        {
+            //lấy ra imei đầu tiên trong danh sách để truy vấn thông tin
+            //(chỉ xử lý truy vấn cho 1 imei nhưng do request param bắt buộc phải để dạng List)
+            string ma_imei = imeis.FirstOrDefault() ?? "";
+
+            return GetSingleImeiStateAndItem(ma_imei, ma_kho);
+        }
+        #endregion
+
         [HttpGet("get_single_imei_state")]
         #region GetSingleImeiStateAndItem
         public IActionResult GetSingleImeiStateAndItem([FromQuery] string imei, [FromQuery] string? ma_kho)
