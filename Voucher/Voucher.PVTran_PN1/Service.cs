@@ -11,41 +11,41 @@ using System.Text.RegularExpressions;
 using Genbyte.Base.Security;
 using Microsoft.Extensions.Configuration;
 
-namespace Voucher.SVTran_DV1
+namespace Voucher.PVTran_PN1
 {
     public class Service : IVoucherService
     {
         //Mã chứng từ
-        public string VoucherCode { get; } = "DV1";
+        public string VoucherCode { get; } = "PN1";
 
         //Bảng gốc dữ liệu không phân kỳ
-        public string MasterTable { get; } = "c521$000000";
+        public string MasterTable { get; } = "c531$000000";
 
         //Bảng chính chứa dữ liệu phân kỳ
-        public string PrimeTable { get; } = "m521$";
+        public string PrimeTable { get; } = "m531$";
 
         //Bảng lưu thông tin tìm kiếm
-        public string InquiryTable { get; } = "i521$";
+        public string InquiryTable { get; } = "i531$";
 
         //Bảng lưu dữ liệu chi tiết của chứng từ
-        public string DetailTable { get; } = "d521$";
-        private const string _DETAIL_PARA = "d521";
+        public string DetailTable { get; } = "d531$";
+        private const string _DETAIL_PARA = "d531";
 
         //Bảng lưu dữ liệu chi tiết của thanh toán
-        public string DetailTtTable { get; } = "d521tt$";
-        private const string _DETAIL_TT_PARA = "d521tt";
+        public string DetailTtTable { get; } = "d531tt$";
+        private const string _DETAIL_TT_PARA = "d531tt";
 
          public string EInvoiceTable { get; } = "hddt$";
         private const string _EINVOICE_INFO = "hddt";
 
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
-        public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_dv;#10$,#20$;d521,d521";
+        public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_dv;#10$,#20$;d531,d531";
 
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as dien_giai,t_tien_nt,t_tien_nt2,t_Ck_nt as t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as dien_giai,t_tien_nt,t_tien_nt2,t_Ck_nt as t_ck_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.name,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "'''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as dien_giai,t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as dien_giai,t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.name,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "'''";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -99,9 +99,9 @@ namespace Voucher.SVTran_DV1
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
-            var e_invoice_info = VoucherUtils.getEInvoiceField();
-            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
-            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
+            //var e_invoice_info = VoucherUtils.getEInvoiceField();
+            //vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            //vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
 
             //convert dữ liệu chi tiết chứng từ
@@ -217,11 +217,14 @@ namespace Voucher.SVTran_DV1
             //insert prime
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
-            string insert_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 1);
+
+            //string insert_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 1);
+            //query += "\n\n";
+            //query += $"{insert_prime_table_query}";
+
             query += "\n\n";
-            //query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_kh, ma_nt, ty_gia, t_so_luong, t_tien2, t_tien_nt2, t_tt, t_tt_nt, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2, ma_nvbh) ";
-            //query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_kh, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt2, @t_tien_nt2, @t_tt_nt, @t_tt_nt, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate(), @ma_nvbh ";
-            query += $"{insert_prime_table_query}";
+            query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_kh, ma_nt, ty_gia, t_so_luong, t_tien, t_tien_nt, t_tt, t_tt_nt, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2, ma_nvbh) ";
+            query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_kh, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt, @t_tien_nt, @t_tt_nt, @t_tt_nt, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate(), @ma_nvbh ";
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
@@ -236,7 +239,7 @@ namespace Voucher.SVTran_DV1
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_dt,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tk_ck,tl_ck,ck_nt,ck,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,ma_dv, gia_vat, gia_vat_nt) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_dt,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tk_ck,tl_ck,ck_nt,ck,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,ma_dv, gia_vat, gia_vat_nt from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho from @{_DETAIL_PARA}";
             }
 
             //insert các bảng chi tiết thanh toán
@@ -251,10 +254,6 @@ namespace Voucher.SVTran_DV1
                 query += "\n\n";
                 query += detail_tt_query?.QueryString;
                 query += "\n";
-                //query += $"update @{_DETAIL_TT_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
-                //query += "\n\n";
-                //query += $"insert into {detail_tt_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_thanhtoan,ma_nvbh_i,line_nbr,tien,tien_nt,so_the_nh,ma_chuan_chi,ma_may_pos,tk_nh_nhan,so_hd_vnpay,vi_dien_tu,so_hd_tragop,tien_phi_bh,ma_dv_tragop) ";
-                //query += $" select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_thanhtoan,ma_nvbh_i,line_nbr,tien,tien_nt,so_the_nh,ma_chuan_chi,ma_may_pos,tk_nh_nhan,so_hd_vnpay,vi_dien_tu,so_hd_tragop,tien_phi_bh,ma_dv_tragop from @{_DETAIL_TT_PARA}";
                 query += $"{insert_paid_query}";
             }
 
@@ -287,7 +286,7 @@ namespace Voucher.SVTran_DV1
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
             CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
-            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
+            //CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -556,13 +555,15 @@ SELECT is_success, message FROM @check";
             //update prime
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
-            string update_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 2);
+            //string update_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 2);
+            //query += "\n\n";
+            //query += $"{update_prime_table_query}";
+
             query += "\n\n";
-            //query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_nt = @ma_nt," +
-            //    $" ty_gia = @ty_gia, t_so_luong = @t_so_luong, t_thue = @t_thue_nt, t_thue_nt = @t_thue_nt, t_tien2 = @t_tien_nt2, t_tien_nt2 = @t_tien_nt2," +
-            //    $" t_tt_nt = @t_tt_nt, t_tt = @t_tt_nt, ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate(), ma_nvbh = @ma_nvbh";
-            //query += $" where stt_rec = @stt_rec";
-            query += $"{update_prime_table_query}";
+            query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_nt = @ma_nt," +
+    $" ty_gia = @ty_gia, t_so_luong = @t_so_luong, t_thue = @t_thue_nt, t_thue_nt = @t_thue_nt, t_tien = @t_tien_nt, t_tien_nt = @t_tien_nt," +
+    $" t_tt_nt = @t_tt_nt, t_tt = @t_tt_nt, ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate(), ma_nvbh = @ma_nvbh";
+            query += $" where stt_rec = @stt_rec";
 
             //xóa và insert lại các bảng chi tiết
             DetailQuery? detail_query = null;
@@ -580,7 +581,7 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_dt,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tk_ck,tl_ck,ck_nt,ck,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,ma_dv,gia_vat) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,tk_dt,tien_nt2,tien2,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tk_ck,tl_ck,ck_nt,ck,tt,tt_nt,ma_kh2,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,ma_dv,gia_vat from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho from @{_DETAIL_PARA}";
             }
             //xóa và insert lại các bảng chi tiết thanh toán
             DetailQuery? detail_tt_query = null;
@@ -636,7 +637,7 @@ SELECT is_success, message FROM @check";
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
             CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
-            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
+            //CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -959,62 +960,11 @@ END";
                         detail_list.Add(sVPaid);
                     }
                 }
-                // Điểm quy đổi
-                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD") != null)
-                {
-                    CommonService.postConversionPoint(vc_item, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "DIEMQD"));
-                }
-                // Active mã giảm giá
-                if (detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG") != null)
-                {
-                    CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
-                }
-            }
-        }
-        public void updateService(VoucherItem vc_item)
-        {
-            if (vc_item.status == "2" && vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA) != null)
-            {
-                VoucherDetail? item_model = vc_item.details.FirstOrDefault(x => x.Name == _DETAIL_PARA);
-                if (item_model.Data == null) return;
-                List<ServiceDetailBase>? service_list = new List<ServiceDetailBase>();
-                foreach (var item in item_model.Data)
-                {
-                    if (item is ServiceDetailBase service_base)
-                    {
-                        service_list.Add(service_base);
-                    }
-                }
-                // GET list key from service
-                bool flag = true;
-                List<KeyServiceModel> list_key = CommonService.getKeys(service_list);
-                if (list_key != null && list_key.Count > 0)
-                {
-                    string expression = vc_item.ngay_ct?.ToString("yyyyMM");
-                    // Update table service detail 
-                    flag = CommonService.updateServiceDetailTable(this.DetailTable + expression, vc_item.stt_rec, list_key);
-                    if (flag)
-                    {
-                        // UPdate active key
-                        CommonService.updateStatusKey(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, vc_item.email_nhan_key, list_key);
-                    }
-                }
-            }
-        }
-        #endregion
-        public string postConversionPoint(TTDetail model, VoucherItem master)
-        {
 
-            string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
-            if (model != null)
-            {
-                sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', {master.diem_qd}, {model.diem_qd}, {model.tien}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
             }
-            else
-            {
-                sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', {master.diem_qd}, null, null, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
-            }
-            return sql;
         }
+
+        #endregion
+
     }
 }
