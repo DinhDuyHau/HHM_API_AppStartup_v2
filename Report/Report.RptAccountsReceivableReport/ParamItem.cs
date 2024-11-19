@@ -8,6 +8,8 @@ namespace Report.RptAccountsReceivableReport
 
         public DateTime den_ngay { get; set; }
 
+        public string ma_cuahang { get; set; } = "";
+
         public string ma_kh { get; set; } = "";
 
     }
