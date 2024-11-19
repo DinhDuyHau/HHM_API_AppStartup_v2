@@ -15,6 +15,7 @@ using System.Web;
 using Imei.Models;
 using Microsoft.Extensions.Configuration;
 using Genbyte.Base.Security;
+using System.Diagnostics;
 
 namespace Imei
 {
@@ -291,8 +292,18 @@ namespace Imei
                 }
                 */
 
+                //Kiểm tra Imei có thuộc kho hàng
+                var kq =  _service.CheckStock(imeis, ma_kho);
+                var itemsWithFalseExists = kq.Where(e => !e.exists_yn).ToList();
+                if (itemsWithFalseExists.Count != 0)
+                {
+                    model.result = itemsWithFalseExists;
+                    model.message = "in_stock_yn_no";
+                    return Ok(model);
+                }
+
                 //lấy trạng thái & thông tin imei
-                if(string.IsNullOrEmpty(ma_kho))
+                if (string.IsNullOrEmpty(ma_kho))
                 {
                     model.result = _service.GetStateAndItemOfImeis(imeis);
                 }
