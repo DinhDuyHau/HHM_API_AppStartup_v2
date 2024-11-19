@@ -55,11 +55,14 @@ namespace Report.RptSalespersonCommission
 
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
+            int user_id = Startup.UserId;
+            int admin = Startup.Admin;
+
             sql = @"
                 declare @CustomerName nvarchar(1024)
                 select @CustomerName = ten_kh from dmkh where ma_kh = @ma_kh
                 select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_kh ma_kh, @CustomerName as ten_kh
-                exec rs_rptSalespersonCommission @tu_ngay, @den_ngay, @ma_kh, @language, @userID, @admin
+                exec rs_rptSalespersonCommission @tu_ngay, @den_ngay, @ma_kh, @language, @user_id, @admin,  @loginShop, @userLogin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -88,15 +91,27 @@ namespace Report.RptSalespersonCommission
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@userID",
+                ParameterName = "@user_id",
                 SqlDbType = SqlDbType.Int,
-                SqlValue = obj_param.userId
+                SqlValue = user_id
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
-                SqlValue = obj_param.admin
+                SqlValue = admin
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@userLogin",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.UserName
             });
             return list_paras;
         }
