@@ -47,6 +47,10 @@ namespace Category.Dmkh
             if (entity_item == null)
                 throw new Exception(ApiReponseMessage.isNullResult);
 
+            // check length 10 character
+            if (entity_item.ma_kh.Length < 10)
+                return false;
+
             //check sql injection
             if (!data_service.IsSQLInjectionValid(entity_item.ma_kh))
                 throw new Exception(ApiReponseMessage.Error_InputData);
