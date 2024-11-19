@@ -69,7 +69,6 @@ namespace Report.RptAccountsReceivableReport
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
             //string ma_nvbh = "";
@@ -82,15 +81,15 @@ namespace Report.RptAccountsReceivableReport
 
             string sql2 = "select val from options where name = 'cn_pthu'";
             CoreService coreservice = new CoreService();
-            //DataSet ds = coreservice.ExecSql2DataSet(sql2, paras: null, conn_type: ConnectType.Accounting);
             List<ParamOption> paramOptions = coreservice.ExecSql2List<ParamOption>(sql2, paras: null, conn_type: ConnectType.Accounting);
             if (paramOptions != null && paramOptions.Count > 0)
             {
                 tk = paramOptions[0].val;
             }
             sql = @"select @tu_ngay as date_from, @den_ngay as date_to
-                    exec rs_rptAccountsReceivableReport @tu_ngay, @den_ngay, @tk, @ma_kh, @nh_kh1, @nh_kh2, @nh_kh3, '', 'ma_kh',
-                           @ma_dvcs, 'v', @user_id, @admin
+                    exec rs_rptAccountsReceivableReport @tu_ngay, @den_ngay, @tk, @ma_kh, @nh_kh1, @nh_kh2, @nh_kh3,
+                            '', 'ma_kh', @ma_dvcs, @ma_cuahang, 'v', @user_id, @admin
+
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -152,6 +151,12 @@ namespace Report.RptAccountsReceivableReport
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_cuahang
             });
 
             return list_paras;
