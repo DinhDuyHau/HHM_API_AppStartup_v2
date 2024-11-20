@@ -16,6 +16,8 @@ using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Voucher.ITTran.Model;
 using Genbyte.Component.Voucher.Model;
+using Newtonsoft.Json.Linq;
+using System.Xml.Linq;
 
 namespace Voucher.ITTran
 {
@@ -176,6 +178,13 @@ end
                 }
             }
 
+            result_model = CheckImei(vc_item,data);
+            if(result_model.message != "")
+            {
+                return result_model;
+            }
+
+
             result_model = checkImeiInsert(vc_item);
             if (!result_model.success)
             {
@@ -218,6 +227,8 @@ end
                 model.success = false;
                 model.message = "voucher_date_null";
             }
+
+
 
             //CheckLockedDate
             //CheckVoucherNumber
@@ -556,6 +567,11 @@ SELECT is_success, message FROM @check";
                         x.ma_ca = Startup.Shift;
                     });
                 }
+            }
+            result_model = CheckImei(vc_item, data);
+            if (result_model.message != "")
+            {
+                return result_model;
             }
             result_model = checkImeiUpdate(vc_item, res);
             if (!result_model.success)
@@ -1176,6 +1192,7 @@ END";
             }
             return result_model;
         }
+
         //Cập nhật lịch sử giao dịch và update trạng thái của phiếu đề nghị
         public void updateStatusTranfer(string stt_rec, string stt_rec_yc, string status)
         {
@@ -1251,6 +1268,86 @@ drop table #temp
                 Value = status
             });
             service.ExecTransactionNonQuery(sql, paras, ConnectType.Accounting);
+        }
+
+        //Kiểm tra imei có thuộc kho hàng, trùng nhau
+        CommonObjectModel CheckImei(VoucherItem vc_item, BaseModel data)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            // Lấy danh sách tất cả các imei
+            int index_value = 1;
+            List<string> imeis = new List<string>();
+            if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
+            {
+                DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+
+                if (item_model != null && item_detail != null)
+                {
+                    List<ITDetail>? detail_list = JsonSerializer.Deserialize<List<ITDetail>>((JsonElement)item_model.Data);
+                    if (detail_list != null && detail_list.Count > 0)
+                    {
+                        detail_list.ForEach((item) =>
+                        {
+                            if (item.ma_imei != null && item.ma_imei != "")
+                            {
+                                imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
+                            }
+                        });
+                        item_detail.Data = new List<DetailEntity>();
+                        item_detail.Data.AddRange(detail_list);
+                    }
+                    item_detail.Detail_Type = typeof(ITDetail).Name;
+                }
+            }
+            //kiểm tra trùng imei từ danh sách nhập vào chi tiết chứng từ
+            if (imeis != null && imeis.Count > 0)
+            {
+                IEnumerable<string> duplicate_imeis = imeis.GroupBy(x => x.ToUpper())
+                        .Where(group => group.Count() > 1)
+                        .Select(group => group.Key);
+
+                if (duplicate_imeis != null && duplicate_imeis.Count() > 0)
+                {
+                    result_model.success = false;
+                    result_model.message = "err_imei_duplicate";
+                    return result_model;
+                }
+            }
+
+            //kiểm imei có thuộc kho hàng
+            CoreService core_service = new CoreService();
+            string imeiString = string.Join(",", imeis);
+            var result = new
+            {
+                ma_imei = imeiString,
+                ma_kho = vc_item.ma_kho
+            };
+            string jsonResult = JsonSerializer.Serialize(result);
+
+            string sql = "exec Genbyte$IMEI$CheckExistsInStore @json";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            CoreService service = new CoreService();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@json",
+                SqlDbType = SqlDbType.Char,
+                Value = jsonResult
+            });
+            List<ImeiCheck> check_results = service.ExecSql2List<ImeiCheck>(sql, paras);
+            var itemsWithFalseExists = check_results.Where(e => !e.exists_yn).ToList();
+            if (itemsWithFalseExists.Count != 0)
+            {
+                result_model.success = false;
+                result_model.result = new List<object> { new { name = "%imei", value = string.Join(", ", itemsWithFalseExists.Select(e => e.ma_imei)) } };
+                result_model.message = "in_stock_yn_no";
+            }
+            return result_model;
         }
     }
 }
