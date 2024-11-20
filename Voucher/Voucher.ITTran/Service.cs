@@ -18,6 +18,8 @@ using Voucher.ITTran.Model;
 using Genbyte.Component.Voucher.Model;
 using Newtonsoft.Json.Linq;
 using System.Xml.Linq;
+using Microsoft.Extensions.Configuration;
+using Genbyte.Base.Security;
 
 namespace Voucher.ITTran
 {
@@ -119,14 +121,16 @@ end
 --end check";
         #endregion
 
-        public Service()
+        private readonly IConfiguration _configuration;
+
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
-
+            _configuration = configuration;
         }
 
         #region Inserting
@@ -169,7 +173,9 @@ end
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                        detail_list.ForEach(x => {
+                            x.ngay_ct = vc_item.ngay_ct;
+                        });
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -178,7 +184,7 @@ end
                 }
             }
 
-            result_model = CheckImei(vc_item,data);
+            result_model = CheckImei(vc_item);
             if(result_model.message != "")
             {
                 return result_model;
@@ -434,6 +440,8 @@ select @stt_rec as stt_rec, @action_state as [state], @err_message as err_messag
                     {
                         detail_list.ForEach((item) =>
                         {
+                            item.stt_rec = APIService.DecryptForWebApp(item.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+
                             if (item.ma_imei != null && item.ma_imei != "")
                             {
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
@@ -568,7 +576,7 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
-            result_model = CheckImei(vc_item, data);
+            result_model = CheckImei(vc_item);
             if (result_model.message != "")
             {
                 return result_model;
@@ -1271,7 +1279,7 @@ drop table #temp
         }
 
         //Kiểm tra imei có thuộc kho hàng, trùng nhau
-        CommonObjectModel CheckImei(VoucherItem vc_item, BaseModel data)
+        CommonObjectModel CheckImei(VoucherItem vc_item)
         {
             CommonObjectModel result_model = new CommonObjectModel()
             {
@@ -1282,29 +1290,15 @@ drop table #temp
             // Lấy danh sách tất cả các imei
             int index_value = 1;
             List<string> imeis = new List<string>();
-            if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
-            {
-                DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
-                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
-
-                if (item_model != null && item_detail != null)
+            VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+            if(item_detail != null) foreach(ITDetail row_entity in item_detail.Data)
                 {
-                    List<ITDetail>? detail_list = JsonSerializer.Deserialize<List<ITDetail>>((JsonElement)item_model.Data);
-                    if (detail_list != null && detail_list.Count > 0)
+                    if (!string.IsNullOrWhiteSpace(row_entity.ma_imei))
                     {
-                        detail_list.ForEach((item) =>
-                        {
-                            if (item.ma_imei != null && item.ma_imei != "")
-                            {
-                                imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
-                            }
-                        });
-                        item_detail.Data = new List<DetailEntity>();
-                        item_detail.Data.AddRange(detail_list);
+                        imeis.AddRange(row_entity.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                     }
-                    item_detail.Detail_Type = typeof(ITDetail).Name;
                 }
-            }
+
             //kiểm tra trùng imei từ danh sách nhập vào chi tiết chứng từ
             if (imeis != null && imeis.Count > 0)
             {
