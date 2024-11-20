@@ -127,6 +127,12 @@ namespace Voucher.ITNTran
                 }
             }
 
+            result_model = CheckImei(vc_item);
+            if (result_model.message != "")
+            {
+                return result_model;
+            }
+
             result_model = checkImeiInsert(vc_item);
             if (!result_model.success)
             {
@@ -414,6 +420,13 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
+
+            result_model = CheckImei(vc_item);
+            if (result_model.message != "")
+            {
+                return result_model;
+            }
+
             result_model = checkImeiUpdate(vc_item, res);
             if (!result_model.success)
             {
@@ -1093,6 +1106,72 @@ END";
                 Value = status
             });
             service.ExecTransactionNonQuery(sql, paras, ConnectType.Accounting);
+        }
+
+        //Kiểm tra imei có thuộc kho hàng, trùng nhau
+        CommonObjectModel CheckImei(VoucherItem vc_item)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            // Lấy danh sách tất cả các imei
+            int index_value = 1;
+            List<string> imeis = new List<string>();
+            VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+            if (item_detail != null) foreach (ITDetail row_entity in item_detail.Data)
+                {
+                    if (!string.IsNullOrWhiteSpace(row_entity.ma_imei))
+                    {
+                        imeis.AddRange(row_entity.ma_imei.Split(",").ToList().Select(x => x.Trim()));
+                    }
+                }
+
+            //kiểm tra trùng imei từ danh sách nhập vào chi tiết chứng từ
+            if (imeis != null && imeis.Count > 0)
+            {
+                IEnumerable<string> duplicate_imeis = imeis.GroupBy(x => x.ToUpper())
+                        .Where(group => group.Count() > 1)
+                        .Select(group => group.Key);
+
+                if (duplicate_imeis != null && duplicate_imeis.Count() > 0)
+                {
+                    result_model.success = false;
+                    result_model.message = "err_imei_duplicate";
+                    return result_model;
+                }
+            }
+
+            //kiểm imei có thuộc kho hàng
+            CoreService core_service = new CoreService();
+            string imeiString = string.Join(",", imeis);
+            var result = new
+            {
+                ma_imei = imeiString,
+                ma_kho = vc_item.ma_kho
+            };
+            string jsonResult = JsonSerializer.Serialize(result);
+
+            string sql = "exec Genbyte$IMEI$CheckExistsInStore @json";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            CoreService service = new CoreService();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@json",
+                SqlDbType = SqlDbType.Char,
+                Value = jsonResult
+            });
+            List<ImeiCheck> check_results = service.ExecSql2List<ImeiCheck>(sql, paras);
+            var itemsWithFalseExists = check_results.Where(e => !e.exists_yn).ToList();
+            if (itemsWithFalseExists.Count != 0)
+            {
+                result_model.success = false;
+                result_model.result = new List<object> { new { name = "%imei", value = string.Join(", ", itemsWithFalseExists.Select(e => e.ma_imei)) } };
+                result_model.message = "in_stock_yn_no";
+            }
+            return result_model;
         }
     }
 }
