@@ -1297,6 +1297,15 @@ drop table #temp
                     {
                         imeis.AddRange(row_entity.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                     }
+                    else
+                    {
+                        if (vc_item.status == "2")
+                        {
+                            result_model.success = false;
+                            result_model.message = "lbl_invalid_imei_detail";
+                            return result_model;
+                        }
+                    }
                 }
 
             //kiểm tra trùng imei từ danh sách nhập vào chi tiết chứng từ
