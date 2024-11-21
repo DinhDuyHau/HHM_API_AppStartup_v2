@@ -81,5 +81,9 @@ namespace Voucher.PVTran_PN1
         public decimal gia_vat { get; set; }
 
         public decimal gia_vat_nt { get; set; }
+        public string stt_rec_hd { get; set; }
+        public string stt_rec0hd { get; set; }
+        public string so_ct_hd { get; set; }
+        public DateTime? ngay_ct_hd { get; set; }
     }
 }

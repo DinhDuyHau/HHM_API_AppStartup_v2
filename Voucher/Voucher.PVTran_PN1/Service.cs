@@ -223,8 +223,8 @@ namespace Voucher.PVTran_PN1
             //query += $"{insert_prime_table_query}";
 
             query += "\n\n";
-            query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_kh, ma_nt, ty_gia, t_so_luong, t_tien, t_tien_nt, t_tt, t_tt_nt, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2, ma_nvbh) ";
-            query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_kh, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt, @t_tien_nt, @t_tt_nt, @t_tt_nt, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate(), @ma_nvbh ";
+            query += $"insert into {prime_table} (stt_rec, ma_ct, so_ct, ngay_ct, ngay_lct, ma_gd, loai_ct, ma_kh, ma_nt, ty_gia, t_so_luong, t_tien, t_tien_nt, t_tt, t_tt_nt, t_thue_nt, t_thue, status, ma_dvcs, ma_cuahang, ma_ca, dien_giai, user_id0, user_id2, datetime0, datetime2, ma_nvbh, t_con_no) ";
+            query += $" select @stt_rec, @ma_ct, @so_ct, @ngay_ct, @ngay_ct, @ma_gd, @loai_ct, @ma_kh, @ma_nt, @ty_gia, @t_so_luong, @t_tien_nt, @t_tien_nt, @t_tt_nt, @t_tt_nt, @t_thue_nt, @t_thue_nt, @status, @ma_dvcs, @ma_cuahang, @ma_ca, @dien_giai, {user_id}, {user_id}, getdate(), getdate(), @ma_nvbh, @t_con_no ";
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
@@ -239,7 +239,7 @@ namespace Voucher.PVTran_PN1
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho, stt_rec_hd, stt_rec0hd, so_ct_hd, ngay_ct_hd) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho, stt_rec_hd, stt_rec0hd, so_ct_hd, ngay_ct_hd from @{_DETAIL_PARA}";
             }
 
             //insert các bảng chi tiết thanh toán
@@ -562,7 +562,7 @@ SELECT is_success, message FROM @check";
             query += "\n\n";
             query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_nt = @ma_nt," +
     $" ty_gia = @ty_gia, t_so_luong = @t_so_luong, t_thue = @t_thue_nt, t_thue_nt = @t_thue_nt, t_tien = @t_tien_nt, t_tien_nt = @t_tien_nt," +
-    $" t_tt_nt = @t_tt_nt, t_tt = @t_tt_nt, ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate(), ma_nvbh = @ma_nvbh";
+    $" t_tt_nt = @t_tt_nt, t_tt = @t_tt_nt, ma_gd = @ma_gd, loai_ct = @loai_ct, user_id2 = {user_id}, datetime2 = getdate(), ma_nvbh = @ma_nvbh, t_con_no = @t_con_no";
             query += $" where stt_rec = @stt_rec";
 
             //xóa và insert lại các bảng chi tiết
@@ -581,7 +581,7 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho, stt_rec_hd, stt_rec0hd, so_ct_hd, ngay_ct_hd) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,ma_thue,thue_suat,tk_thue,thue_nt,thue,tt,tt_nt,ma_vv,ma_sp,ma_bp,so_lsx,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,dvt,so_luong,gia,gia_nt,tien,tien_nt,ma_dv, gia_vat, vt_ton_kho, ma_kho, stt_rec_hd, stt_rec0hd, so_ct_hd, ngay_ct_hd from @{_DETAIL_PARA}";
             }
             //xóa và insert lại các bảng chi tiết thanh toán
             DetailQuery? detail_tt_query = null;

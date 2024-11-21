@@ -53,5 +53,7 @@ namespace Voucher.SVTran_HD3
         public bool vt_ton_kho { get; set; }
         public decimal gia2 { get; set; }
         public decimal gia_nt2 { get; set; }
+        public DateTime? ngay_ct_hd1 { get; set; }
+        public string so_ct_hd1 { get; set; }
     }
 }
