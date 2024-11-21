@@ -81,5 +81,8 @@ namespace Service.ModelDV1
         public decimal gia_nt { get; set; }
         public string ma_dv { get; set; }
         public bool vt_ton_kho { get; set; }
+        public decimal tl_giam { get; set; }
+        public decimal tien_giam { get; set; }
+        public string key { get; set; }
     }
 }
