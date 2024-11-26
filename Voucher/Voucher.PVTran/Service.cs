@@ -363,6 +363,32 @@ namespace Voucher.PVTran
                 index_value++;
             }
 
+            // Lấy danh sách tất cả các imei
+            List<string> imeis = new List<string>();
+            VoucherDetail? item_detail2 = vc_item.details.FirstOrDefault(x => x.Id == index_value);
+            if (item_detail2 != null) foreach (PVDetail row_entity in item_detail2.Data)
+                {
+                    if (!string.IsNullOrWhiteSpace(row_entity.ma_imei))
+                    {
+                        imeis.AddRange(row_entity.ma_imei.Split(",").ToList().Select(x => x.Trim()));
+                    }
+                }
+
+            //kiểm tra trùng imei từ danh sách nhập vào chi tiết chứng từ
+            if (imeis != null && imeis.Count > 0)
+            {
+                IEnumerable<string> duplicate_imeis = imeis.GroupBy(x => x.ToUpper())
+                        .Where(group => group.Count() > 1)
+                        .Select(group => group.Key);
+
+                if (duplicate_imeis != null && duplicate_imeis.Count() > 0)
+                {
+                    result_model.success = false;
+                    result_model.message = "err_imei_duplicate";
+                    return result_model;
+                }
+            }
+
             // Kiểm tra ngay_ct
 
             if (vc_item.ngay_ct > DateTime.Now)

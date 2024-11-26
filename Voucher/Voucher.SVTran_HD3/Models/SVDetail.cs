@@ -43,7 +43,6 @@ namespace Voucher.SVTran_HD3
         public DateTime? s8 { get; set; }
         public DateTime? s9 { get; set; }
         public decimal gia_ban { get; set; }
-        public decimal gia_tra_lai { get; set; }
         public decimal so_luong { get; set; }
         public string stt_rec_hd1 { get; set; }
         public string stt_rec0hd1 { get; set; }
@@ -52,6 +51,9 @@ namespace Voucher.SVTran_HD3
         public string ten_dv { get; set; }
         public string dvt { get; set; }
         public bool vt_ton_kho { get; set; }
-
+        public decimal gia2 { get; set; }
+        public decimal gia_nt2 { get; set; }
+        public DateTime? ngay_ct_hd1 { get; set; }
+        public string so_ct_hd1 { get; set; }
     }
 }

@@ -15,6 +15,7 @@ using System.Web;
 using Imei.Models;
 using Microsoft.Extensions.Configuration;
 using Genbyte.Base.Security;
+using System.Diagnostics;
 
 namespace Imei
 {
@@ -256,6 +257,42 @@ namespace Imei
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy thông tin về tình trạng của imei và vật tư
+        /// update 2024-07-29: Nếu có param ma_kho => lấy trạng thái tồn kho theo mã kho chỉ định
+        /// </summary>
+        /// <param name="imeis">danh sách imei cần truy vấn</param>
+        /// <returns></returns>
+        [HttpPost("state_and_item")]
+        #region GetImeiStateAndItem
+        public IActionResult ImeiStateAndItem([FromBody] List<string> imeis, [FromQuery] string? ma_kho)
+        {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //Kiểm tra Imei có thuộc kho hàng
+                var kq = _service.CheckStock(imeis, ma_kho);
+                var itemsWithFalseExists = kq.Where(e => !e.exists_yn).ToList();
+                if (itemsWithFalseExists.Count != 0)
+                {
+                    model.result = itemsWithFalseExists;
+                    model.message = "in_stock_yn_no";
+                    return Ok(model);
+                }
+
+            return GetImeiStateAndItem(imeis, ma_kho);
+
+
+
+        }
+        #endregion
+
 
         /// <summary>
         /// Lấy thông tin về tình trạng của imei và vật tư

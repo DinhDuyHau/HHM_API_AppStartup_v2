@@ -7,6 +7,7 @@ using Imei.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -820,5 +821,36 @@ namespace Imei
             return entities;
         }
         #endregion
+
+
+        /// <summary>
+        /// Kiêm
+        /// </summary>
+        /// <param name="imei"></param>
+        /// <returns></returns>
+        #region CheckStock
+        public List<ImeiCheck> CheckStock(List<string> imeis, string makho)
+        {
+
+            string imei_list = string.Join(',', imeis);
+            var result = new
+            {
+                ma_imei = imei_list,
+                ma_kho = makho
+            };
+            string jsonResult = JsonConvert.SerializeObject(new[] { result }, Formatting.Indented);
+
+            string sql = "exec Genbyte$IMEI$CheckExistsInStore @json";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@json",
+                SqlDbType = SqlDbType.Char,
+                Value = jsonResult
+            });
+            return base.ExecSql2List<ImeiCheck>(sql, paras);
+        }
+        #endregion
+
     }
 }
