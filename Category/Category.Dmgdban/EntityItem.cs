@@ -6,7 +6,6 @@ namespace Category.Dmgdban
     {
         [IsPrimary]
         public string ma_loaigd{ get; set; }
-
         public string ten_loaigd { get; set; }
 
     }
