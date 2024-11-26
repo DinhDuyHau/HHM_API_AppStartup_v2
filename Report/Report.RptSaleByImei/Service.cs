@@ -82,7 +82,6 @@ namespace Report.RptSaleByImei
             string ma_td1 = "";
             string ma_td2 = "";
             string ma_td3 = "";
-            string ds_ma_gd = "";
             int maxLength = 12;
             int loai_du_lieu = 1;
             string ma_nh_kho = "";
@@ -242,7 +241,7 @@ namespace Report.RptSaleByImei
             {
                 ParameterName = "@ds_ma_gd",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ds_ma_gd
+                SqlValue = obj_param.ma_loaigd
             });
             list_paras.Add(new SqlParameter
             {
