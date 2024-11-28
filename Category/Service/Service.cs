@@ -225,5 +225,32 @@ namespace Servive
             }
             return result;
         }
+
+        public object GetOrdersBuyBackService(string ma_kh, string ma_cuahang)
+        {
+            //Có thể thực hiện xử lý dữ liệu đã lấy từ db tại backend trước khi trả về client
+            string query = @"exec Genbyte$Service$GetListOrderBuyBackService @ma_kh, @ma_cuahang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh
+            },new SqlParameter()
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cuahang.Trim()
+            }});
+            var dataSet = this.ExecSql2DataSet(query, paras);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 0)
+            {
+                var detail = dataSet.Tables[0].ToList<SVDetailDV1>();
+                return detail;
+            }
+            return result;
+        }
     }
 }
