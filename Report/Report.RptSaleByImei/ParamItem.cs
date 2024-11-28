@@ -33,5 +33,7 @@ namespace Report.RptSaleByImei
         public string nh_vt5 { get; set; } = "";
 
         public string ma_nganh { get; set; } = "";
+
+        public string ma_loaigd { get; set; } = ""; 
     }
 }
