@@ -192,5 +192,46 @@ namespace Price
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy thuế & thuế suất của dịch vụ
+        /// </summary>
+        /// <param name="ma_dichvu">mã dịch vụ cần lấy thông tin</param>
+        /// <returns></returns>
+        [HttpGet("get_tax_service_buyback")]
+        #region GetTaxOfServiceBuyback
+        public IActionResult GetTaxOfServiceBuyback(string ma_dichvu)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_dichvu))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy giá dịch vụ
+                ServiceBuyBackModel price_item = _service.GetTaxOfServiceBuyback(ma_dichvu);
+                if (price_item != null)
+                {
+                    model.success = true;
+                    model.result = price_item;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetTaxOfServiceBuyback?ma_dichvu={ma_dichvu}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }
