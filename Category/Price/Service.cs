@@ -182,5 +182,27 @@ namespace Price
             List<ReturnPriceModel> entities = base.ExecSql2List<ReturnPriceModel>(sql, paras);
             return entities.FirstOrDefault();
         }
+
+        /// <summary>
+        /// Lấy thuế suất và mã thuế theo dịch vụ
+        /// </summary>
+        /// <param name="ma_dichvu"></param>
+        /// <returns></returns>
+        public ServiceBuyBackModel GetTaxOfServiceBuyback(string ma_dichvu)
+        {
+            string sql = @"SELECT a.ma_dv, a.ma_thue, b.thue_suat 
+		                        FROM dmdichvu a 
+		                        LEFT JOIN dmthue b ON a.ma_thue = b.ma_thue 
+		                        WHERE ma_dv = @service_id";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@service_id",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_dichvu
+            });
+            List<ServiceBuyBackModel> entities = base.ExecSql2List<ServiceBuyBackModel>(sql, paras);
+            return entities.FirstOrDefault();
+        }
     }
 }
