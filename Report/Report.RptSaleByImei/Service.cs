@@ -296,7 +296,7 @@ namespace Report.RptSaleByImei
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
-            });
+            }); 
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_nh_kho",
@@ -311,6 +311,5 @@ namespace Report.RptSaleByImei
             });
             return list_paras;
         }
-
     }
 }

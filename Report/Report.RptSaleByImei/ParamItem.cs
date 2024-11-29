@@ -34,6 +34,6 @@ namespace Report.RptSaleByImei
 
         public string ma_nganh { get; set; } = "";
 
-        public string ma_loaigd { get; set; } = "";
+        public string ma_loaigd { get; set; } = ""; 
     }
 }
