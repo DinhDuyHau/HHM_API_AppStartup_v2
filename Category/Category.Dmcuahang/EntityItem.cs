@@ -20,5 +20,7 @@ namespace Category.Dmcuahang
 
         public string status { get; set; }
 
+        public string ma_kvkd { get; set; }
+
     }
 }
