@@ -118,6 +118,7 @@ namespace Voucher.SVTran
             //khai báo list chi tiết hàng hóa và list chi tiết dịch vụ (for check)
             List<SVDetail>? list_hang_hoa = null;
             List<SVServiceModel>? list_dich_vu = null;
+            List<SVWarrantyModel>? list_goi_cuoc = null;
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -141,6 +142,8 @@ namespace Voucher.SVTran
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check tổng tiền hàng
+                                    
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -201,6 +204,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(warranty_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVWarrantyModel).Name;
+                                list_goi_cuoc = warranty_list;
                                 break;
                             default:
                                 break;
@@ -209,6 +213,22 @@ namespace Voucher.SVTran
                     }
                 }
                 index_value++;
+            }
+
+            // check tiền hợp lệ hay ko, phải khớp với nhau ko được lệch
+            if (validMoneyMerchandise(list_hang_hoa, list_dich_vu, list_goi_cuoc, vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_money_merchandise";
+                return result_model;
+            }
+
+            // check tổng tiền thanh toán với tiền còn nợ và tổng tiền đã thanh toán
+            if (validTotalPayment(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_total_payment";
+                return result_model;
             }
 
             //check các trường số lượng, giá, tiền trong grid hàng hóa và dịch vụ
@@ -526,6 +546,10 @@ namespace Voucher.SVTran
                 vc_item.ty_gia = 1;
             }
 
+            List<SVDetail>? list_hang_hoa = null;
+            List<SVServiceModel>? list_dich_vu = null;
+            List<SVWarrantyModel>? list_goi_cuoc = null;
+
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
             int index_value = 1;
@@ -556,6 +580,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(detail_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVDetail).Name;
+                                list_hang_hoa = detail_list;
                                 break;
                             case 2:
                                 List<SVServiceModel>? service_list = JsonSerializer.Deserialize<List<SVServiceModel>>((JsonElement)item_model.Data);
@@ -565,6 +590,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(service_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVServiceModel).Name;
+                                list_dich_vu = service_list;
                                 break;
                             case 3:
                                 List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
@@ -595,6 +621,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(warranty_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVWarrantyModel).Name;
+                                list_goi_cuoc = warranty_list;
                                 break;
                             default:
                                 break;
@@ -602,6 +629,22 @@ namespace Voucher.SVTran
                     }
                 }
                 index_value++;
+            }
+
+            // check tiền hợp lệ hay ko, phải khớp với nhau ko được lệch
+            if (validMoneyMerchandise(list_hang_hoa, list_dich_vu, list_goi_cuoc, vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_money_merchandise";
+                return result_model;
+            }
+
+            // check tổng tiền thanh toán với tiền còn nợ và tổng tiền đã thanh toán
+            if (validTotalPayment(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_total_payment";
+                return result_model;
             }
 
             //2024-10-28: kiểm tra imei duplicate
@@ -1652,5 +1695,30 @@ END";
             return result_model;
         }
 
+
+        public bool validMoneyMerchandise(
+            List<SVDetail> list_hang_hoa,
+            List<SVServiceModel> list_dich_vu,
+            List<SVWarrantyModel> list_goi_cuoc,
+            VoucherItem vc_item)
+        {
+            var totalHH = list_hang_hoa.Sum(x => x.tt);
+            var totalDV = list_dich_vu.Sum(x => x.tt);
+            var totalGC = list_goi_cuoc
+                .Where(e => e.naptien_hh_yn)
+                .Sum(x => x.tt);
+            var total = totalHH + totalDV + totalGC;
+
+            return total != vc_item.t_tt;
+        }
+
+        public bool validTotalPayment(VoucherItem vc_item)
+        {
+            var totalPayment = vc_item.fqty1;
+            var tienDaTra = vc_item.t_da_tra;
+            var tienConNo = vc_item.t_con_no;
+
+            return totalPayment != (tienConNo + tienDaTra);
+        }
     }
 }
