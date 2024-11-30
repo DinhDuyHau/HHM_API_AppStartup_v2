@@ -985,6 +985,20 @@ SELECT is_success, message FROM @check";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
+            //status = '2' => xử lý tạo lệnh và đẩy sang mobifone
+            if(vc_item.status == "2")
+            {
+                MobifoneService mobi_service = new MobifoneService(_configuration);
+                WsResponse response = mobi_service.SendInvoiceToMBF(vc_item, _DETAIL_PARA);
+                if (response == null || (!string.IsNullOrWhiteSpace(response.code) && response.code != "API000"))
+                {
+                    model.success = false;
+                    model.message = (response != null && response.message == "err_customer_shopcode") ? "err_customer_shopcode" : "err_mobifone_send_fail";
+                    model.result = vc_item;
+                    return model;
+                }
+            }
+
             model.success = true;
             model.message = "";
             model.result = vc_item;
