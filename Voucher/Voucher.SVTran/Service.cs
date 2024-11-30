@@ -648,7 +648,8 @@ namespace Voucher.SVTran
             }
 
             //2024-10-28: kiểm tra imei duplicate
-            Dictionary<string, int> imei_group_count = imeis.GroupBy(x => x).Select(y => new
+            Dictionary<string, int> imei_group_count = imeis.Where(x => !string.IsNullOrWhiteSpace(x))
+                .GroupBy(x => x).Select(y => new
             {
                 y.Key,
                 Count = y.Count()
