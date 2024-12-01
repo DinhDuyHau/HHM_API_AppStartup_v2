@@ -84,7 +84,7 @@ namespace Report.RptLookupInventory
             if exists(select ma_cuahang from dmcuahang where ma_cuahang = @ma_cuahang)
             select @tench = ten_cuahang from dmcuahang where ma_cuahang = @ma_cuahang
             select cast(@ngay as smalldatetime) as date_to, @ma_kho as ma_kho, @SiteName as ten_kho, @SiteName2 as ten_kho2, @ma_cuahang as ma_cuahang, @tench as ten_cuahang
-            exec rs_rptLookupInventory @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, 'v', @user_id, @admin, @nh_vt5, @nh_vt6, @ma_nganh, @ma_loai
+            exec rs_rptLookupInventory @ngay, @loginShop, @ma_cuahang, @ma_kho, @ma_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @c, @ma_dvcs, @loai_ky, 'ma_vt',  @loai_du_lieu, 'v', @user_id, @admin, @nh_vt5, @nh_vt6, @ma_nganh, @ma_loai, 0
 ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
