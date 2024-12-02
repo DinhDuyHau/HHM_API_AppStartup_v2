@@ -628,12 +628,12 @@ SELECT is_success, message FROM @check";
 			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
 			update #tmp_tax set ngay_ct = @today where stt_rec = @stt_rec
 
-			delete from {this.MasterTable} where stt_rec = @stt_rec
 			delete from {old_prime_table} where stt_rec = @stt_rec
 			delete from {old_detail_table} where stt_rec = @stt_rec
 			delete from {old_tax_table} where stt_rec = @stt_rec
 			delete from {old_inquiry_table} where stt_rec = @stt_rec
 
+            update {this.MasterTable} set ngay_ct = @today where stt_rec = @stt_rec
 			insert into {new_prime_table} select * from #tmp_prime
 			insert into {new_detail_table} select * from #tmp_detail
 			insert into {new_tax_table} select * from #tmp_tax
