@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Report.RptPaymentBank": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54006;http://localhost:54007"
+    }
+  }
+}
