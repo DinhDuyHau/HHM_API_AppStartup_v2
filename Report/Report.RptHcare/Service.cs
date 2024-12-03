@@ -66,7 +66,7 @@ namespace Report.RptHcare
             string userName = Startup.UserName;
       
             sql = @"select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to
-                    exec rs_rptHcare @tu_ngay, @den_ngay, @ma_nvbh, 'v', @user_id, @admin, @loginShop, @userName 
+                    exec rs_rptHcare @tu_ngay, @den_ngay, @ma_nvbh, @ma_asm, @ma_cuahang, 'v', @user_id, @admin, @loginShop, @userName, @mau_bc
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -86,7 +86,25 @@ namespace Report.RptHcare
                 ParameterName = "@ma_nvbh",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_nvbh
-            });           
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_asm",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_asm
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_cuahang
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@mau_bc",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = obj_param.mau_bc
+            });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@user_id",

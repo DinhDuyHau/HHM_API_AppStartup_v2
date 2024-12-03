@@ -67,7 +67,6 @@ namespace Report.RptCashBookGLStore
             int admin = Startup.Admin;
             string ma_dvcs = Startup.Unit;
 
-            string tk = "111";
             int phan_loai = 3;
 
             sql = @"declare @AccountName nvarchar(1024), @AccountName2 nvarchar(1024)
@@ -109,7 +108,7 @@ namespace Report.RptCashBookGLStore
             {
                 ParameterName = "@tk",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = tk
+                SqlValue = obj_param.tk
             });
             list_paras.Add(new SqlParameter
             {

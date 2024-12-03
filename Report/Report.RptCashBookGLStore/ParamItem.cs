@@ -8,6 +8,8 @@ namespace Report.RptCashBookGLStore
 
         public DateTime den_ngay { get; set; }
 
+        public string tk { get; set; } = "";
+
         public string ma_cuahang { get; set; } = "";
 
         public string ma_ca { get; set; } = "";
