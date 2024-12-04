@@ -371,12 +371,17 @@ namespace Voucher.SVTran_HDF
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
-            if (vc_item.ngay_ct.Value.Date.AddDays(3) < DateTime.Today)
-            {
-                result_model.success = false;
-                result_model.message = "voucher_cannot_edit";
-                return result_model;
-            }
+
+            /*
+             * tạm bỏ qua check quá 3 ngày ko được phép sửa
+             */
+            //if (vc_item.ngay_ct.Value.Date.AddDays(3) < DateTime.Today)
+            //{
+            //    result_model.success = false;
+            //    result_model.message = "voucher_cannot_edit";
+            //    return result_model;
+            //}
+
             vc_item.ma_ct = this.VoucherCode;
             vc_item.ma_gd = "1";
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
