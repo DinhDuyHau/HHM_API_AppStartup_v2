@@ -15,5 +15,11 @@ namespace Report.RptHcare
         
         public string ma_nvbh { get; set; } = "";
 
+        public string ma_asm{ get; set; } = ""; 
+
+        public string ma_cuahang { get; set; } = "";
+
+        public int mau_bc { get; set; } = 50;
+
     }
 }
