@@ -25,7 +25,7 @@ namespace Report.RptCheckInventory
         public string nh_vt4 { get; set; } = "";
         public string tinh_ps { get; set; } = "";
         public string group { get; set; } = "";
-        public int dataType { get; set; } = 0;
+        public int dataType { get; set; } = 2;
         public string ma_nganh { get; set; } = "";
     }
 
