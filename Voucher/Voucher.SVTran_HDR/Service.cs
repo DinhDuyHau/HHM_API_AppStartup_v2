@@ -134,6 +134,7 @@ namespace Voucher.SVTran_HDR
                                 {
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+                                    detail_list.ForEach(x => x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.aes_key, this.aes_iv));
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
