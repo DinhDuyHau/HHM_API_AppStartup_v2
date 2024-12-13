@@ -397,6 +397,7 @@ namespace Voucher.SVTran_HDR
                                             imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                                         }
                                     });
+                                    detail_list.ForEach(x => x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.aes_key, this.aes_iv));
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(detail_list);
                                 }
