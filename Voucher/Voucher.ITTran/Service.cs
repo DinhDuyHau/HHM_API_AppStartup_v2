@@ -156,6 +156,14 @@ end
                 vc_item.ty_gia = 1;
             }
 
+            // Kiểm tra trùng xuất và nhập với loại gd 1
+            if(validTicket(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "store_warehouse_mismatch";
+                return result_model;
+            }
+
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
 
@@ -421,6 +429,14 @@ select @stt_rec as stt_rec, @action_state as [state], @err_message as err_messag
             {
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
+            }
+
+            // Kiểm tra trùng xuất và nhập với loại gd 1
+            if (validTicket(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "store_warehouse_mismatch";
+                return result_model;
             }
 
             //convert dữ liệu chi tiết chứng từ
@@ -1351,6 +1367,13 @@ drop table #temp
                 result_model.message = "in_stock_yn_no";
             }
             return result_model;
+        }
+
+        private bool validTicket(VoucherItem vc_item)
+        {
+            return vc_item.ma_cuahang == vc_item.ma_cuahang_n &&
+                   vc_item.ma_kho == vc_item.ma_khon &&
+                   vc_item.fnote2 != "1";
         }
     }
 }
