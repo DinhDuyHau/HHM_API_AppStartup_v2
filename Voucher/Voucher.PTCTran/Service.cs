@@ -761,6 +761,12 @@ END";
                 IList<PTCDetailFinding> pr_detail = ds.Tables[1].ToList<PTCDetailFinding>();
                 IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
 
+                //Kiểm tra ngay_tra (ngày trả) nếu < 01-01-2020 set value = null
+                if(pr_detail[0].ngay_tra < new DateTime(2020, 1, 1))
+                {
+                    pr_detail[0].ngay_tra = null;
+                }
+
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
                 invoice_model.details = new List<DetailItemModel>();

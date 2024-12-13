@@ -496,7 +496,7 @@ SELECT is_success, message FROM @check";
             query += "\n";
             query += $"declare @today DATETIME = '{new_ngay_ct.ToString("yyyy-MM-dd")}' \n";
             query += $"declare @old_partition char(6) = '{expression}', @new_partition char(6) = '{new_partition}' \n";
-            query += @$"if exists(select 1 from {old_prime_table} where stt_rec = @stt_rec and status <> '0' and ngay_ct <> @today) begin
+            query += @$"if exists(select 1 from {old_prime_table} where stt_rec = @stt_rec and ngay_ct <> @today) begin
 	SET XACT_ABORT ON
 	BEGIN TRAN
 	BEGIN TRY

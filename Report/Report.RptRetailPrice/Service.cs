@@ -75,7 +75,7 @@ exec rs_rptRetailPrice @ngay_hl, @ma_cuahang, @ma_vt, @nh_vt3, 'v', @user_id , @
             {
                 ParameterName = "@ngay_hl",
                 SqlDbType = SqlDbType.DateTime,
-                SqlValue = obj_param.ngay_hl
+                SqlValue = obj_param.tu_ngay
             });
             list_paras.Add(new SqlParameter
             {
