@@ -16,6 +16,8 @@ using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
 using Genbyte.Component.Voucher.Model;
+using Genbyte.Base.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.SVTran_BHI
 {
@@ -58,15 +60,22 @@ namespace Voucher.SVTran_BHI
 
         // Lấy danh sách imei xóa khỏi grid
         List<string> list_imei_delete = new List<string>();
+        private readonly IConfiguration _configuration;
 
-        public Service()
+        private readonly string aes_key = "";
+        private readonly string aes_iv = "";
+
+        public Service(IConfiguration configuration)
         {
             VoucherRight = new AccessRight();
             VoucherRight.AllowRead = true;
             VoucherRight.AllowCreate = true;
             VoucherRight.AllowUpdate = true;
             VoucherRight.AllowDelete = true;
+            _configuration = configuration;
 
+            this.aes_key = _configuration["Security:KeyAES"];
+            this.aes_iv = _configuration["Security:IVAES"];
         }
 
         #region Inserting
@@ -298,6 +307,7 @@ namespace Voucher.SVTran_BHI
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                             }
                         });
+                        detail_list.ForEach(x => x.stt_rec_hd = APIService.DecryptForWebApp(x.stt_rec_hd, this.aes_key, this.aes_iv));
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
