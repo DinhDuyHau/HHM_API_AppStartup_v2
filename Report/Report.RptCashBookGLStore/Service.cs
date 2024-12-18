@@ -108,7 +108,7 @@ namespace Report.RptCashBookGLStore
             {
                 ParameterName = "@tk",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.tk
+                SqlValue = string.IsNullOrEmpty(obj_param.tk) ? "141" : obj_param.tk
             });
             list_paras.Add(new SqlParameter
             {
@@ -135,7 +135,7 @@ namespace Report.RptCashBookGLStore
                 SqlValue = Startup.Shop
             });
 
-            return list_paras;
+            return list_paras; 
         }
 
     }
