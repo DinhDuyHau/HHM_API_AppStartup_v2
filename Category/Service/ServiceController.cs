@@ -94,6 +94,13 @@ namespace Servive
             if (!_service.IsSQLInjectionValid(stt_rec))
                 return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
+            // check xem đã gửi hay chưa, nếu rồi ko gửi lại nữa
+            if(_service.isEmailSent(stt_rec))
+            {
+                model.message = "";
+                return Ok(model);
+            }
+
             List<KeyToSendEmail> keyToSends = _service.GetKeyToSendEmail(stt_rec);
             if(keyToSends == null || keyToSends.Count == 0)
             {
@@ -118,6 +125,10 @@ namespace Servive
             {
                 return Ok(model);
             }
+
+            // update count_sent tăng lên khi gửi thành công
+            _service.UpdateCountSent(stt_rec);
+
             model.success = true;
             model.message = "send_email_success";
             return Ok(model);
