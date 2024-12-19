@@ -67,15 +67,21 @@ namespace Report.RptRetailPrice
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
 
-            sql = @"select cast(@ngay_hl as smalldatetime) as ngay_hl
-exec rs_rptRetailPrice @ngay_hl, @ma_cuahang, @ma_vt, @nh_vt3, 'v', @user_id , @admin
+            sql = @"select cast(@tu_ngay as smalldatetime) as tu_ngay, cast(@den_ngay as smalldatetime) as den_ngay
+                    exec rs_rptRetailPrices @tu_ngay, @den_ngay, @ma_cuahang, @ma_vt, @nh_vt3, 'v', @user_id , @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ngay_hl",
+                ParameterName = "@tu_ngay",
                 SqlDbType = SqlDbType.DateTime,
                 SqlValue = obj_param.tu_ngay
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@den_ngay",
+                SqlDbType = SqlDbType.DateTime,
+                SqlValue = obj_param.den_ngay
             });
             list_paras.Add(new SqlParameter
             {
