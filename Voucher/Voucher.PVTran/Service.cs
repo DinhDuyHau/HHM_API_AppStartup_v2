@@ -1164,7 +1164,7 @@ END";
         }
         #endregion
 
-        #region checkImeiUpdate
+        #region IsInvalidWarehouse
         /// <summary>
         /// Kiểm tra sự hợp lệ kho với cửa hàng
         /// </summary>
