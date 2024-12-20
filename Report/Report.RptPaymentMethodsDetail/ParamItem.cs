@@ -21,7 +21,7 @@ namespace Report.RptPaymentMethodsDetail
         public string ma_vc { get; set; } = "";
         public string ma_san { get; set; } = "";
         public string ma_thuho { get; set; } = "";
-        public string ma_dvtg { get; set; } = "";
+        public string ma_dvtg { get; set; } = ""; 
 
     }
 }

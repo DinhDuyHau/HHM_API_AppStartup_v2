@@ -156,7 +156,7 @@ namespace Report.RptPaymentMethodsDetail
             {
                 ParameterName = "@ma_lo",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_lo
+                SqlValue = ma_lo 
             });
             list_paras.Add(new SqlParameter
             {
