@@ -287,7 +287,7 @@ namespace Voucher.SVTran_DV1
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
             CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
-            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
+            CommonService.updateService(vc_item, _DETAIL_PARA, DetailTable, vc_item.email_nhan_key);
 
             //insert bảng master (c) & inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;
@@ -636,7 +636,7 @@ SELECT is_success, message FROM @check";
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
             CommonService.updatePaid(vc_item, _DETAIL_TT_PARA);
-            CommonService.updateService(vc_item, _DETAIL_TT_PARA, detail_tt_table, vc_item.email_nhan_key);
+            CommonService.updateService(vc_item, _DETAIL_PARA, DetailTable, vc_item.email_nhan_key);
 
             //insert lại dữ liệu tại bảng inquiry (i)
             string inquiry_table = this.InquiryTable.Trim() + expression;

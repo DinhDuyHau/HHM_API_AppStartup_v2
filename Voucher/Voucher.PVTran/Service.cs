@@ -318,6 +318,14 @@ namespace Voucher.PVTran
                                 thue_suat = detail_list.Max(x => x.thue_suat);
                                 foreach (var detail_item in detail_list)
                                 {
+                                    // kiểm tra hợp lệ kho với cửa hàng
+                                    if(IsInvalidWarehouse(detail_item.ma_cuahang, detail_item.ma_kho))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "invalid_warehouse";
+                                        return result_model;
+                                    }
+
                                     List<string> imei = detail_item.ma_imei.Split(',').ToList();
                                     foreach (var imei_item in imei)
                                     {
@@ -1156,5 +1164,41 @@ END";
         }
         #endregion
 
+        #region IsInvalidWarehouse
+        /// <summary>
+        /// Kiểm tra sự hợp lệ kho với cửa hàng
+        /// </summary>
+        /// <param name="ma_cuahang"></param>
+        /// <param name="ma_kho"></param>
+        /// <returns></returns>
+        private bool IsInvalidWarehouse(string ma_cuahang, string ma_kho)
+        {
+            CoreService service = new CoreService();
+
+            // kiểm tra sự tồn tại của ma_kho và ma_cuahang trong bảng dmkho
+            string sql = "SELECT 1 FROM dmkho WHERE ma_cuahang = @ma_cuahang AND ma_kho = @ma_kho";
+            List<SqlParameter> parameters = new List<SqlParameter>
+            {
+                new SqlParameter
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_cuahang
+                },
+                new SqlParameter
+                {
+                    ParameterName = "@ma_kho",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_kho
+                }
+            };
+
+            // Thực thi truy vấn
+            var result = service.ExecSql2List<int>(sql, parameters);
+
+            // Nếu có kết quả (tồn tại), trả về false. Nếu không có kết quả, trả về true.
+            return result.Count == 0;
+        }
+        #endregion
     }
 }

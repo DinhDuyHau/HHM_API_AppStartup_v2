@@ -252,5 +252,49 @@ namespace Servive
             }
             return result;
         }
+
+        public bool isEmailSent(string stt_rec)
+        {
+            string sql = $"select count(1) as Count from dmkey where stt_rec = @stt_rec and count_sent > 0";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@stt_rec",
+                SqlDbType = SqlDbType.VarChar,
+                Value = stt_rec
+            });
+
+            List<Dictionary<string, object>> result = base.ExecSql2Dictionary(sql, paras, ConnectType.Accounting);
+            if (result != null && result.Count > 0)
+            {
+                var count = result.FirstOrDefault()?["Count"];
+                return count != null && Convert.ToInt32(count) > 0;
+            }
+
+            return false;
+        }
+
+        public void UpdateCountSent(string stt_rec)
+        {
+            List<SqlParameter> paras = new List<SqlParameter>();
+            CoreService service = new CoreService();
+
+            // Tạo câu lệnh SQL để cập nhật trường count_sent
+            string updateQuery = @"
+                    UPDATE dmkey
+                    SET count_sent = ISNULL(count_sent, 0) + 1
+                    WHERE stt_rec = @stt_rec";
+
+            // Khởi tạo các tham số cho câu lệnh SQL
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@stt_rec",
+                SqlDbType = SqlDbType.VarChar,
+                Value = stt_rec
+            });
+
+            service.ExecuteNonQuery(updateQuery, paras, ConnectType.Accounting);
+        }
+
     }
 }
