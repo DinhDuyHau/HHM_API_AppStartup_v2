@@ -18,7 +18,10 @@ namespace Report.RptPaymentMethodsDetail
         public string ma_thanhtoan { get; set; } = "";
         public string ma_kho { get; set; } = "";
         public string ma_kh { get; set; } = "";
-
+        public string ma_vc { get; set; } = "";
+        public string ma_san { get; set; } = "";
+        public string ma_thuho { get; set; } = "";
+        public string ma_dvtg { get; set; } = "";
 
     }
 }
