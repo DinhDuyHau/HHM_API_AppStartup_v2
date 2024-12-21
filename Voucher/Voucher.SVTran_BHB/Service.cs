@@ -443,6 +443,11 @@ namespace Voucher.SVTran_BHB
                                 List<SVPaidModel>? paid_list = JsonSerializer.Deserialize<List<SVPaidModel>>((JsonElement)item_model.Data);
                                 if (paid_list != null && paid_list.Count > 0)
                                 {
+                                    //cập nhật ngày chứng từ
+                                    paid_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.stt_rec_pt = APIService.DecryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                                    });
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(paid_list);
                                 }
@@ -935,6 +940,12 @@ END";
                                         APIService.EncryptForWebApp(item.stt_rec, this.aes_key, this.aes_iv);
                     item.stt_rec_hd = string.IsNullOrEmpty(item.stt_rec_hd) ? "" :
                                         APIService.EncryptForWebApp(item.stt_rec_hd, this.aes_key, this.aes_iv);
+                }
+
+                foreach (PaidDetailBaseResponse item in pr_paid)
+                {
+                    item.stt_rec_pt = string.IsNullOrEmpty(item.stt_rec_pt) ? "" :
+                                        APIService.EncryptForWebApp(item.stt_rec_pt, this.aes_key, this.aes_iv);
                 }
 
                 BaseModel invoice_model = new BaseModel();

@@ -283,7 +283,17 @@ namespace Voucher.ORTran
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += "\n";
+
+                //2024-12-20: Nếu khai báo ma_phi => thực hiện cập nhật tài khoản có = tk_cp trong dmphi
+                query += $@"
+IF EXISTS(SELECT 1 FROM @{_DETAIL_PARA} WHERE ma_phi IS NOT NULL AND ma_phi <> '') BEGIN
+	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE tk_co END
+		FROM @{_DETAIL_PARA} a INNER JOIN dmphi b ON a.ma_phi = b.ma_phi
+END";
                 query += "\n\n";
+                //2024-12-20: end
+
                 query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9 from @{_DETAIL_PARA}";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _PAID_PARA))
@@ -580,7 +590,16 @@ SELECT is_success, message FROM @check";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += "\n";
+
+                //2024-12-20: Nếu khai báo ma_phi => thực hiện cập nhật tài khoản có = tk_cp trong dmphi
+                query += $@"
+IF EXISTS(SELECT 1 FROM @{_DETAIL_PARA} WHERE ma_phi IS NOT NULL AND ma_phi <> '') BEGIN
+	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE tk_co END
+		FROM @{_DETAIL_PARA} a INNER JOIN dmphi b ON a.ma_phi = b.ma_phi
+END";
                 query += "\n\n";
+                //2024-12-20: end
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
