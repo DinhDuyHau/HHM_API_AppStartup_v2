@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Report.RptStockBalanceImei": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50113;http://localhost:50115"
+    }
+  }
+}
