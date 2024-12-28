@@ -40,7 +40,7 @@ namespace Imei
         /// <returns></returns>
         [HttpGet("getinstore")]
         #region GetImeiInStore
-        public IActionResult GetImeiInStore(string ma_imei, string ma_cuahang, string ma_ct, string? ma_kh)
+        public IActionResult GetImeiInStore(string ma_imei, string ma_cuahang, string ma_ct, string? ma_kh, DateTime? ngay_ct = null)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Imei
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                DataSet ds = _service.GetImeiInStore(ma_imei, ma_cuahang, ma_ct, ma_kh);
+                DataSet ds = _service.GetImeiInStore(ma_imei, ma_cuahang, ma_ct, ma_kh, ngay_ct);
                 if(ds != null && ds.Tables.Count >= 2)
                 {
                     ImeiState imei_state = null;

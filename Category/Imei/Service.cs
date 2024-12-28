@@ -80,9 +80,9 @@ namespace Imei
         /// <param name="vc_code"></param>
         /// <returns></returns>
         #region GetImeiInStore
-        public DataSet GetImeiInStore(string imei, string shop_id, string vc_code, string ma_kh)
+        public DataSet GetImeiInStore(string imei, string shop_id, string vc_code, string ma_kh, DateTime? ngay_ct = null)
         {
-            string sql = "exec Genbyte$IMEI$GetImeiInfo @imei, @shop_id, @vc_code, @ma_kh";
+            string sql = "exec Genbyte$IMEI$GetImeiInfo @imei, @shop_id, @vc_code, @ma_kh, @ngay_ct";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -107,6 +107,12 @@ namespace Imei
                 ParameterName = $"@ma_kh",
                 SqlDbType = SqlDbType.Char,
                 Value = ma_kh == null? DBNull.Value : ma_kh
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct == null ? DBNull.Value : ngay_ct.Value
             });
             return base.ExecSql2DataSet(sql, paras);
         }
