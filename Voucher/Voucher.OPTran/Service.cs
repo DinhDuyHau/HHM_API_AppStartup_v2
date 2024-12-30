@@ -183,6 +183,16 @@ namespace Voucher.OPTran
                                 List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    //Kiểm tra ma_phi có tồn tại hay không
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (string.IsNullOrEmpty(x.ma_phi))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "not_exist_ma_phi";
+                                            return result_model;
+                                        }
+                                    }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
                                     detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
@@ -403,6 +413,16 @@ namespace Voucher.OPTran
                                 List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    //Kiểm tra ma_phi có tồn tại hay không
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (string.IsNullOrEmpty(x.ma_phi))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "not_exist_ma_phi";
+                                            return result_model;
+                                        }
+                                    }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -556,7 +576,6 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
-
             //return voucher object
             result_model.result = vc_item;
             return result_model;
