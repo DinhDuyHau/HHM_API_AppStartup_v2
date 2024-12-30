@@ -57,7 +57,7 @@ namespace Report.RptImeiReport
         {
             sql = @"
                 select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_cuahang ma_cuahang
-                exec rs_rptImeiReport @ma_imei, @tu_ngay, @den_ngay, @ma_cuahang, @language, @userID, @admin
+                exec rs_rptImeiReport @ma_imei, DEFAULT, @tu_ngay, @den_ngay, @ma_cuahang, @language, @userID, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
