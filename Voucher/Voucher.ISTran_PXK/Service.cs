@@ -141,9 +141,6 @@ namespace Voucher.ISTran_PXK
                 return result_model;
             }
 
-
-
-
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
             {
                 vc_item.ma_nt = "VND";
@@ -177,6 +174,19 @@ namespace Voucher.ISTran_PXK
                         detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
                         detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
 
+                        // kiểm tra xem có cần asm duyệt ko trước khi xuất
+                        foreach (var x in detail_list)
+                        {
+                            if (IsEventApproved(x.ma_sukien))
+                            {
+                                if (string.IsNullOrEmpty(vc_item.fcode3))
+                                {
+                                    result_model.success = false;
+                                    result_model.message = "is_event_approved";
+                                    return result_model;
+                                }
+                            }
+                        }
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -390,6 +400,21 @@ namespace Voucher.ISTran_PXK
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                             }
                         });
+
+                        // kiểm tra xem có cần asm duyệt ko trước khi xuất
+                        foreach (var x in detail_list)
+                        {
+                            if (IsEventApproved(x.ma_sukien))
+                            {
+                                if (string.IsNullOrEmpty(vc_item.fcode3))
+                                {
+                                    result_model.success = false;
+                                    result_model.message = "is_event_approved";
+                                    return result_model;
+                                }
+                            }
+                        }
+
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -1036,5 +1061,29 @@ END";
             return new List<ImeiState>();
         }
         #endregion
+
+        /// <summary>
+        /// Kiểm tra sự kiện có cần asm duyệt hay ko
+        /// </summary>
+        /// <param name="ma_sukien"></param>
+        /// <returns></returns>
+        public bool IsEventApproved(string ma_sukien)
+        {
+            string sql = @"SELECT 1 FROM dmsukien WHERE ma_sukien = @ma_sukien AND duyet_yn = 1";
+
+            CoreService service = new CoreService();
+            List<SqlParameter> paras = new List<SqlParameter>
+            {
+                new SqlParameter
+                {
+                    ParameterName = "@ma_sukien",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_sukien.Replace("'", "''")
+                }
+            };
+
+            return service.ExecSql2List<int>(sql, paras).Any();
+        }
+
     }
 }
