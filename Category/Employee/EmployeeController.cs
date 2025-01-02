@@ -30,7 +30,7 @@ namespace Employee
         /// </summary>
         [HttpGet("get_list_asm")]
         #region get_payment_debit
-        public IActionResult GetListASM(string? ma_nvbh = "", string? order_by = "", string? name = "ASM", int page_index = 1, int page_size = 0)
+        public IActionResult GetListASM(string? ma_nvbh = "", string? order_by = "", int page_index = 1, int page_size = 0)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace Employee
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy công nợ
-                EntityCollection<EmployeeModel> employees = _service.GetListEmployee(ma_nvbh ?? "", order_by ?? "", page_index, page_size, name ?? "");
+                EntityCollection<EmployeeModel> employees = _service.GetListEmployee(ma_nvbh ?? "", order_by ?? "", page_index, page_size);
                 if (employees != null)
                 {
                     model.success = true;
@@ -59,6 +59,44 @@ namespace Employee
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- EmployeeController/GetListASM?ma_nvbh={ma_nvbh}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+        /// <summary>
+        /// Lấy danh sách người duyệt
+        /// </summary>
+        [HttpGet("get_list_approver")]
+        #region get_list_approver
+        public IActionResult GetListApprover(string? ma_nvbh = "", string? order_by = "", int page_index = 1, int page_size = 0)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_nvbh) || !_service.IsSQLInjectionValid(order_by))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy công nợ
+                EntityCollection<EmployeeModel> employees = _service.GetListEmployeeApprover(ma_nvbh ?? "", order_by ?? "", page_index, page_size);
+                if (employees != null)
+                {
+                    model.success = true;
+                    model.result = employees;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- EmployeeController/GetListApprover?ma_nvbh={ma_nvbh}", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }
