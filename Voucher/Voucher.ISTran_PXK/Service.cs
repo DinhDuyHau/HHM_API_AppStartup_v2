@@ -760,8 +760,8 @@ SELECT is_success, message FROM @check";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.image, d.ten_nvbh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join {3}' + @exp + ' c on a.so_ct = c.so_ct left join dmnvbh d on d.ma_nvbh = a.fcode3 where a.stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, d1.ten_nvbh, c.ten_sukien from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmsukien c on a1.ma_sukien = c.ma_sukien left join dmnvbh d1 on d1.ma_nvbh = a1.ma_td3 where stt_rec = @stt_rec'
+	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.image, d.comment as ten_nvbh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join {3}' + @exp + ' c on a.so_ct = c.so_ct left join HHM_CORE_SYS..userinfo d on d.name = a.fcode3 where a.stt_rec = @stt_rec '
+	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, d1.comment as ten_nvbh, c.ten_sukien from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmsukien c on a1.ma_sukien = c.ma_sukien left join HHM_CORE_SYS..userinfo d1 on d1.name = a1.ma_td3 where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ImageTable);
