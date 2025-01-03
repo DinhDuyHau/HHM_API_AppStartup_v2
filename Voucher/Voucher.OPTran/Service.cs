@@ -642,7 +642,10 @@ SELECT is_success, message FROM @check";
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"update @{_DETAIL_PARA} SET  tk_no = b.tk_cp from @{_DETAIL_PARA} a left join dmphi b on a.ma_phi = b.ma_phi";
+                query += @$"if exists(select 1 from {prime_table} where stt_rec = @stt_rec and fcode3 <> 'THUONGNONG') begin
+    update @{_DETAIL_PARA} SET  tk_no = b.tk_cp from @{_DETAIL_PARA} a left join dmphi b on a.ma_phi = b.ma_phi
+end
+";
                 query += "\n\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
