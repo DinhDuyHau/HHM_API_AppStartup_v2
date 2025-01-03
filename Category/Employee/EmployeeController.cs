@@ -30,7 +30,7 @@ namespace Employee
         /// </summary>
         [HttpGet("get_list_asm")]
         #region get_payment_debit
-        public IActionResult GetListASM(string? ma_nvbh = "", string? order_by = "", int page_index = 1, int page_size = 0)
+        public IActionResult GetListASM(string? ma_nvbh = "", string? order_by = "", string? name = "ASM", int page_index = 1, int page_size = 0)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace Employee
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy công nợ
-                EntityCollection<EmployeeModel> employees = _service.GetListEmployee(ma_nvbh ?? "", order_by ?? "", page_index, page_size);
+                EntityCollection<EmployeeModel> employees = _service.GetListEmployee(ma_nvbh ?? "", order_by ?? "", page_index, page_size, name ?? "");
                 if (employees != null)
                 {
                     model.success = true;
