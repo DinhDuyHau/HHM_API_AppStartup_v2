@@ -14,7 +14,7 @@ namespace Category.Dmnhkho
             CateRight.AllowCreate = false;
             CateRight.AllowUpdate = false;
             CateRight.AllowDelete = false;
-
+            CateRight.ConnectionType = ConnectType.Accounting;
         }
 
         #region CREATE
