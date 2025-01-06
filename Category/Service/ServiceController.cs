@@ -299,5 +299,41 @@ namespace Servive
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy phiên bản ứng dụng FE được lưu trong options
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("get_version_app")]
+        #region GetVersionApp
+        public IActionResult GetVersionApp()
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                var service = _service.GetVersionApp();
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetVersionApp", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }

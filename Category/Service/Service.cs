@@ -296,5 +296,22 @@ namespace Servive
             service.ExecuteNonQuery(updateQuery, paras, ConnectType.Accounting);
         }
 
+        public object GetVersionApp()
+        {
+            string query = @"select top 1 val from options where name = 'x_version'";
+            var dataSet = this.ExecSql2DataSet(query, null);
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                var row = dataSet.Tables[0].Rows[0];
+                var result = new
+                {
+                    version = row["val"].ToString()
+                };
+                return result;
+            }
+
+            return new { version = "unknown" };
+        }
+
     }
 }
