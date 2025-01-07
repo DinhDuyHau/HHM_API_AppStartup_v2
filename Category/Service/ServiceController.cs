@@ -335,5 +335,85 @@ namespace Servive
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy mã màu thành viên theo ma_kh
+        /// </summary>
+        /// <param name="ma_kh">mã khách hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_rank_customer")]
+        #region GetRankCustomer
+        public IActionResult GetRankCustomer(string ma_kh)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_kh))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                var service = _service.GetRankCustomer(ma_kh);
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetRankCustomer", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy mã màu hạng theo ma_hang
+        /// </summary>
+        /// <param name="ma_hang">mã hạng</param>
+        /// <returns></returns>
+        [HttpGet("get_color_rank")]
+        #region GetColorRank
+        public IActionResult GetColorRank(string ma_hang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_hang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                var service = _service.GetColorRank(ma_hang);
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetColorRank", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }
