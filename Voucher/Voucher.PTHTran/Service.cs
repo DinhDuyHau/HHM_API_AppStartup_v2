@@ -286,6 +286,21 @@ namespace Voucher.PTHTran
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
                 query += "\n\n";
+
+                //2025-01-04: cập nhật lại tài khoản trường hợp mã khách thuộc nhóm NBHH
+                query += $@"
+declare @tk_no_thuho varchar(33)
+if exists(select 1 from dmkh where ma_kh = @ma_kh and nh_kh3 = 'NBHH') begin
+	select @tk_no_thuho = rtrim(ma_td1) from dmkh where ma_kh = @ma_kh
+    update {prime_table} set tk = @tk_no_thuho where stt_rec = @stt_rec
+
+	update @{_DETAIL_PARA} set tk_co = rtriM(b.ma_td1) from @{_DETAIL_PARA} a 
+        inner join dmkh b on a.ma_kh_thuho = b.ma_kh where stt_rec = @stt_rec
+end
+";
+                //2025-01-04: end
+
+                query += "\n\n";
                 query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho from @{_DETAIL_PARA}";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _PAID_PARA))
@@ -583,6 +598,21 @@ SELECT is_success, message FROM @check";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += "\n\n";
+
+                //2025-01-04: cập nhật lại tài khoản trường hợp mã khách thuộc nhóm NBHH
+                query += $@"
+declare @tk_no_thuho varchar(33)
+if exists(select 1 from dmkh where ma_kh = @ma_kh and nh_kh3 = 'NBHH') begin
+	select @tk_no_thuho = rtrim(ma_td1) from dmkh where ma_kh = @ma_kh
+    update {prime_table} set tk = @tk_no_thuho where stt_rec = @stt_rec
+
+	update @{_DETAIL_PARA} set tk_co = rtriM(b.ma_td1) from @{_DETAIL_PARA} a 
+        inner join dmkh b on a.ma_kh_thuho = b.ma_kh where stt_rec = @stt_rec
+end
+";
+                //2025-01-04: end
+
                 query += "\n\n";
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";

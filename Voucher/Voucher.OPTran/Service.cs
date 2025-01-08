@@ -700,7 +700,6 @@ end
 			update #tmp_prime set ngay_ct = @today where stt_rec = @stt_rec
 			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
 
-			delete from {this.MasterTable} where stt_rec = @stt_rec
 			delete from {old_prime_table} where stt_rec = @stt_rec
 			delete from {old_detail_table} where stt_rec = @stt_rec
 			delete from {old_inquiry_table} where stt_rec = @stt_rec
