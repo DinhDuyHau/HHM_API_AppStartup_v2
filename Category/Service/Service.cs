@@ -9,6 +9,7 @@ using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Service.Model;
 using Service.ModelDV1;
+using System.Text.RegularExpressions;
 
 namespace Servive
 {
@@ -311,6 +312,62 @@ namespace Servive
             }
 
             return new { version = "unknown" };
+        }
+
+        public object GetRankCustomer(string ma_kh)
+        {
+            string query = @"select a.ma_hang, b.mau_chu from dmkh a 
+            left join dmhangthanhvien b on b.ma_hang = a.ma_hang
+            where ma_kh = @ma_kh";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh.Trim()
+            }
+            });
+            var dataSet = this.ExecSql2DataSet(query, paras, ConnectType.Accounting);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                var row = dataSet.Tables[0].Rows[0];
+                result = new
+                {
+                    ma_hang = row["ma_hang"].ToString().Trim(),
+                    mau_chu = row["mau_chu"].ToString().Trim()
+                };
+                return result;
+            }
+            return result;
+        }
+
+        public object GetColorRank(string ma_hang)
+        {
+            string query = @"select top 1 ma_hang, mau_chu from dmhangthanhvien where ma_hang = @ma_hang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_hang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_hang.Trim()
+            }
+            });
+            var dataSet = this.ExecSql2DataSet(query, paras, ConnectType.Accounting);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                var row = dataSet.Tables[0].Rows[0];
+                result = new
+                {
+                    ma_hang = row["ma_hang"].ToString().Trim(),
+                    mau_chu = row["mau_chu"].ToString().Trim()
+                };
+                return result;
+            }
+            return result;
         }
 
     }

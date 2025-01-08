@@ -28,5 +28,6 @@ namespace Voucher.SVTran
         public decimal tien_phi_cod { get; set; }
 
         public string ghi_chu_gh { get; set; }
+        public string ma_hang { get; set; }
     }
 }

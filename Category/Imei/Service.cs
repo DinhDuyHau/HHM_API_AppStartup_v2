@@ -467,6 +467,54 @@ namespace Imei
         #endregion
 
         /// <summary>
+        /// Lấy chiết khấu 09
+        /// </summary>
+        /// <param name="ma_kh"></param>
+        /// <param name="ma_hang"></param>
+        /// <param name="ngay_ct"></param>
+        /// <param name="ma_imei"></param>
+        /// <param name="ma_vt"></param>
+        /// <returns></returns>
+        #region GetDiscountRankCustomer
+        public List<Dictionary<string, object>> GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt)
+        {
+            string sql = "exec fs_Calc$Discount$RankCustomer @ma_kh, @ma_hang, @ngay_ct, @ma_imei, @ma_vt";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_hang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_hang
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_imei",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_imei
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt
+            });
+            return base.ExecSql2Dictionary(sql, paras);
+        }
+        #endregion
+
+        /// <summary>
         /// GetImeiSoldInfo
         /// </summary>
         /// <param name="imeiId"></param>
