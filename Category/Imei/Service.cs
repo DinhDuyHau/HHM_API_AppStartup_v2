@@ -476,7 +476,7 @@ namespace Imei
         /// <param name="ma_vt"></param>
         /// <returns></returns>
         #region GetDiscountRankCustomer
-        public List<Dictionary<string, object>> GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt)
+        public List<Dictionary<string, object>> GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt, string ma_ct = "")
         {
             string sql = "exec fs_Calc$Discount$RankCustomer @ma_kh, @ma_hang, @ngay_ct, @ma_imei, @ma_vt";
             List<SqlParameter> paras = new List<SqlParameter>();
@@ -509,6 +509,12 @@ namespace Imei
                 ParameterName = "@ma_vt",
                 SqlDbType = SqlDbType.VarChar,
                 Value = ma_vt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ct",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_ct
             });
             return base.ExecSql2Dictionary(sql, paras);
         }
