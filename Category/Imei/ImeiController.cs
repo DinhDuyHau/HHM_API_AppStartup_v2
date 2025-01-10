@@ -746,8 +746,8 @@ namespace Imei
         /// <param name="ma_vt"></param>
         /// <returns></returns>
         [HttpGet("discount_rank_customer")]
-        #region FindByPrefix
-        public IActionResult GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt)
+        #region GetDiscountRankCustomer
+        public IActionResult GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt, string ma_ct = "")
         {
             try
             {
@@ -769,7 +769,7 @@ namespace Imei
                 if (!_service.IsSQLInjectionValid(ma_vt))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
-                model.result = _service.GetDiscountRankCustomer(ma_kh, ma_hang, ngay_ct, ma_imei, ma_vt);
+                model.result = _service.GetDiscountRankCustomer(ma_kh, ma_hang, ngay_ct, ma_imei, ma_vt, ma_ct);
                 if (model.result != null)
                     model.success = true;
 
