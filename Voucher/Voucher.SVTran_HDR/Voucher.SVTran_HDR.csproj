@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -19,11 +19,12 @@
 		</Reference>
 		<Reference Include="Genbyte.Base.Security">
 		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
-		</Reference>
+      <Private>False</Private>
+    </Reference>
 		<Reference Include="Genbyte.Component.Voucher">
-			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
+		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
 		<Reference Include="Genbyte.Sys.AppAuth">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
 			<Private>False</Private>

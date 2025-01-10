@@ -9,6 +9,7 @@ using Genbyte.Base.CoreLib;
 using Genbyte.Sys.AppAuth;
 using Service.Model;
 using Service.ModelDV1;
+using System.Text.RegularExpressions;
 
 namespace Servive
 {
@@ -252,5 +253,122 @@ namespace Servive
             }
             return result;
         }
+
+        public bool isEmailSent(string stt_rec)
+        {
+            string sql = $"select count(1) as Count from dmkey where stt_rec = @stt_rec and count_sent > 0";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@stt_rec",
+                SqlDbType = SqlDbType.VarChar,
+                Value = stt_rec
+            });
+
+            List<Dictionary<string, object>> result = base.ExecSql2Dictionary(sql, paras, ConnectType.Accounting);
+            if (result != null && result.Count > 0)
+            {
+                var count = result.FirstOrDefault()?["Count"];
+                return count != null && Convert.ToInt32(count) > 0;
+            }
+
+            return false;
+        }
+
+        public void UpdateCountSent(string stt_rec)
+        {
+            List<SqlParameter> paras = new List<SqlParameter>();
+            CoreService service = new CoreService();
+
+            // Tạo câu lệnh SQL để cập nhật trường count_sent
+            string updateQuery = @"
+                    UPDATE dmkey
+                    SET count_sent = ISNULL(count_sent, 0) + 1
+                    WHERE stt_rec = @stt_rec";
+
+            // Khởi tạo các tham số cho câu lệnh SQL
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@stt_rec",
+                SqlDbType = SqlDbType.VarChar,
+                Value = stt_rec
+            });
+
+            service.ExecuteNonQuery(updateQuery, paras, ConnectType.Accounting);
+        }
+
+        public object GetVersionApp()
+        {
+            string query = @"select top 1 val from options where name = 'x_version'";
+            var dataSet = this.ExecSql2DataSet(query, null);
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                var row = dataSet.Tables[0].Rows[0];
+                var result = new
+                {
+                    version = row["val"].ToString()
+                };
+                return result;
+            }
+
+            return new { version = "unknown" };
+        }
+
+        public object GetRankCustomer(string ma_kh)
+        {
+            string query = @"select a.ma_hang, b.mau_chu from dmkh a 
+            left join dmhangthanhvien b on b.ma_hang = a.ma_hang
+            where ma_kh = @ma_kh";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh.Trim()
+            }
+            });
+            var dataSet = this.ExecSql2DataSet(query, paras, ConnectType.Accounting);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                var row = dataSet.Tables[0].Rows[0];
+                result = new
+                {
+                    ma_hang = row["ma_hang"].ToString().Trim(),
+                    mau_chu = row["mau_chu"].ToString().Trim()
+                };
+                return result;
+            }
+            return result;
+        }
+
+        public object GetColorRank(string ma_hang)
+        {
+            string query = @"select top 1 ma_hang, mau_chu from dmhangthanhvien where ma_hang = @ma_hang";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_hang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_hang.Trim()
+            }
+            });
+            var dataSet = this.ExecSql2DataSet(query, paras, ConnectType.Accounting);
+            object result = new object { };
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                var row = dataSet.Tables[0].Rows[0];
+                result = new
+                {
+                    ma_hang = row["ma_hang"].ToString().Trim(),
+                    mau_chu = row["mau_chu"].ToString().Trim()
+                };
+                return result;
+            }
+            return result;
+        }
+
     }
 }

@@ -94,6 +94,13 @@ namespace Servive
             if (!_service.IsSQLInjectionValid(stt_rec))
                 return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
+            // check xem đã gửi hay chưa, nếu rồi ko gửi lại nữa
+            if(_service.isEmailSent(stt_rec))
+            {
+                model.message = "";
+                return Ok(model);
+            }
+
             List<KeyToSendEmail> keyToSends = _service.GetKeyToSendEmail(stt_rec);
             if(keyToSends == null || keyToSends.Count == 0)
             {
@@ -118,6 +125,10 @@ namespace Servive
             {
                 return Ok(model);
             }
+
+            // update count_sent tăng lên khi gửi thành công
+            _service.UpdateCountSent(stt_rec);
+
             model.success = true;
             model.message = "send_email_success";
             return Ok(model);
@@ -284,6 +295,122 @@ namespace Servive
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetOrdersBuyBackService?ma_kh={ma_kh}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy phiên bản ứng dụng FE được lưu trong options
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("get_version_app")]
+        #region GetVersionApp
+        public IActionResult GetVersionApp()
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                var service = _service.GetVersionApp();
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetVersionApp", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy mã màu thành viên theo ma_kh
+        /// </summary>
+        /// <param name="ma_kh">mã khách hàng</param>
+        /// <returns></returns>
+        [HttpGet("get_rank_customer")]
+        #region GetRankCustomer
+        public IActionResult GetRankCustomer(string ma_kh)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_kh))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                var service = _service.GetRankCustomer(ma_kh);
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetRankCustomer", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy mã màu hạng theo ma_hang
+        /// </summary>
+        /// <param name="ma_hang">mã hạng</param>
+        /// <returns></returns>
+        [HttpGet("get_color_rank")]
+        #region GetColorRank
+        public IActionResult GetColorRank(string ma_hang)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_hang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                var service = _service.GetColorRank(ma_hang);
+                if (service != null)
+                {
+                    model.success = true;
+                    model.result = service;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetColorRank", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

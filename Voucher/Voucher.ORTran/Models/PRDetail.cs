@@ -43,5 +43,6 @@ namespace Voucher.ORTran
         public DateTime? s7 { get; set; }
         public DateTime? s8 { get; set; }
         public DateTime? s9 { get; set; }
+        public string ten_phi { get; set; }
     }
 }

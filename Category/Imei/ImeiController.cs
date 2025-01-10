@@ -40,7 +40,7 @@ namespace Imei
         /// <returns></returns>
         [HttpGet("getinstore")]
         #region GetImeiInStore
-        public IActionResult GetImeiInStore(string ma_imei, string ma_cuahang, string ma_ct, string? ma_kh)
+        public IActionResult GetImeiInStore(string ma_imei, string ma_cuahang, string ma_ct, string? ma_kh, DateTime? ngay_ct = null)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Imei
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                DataSet ds = _service.GetImeiInStore(ma_imei, ma_cuahang, ma_ct, ma_kh);
+                DataSet ds = _service.GetImeiInStore(ma_imei, ma_cuahang, ma_ct, ma_kh, ngay_ct);
                 if(ds != null && ds.Tables.Count >= 2)
                 {
                     ImeiState imei_state = null;
@@ -731,6 +731,53 @@ namespace Imei
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- ImeiController/FindByPrefix", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy thông tin ck 09
+        /// </summary>
+        /// <param name="ma_kh"></param>
+        /// <param name="ma_hang"></param>
+        /// <param name="ngay_ct"></param>
+        /// <param name="ma_imei"></param>
+        /// <param name="ma_vt"></param>
+        /// <returns></returns>
+        [HttpGet("discount_rank_customer")]
+        #region FindByPrefix
+        public IActionResult GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_kh))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                if (!_service.IsSQLInjectionValid(ma_hang))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                if (!_service.IsSQLInjectionValid(ma_imei))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                if (!_service.IsSQLInjectionValid(ma_vt))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                model.result = _service.GetDiscountRankCustomer(ma_kh, ma_hang, ngay_ct, ma_imei, ma_vt);
+                if (model.result != null)
+                    model.success = true;
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ImeiController/GetDiscountRankCustomer", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

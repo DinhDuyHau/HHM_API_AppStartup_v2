@@ -81,8 +81,10 @@ namespace Report.RptPaymentMethodsDetail
             sql = @"select @ngay_ct1 as tu_ngay, @ngay_ct2 as den_ngay
                     exec rs_rptPaymentMethodsDetail @ngay_ct1, @ngay_ct2, @so_ct1, @so_ct2, @ma_nvbh, @ma_kh, @ma_kho, @ma_vv,
                                                     @ma_hd, @ma_bp, @ma_dvcs, @ma_lo, @ma_td1, @ma_td2, @ma_td3,
-								'HDA, HD1', '2', @maxLength, N'a.ngay_ct, a.ma_ct, a.so_ct', '1', @ma_cuahang, @ma_ca, 'v', @user_id, @admin, @ma_thanhtoan, @loginShop
-            ";
+								                    'HDA, HD1', '2', @maxLength, N'a.ngay_ct, a.ma_ct, a.so_ct', '1', @ma_cuahang,
+                                                    @ma_ca, 'v', @user_id, @admin, @ma_thanhtoan, @loginShop,  
+                                                    @ma_vc, @ma_tmdt, @ma_thuho, @ma_tragop, 0           
+";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
             {
@@ -154,7 +156,7 @@ namespace Report.RptPaymentMethodsDetail
             {
                 ParameterName = "@ma_lo",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_lo
+                SqlValue = ma_lo 
             });
             list_paras.Add(new SqlParameter
             {
@@ -215,6 +217,30 @@ namespace Report.RptPaymentMethodsDetail
                 ParameterName = "@loginShop",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_vc",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_vc
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_tmdt",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_san
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_thuho",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_thuho
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_tragop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = obj_param.ma_dvtg
             });
 
             return list_paras;

@@ -54,6 +54,7 @@ namespace Voucher.ISTran_PXK
         public string ma_sukien { get; set; }
         public string ten_vt { get; set; }
         public string ten_sukien { get; set; }
+        public string ten_nvbh { get; set; }
 
     }
 }

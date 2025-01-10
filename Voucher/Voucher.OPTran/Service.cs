@@ -49,7 +49,7 @@ namespace Voucher.OPTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(dien_giai) as dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join vdmkh_acc b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(dien_giai) as dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(a.ma_ca) as ma_ca,c.ten_ca, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join vdmkh_acc b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -188,6 +188,16 @@ namespace Voucher.OPTran
                                 List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    //Kiểm tra ma_phi có tồn tại hay không
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (string.IsNullOrEmpty(x.ma_phi))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "not_exist_ma_phi";
+                                            return result_model;
+                                        }
+                                    }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
                                     detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
@@ -408,6 +418,16 @@ namespace Voucher.OPTran
                                 List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    //Kiểm tra ma_phi có tồn tại hay không
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (string.IsNullOrEmpty(x.ma_phi))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "not_exist_ma_phi";
+                                            return result_model;
+                                        }
+                                    }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -561,7 +581,6 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
-
             //return voucher object
             result_model.result = vc_item;
             return result_model;
@@ -628,7 +647,10 @@ SELECT is_success, message FROM @check";
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"update @{_DETAIL_PARA} SET  tk_no = b.tk_cp from @{_DETAIL_PARA} a left join dmphi b on a.ma_phi = b.ma_phi";
+                query += @$"if exists(select 1 from {prime_table} where stt_rec = @stt_rec and fcode3 <> 'THUONGNONG') begin
+    update @{_DETAIL_PARA} SET  tk_no = b.tk_cp from @{_DETAIL_PARA} a left join dmphi b on a.ma_phi = b.ma_phi
+end
+";
                 query += "\n\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
@@ -683,7 +705,6 @@ SELECT is_success, message FROM @check";
 			update #tmp_prime set ngay_ct = @today where stt_rec = @stt_rec
 			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
 
-			delete from {this.MasterTable} where stt_rec = @stt_rec
 			delete from {old_prime_table} where stt_rec = @stt_rec
 			delete from {old_detail_table} where stt_rec = @stt_rec
 			delete from {old_inquiry_table} where stt_rec = @stt_rec

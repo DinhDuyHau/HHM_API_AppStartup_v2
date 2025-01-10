@@ -50,7 +50,7 @@ namespace Voucher.PVTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where ma_gd = ''1'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(a.ma_ca) as ma_ca,c.ten_ca, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(so_ct0) as so_ct0,rtrim(ma_gd) as ma_gd,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_thue_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id where ma_gd = ''1'' ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
         public string WhereClauseFinding { get; } = "ma_gd = '1'";
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -323,6 +323,14 @@ namespace Voucher.PVTran
                                 thue_suat = detail_list.Max(x => x.thue_suat);
                                 foreach (var detail_item in detail_list)
                                 {
+                                    // kiểm tra hợp lệ kho với cửa hàng
+                                    if(IsInvalidWarehouse(detail_item.ma_cuahang, detail_item.ma_kho))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "invalid_warehouse";
+                                        return result_model;
+                                    }
+
                                     List<string> imei = detail_item.ma_imei.Split(',').ToList();
                                     foreach (var imei_item in imei)
                                     {
@@ -620,7 +628,7 @@ SELECT is_success, message FROM @check";
             query += "\n";
             query += $"declare @today DATETIME = '{new_ngay_ct.ToString("yyyy-MM-dd")}' \n";
             query += $"declare @old_partition char(6) = '{expression}', @new_partition char(6) = '{new_partition}' \n";
-            query += @$"if exists(select 1 from {old_prime_table} where stt_rec = @stt_rec and status <> '0' and ngay_ct <> @today) begin
+            query += @$"if exists(select 1 from {old_prime_table} where stt_rec = @stt_rec and ngay_ct <> @today) begin
 	SET XACT_ABORT ON
 	BEGIN TRAN
 	BEGIN TRY
@@ -633,12 +641,12 @@ SELECT is_success, message FROM @check";
 			update #tmp_detail set ngay_ct = @today where stt_rec = @stt_rec
 			update #tmp_tax set ngay_ct = @today where stt_rec = @stt_rec
 
-			delete from {this.MasterTable} where stt_rec = @stt_rec
 			delete from {old_prime_table} where stt_rec = @stt_rec
 			delete from {old_detail_table} where stt_rec = @stt_rec
 			delete from {old_tax_table} where stt_rec = @stt_rec
 			delete from {old_inquiry_table} where stt_rec = @stt_rec
 
+            update {this.MasterTable} set ngay_ct = @today where stt_rec = @stt_rec
 			insert into {new_prime_table} select * from #tmp_prime
 			insert into {new_detail_table} select * from #tmp_detail
 			insert into {new_tax_table} select * from #tmp_tax
@@ -1161,5 +1169,41 @@ END";
         }
         #endregion
 
+        #region IsInvalidWarehouse
+        /// <summary>
+        /// Kiểm tra sự hợp lệ kho với cửa hàng
+        /// </summary>
+        /// <param name="ma_cuahang"></param>
+        /// <param name="ma_kho"></param>
+        /// <returns></returns>
+        private bool IsInvalidWarehouse(string ma_cuahang, string ma_kho)
+        {
+            CoreService service = new CoreService();
+
+            // kiểm tra sự tồn tại của ma_kho và ma_cuahang trong bảng dmkho
+            string sql = "SELECT 1 FROM dmkho WHERE ma_cuahang = @ma_cuahang AND ma_kho = @ma_kho";
+            List<SqlParameter> parameters = new List<SqlParameter>
+            {
+                new SqlParameter
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_cuahang
+                },
+                new SqlParameter
+                {
+                    ParameterName = "@ma_kho",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_kho
+                }
+            };
+
+            // Thực thi truy vấn
+            var result = service.ExecSql2List<int>(sql, parameters);
+
+            // Nếu có kết quả (tồn tại), trả về false. Nếu không có kết quả, trả về true.
+            return result.Count == 0;
+        }
+        #endregion
     }
 }

@@ -19,5 +19,6 @@ namespace EventGiveAway.Model
         public string ma_dvcs { get; set; }
         public string ma_cuahang { get; set; }
         public string ghi_chu { get; set; }
+        public bool duyet_yn { get; set; }
     }
 }

@@ -105,6 +105,10 @@ namespace Voucher.SVTran
         public string imei_mua { get; set; }
 
         public decimal gia_vat { get; set; }
+        public decimal tl_ck09 { get; set; }
+        public decimal tien_kb09 { get; set; }
+        public decimal tien_max09 { get; set; }
+        public decimal tien_ck09 { get; set; }
 
     }
 }

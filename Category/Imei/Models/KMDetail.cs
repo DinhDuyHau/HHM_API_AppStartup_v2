@@ -29,5 +29,8 @@
         public string ma_td1 { get; set; }
         public string ma_td2 { get; set; }
         public string ma_td3 { get; set; }
+        public string ma_kh_tmdt { get; set; }
+        public string ma_dh { get; set; }
+        public string ma_van_don { get; set; }
     }
 }

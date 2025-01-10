@@ -49,7 +49,7 @@ namespace Voucher.ITTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading_PXB '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(ma_kho) as ma_kho,rtrim(ma_khon) as ma_khon,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,loai_ct', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khon) as ma_khon,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.loai_ct = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '', '@@SYSID'";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading_PXB '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(ma_kho) as ma_kho,rtrim(ma_khon) as ma_khon,rtrim(dien_giai) as dien_giai,t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2,loai_ct', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_ca) as ma_ca,c.ten_ca,rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,rtrim(a.ma_kho) as ma_kho,rtrim(a.ma_khon) as ma_khon,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong, t_tien_nt,t_tien,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct and a.loai_ct = x.loai_gd left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '', '@@SYSID'";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -156,6 +156,22 @@ end
             {
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
+            }
+
+            // Kiểm tra trùng xuất và nhập với loại gd 1
+            if(validTicket(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "store_warehouse_mismatch";
+                return result_model;
+            }
+
+            // kiểm tra hợp lệ kho với cửa hàng, xuất và nhập
+            if (IsInvalidWarehouse(vc_item.ma_cuahang, vc_item.ma_kho) || IsInvalidWarehouse(vc_item.ma_cuahang_n, vc_item.ma_khon))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_warehouse";
+                return result_model;
             }
 
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
@@ -423,6 +439,14 @@ select @stt_rec as stt_rec, @action_state as [state], @err_message as err_messag
             {
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
+            }
+
+            // Kiểm tra trùng xuất và nhập với loại gd 1
+            if (validTicket(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "store_warehouse_mismatch";
+                return result_model;
             }
 
             //convert dữ liệu chi tiết chứng từ
@@ -1355,5 +1379,49 @@ drop table #temp
             }
             return result_model;
         }
+
+        private bool validTicket(VoucherItem vc_item)
+        {
+            return vc_item.ma_cuahang == vc_item.ma_cuahang_n &&
+                   vc_item.ma_kho == vc_item.ma_khon &&
+                   vc_item.fnote2 != "1";
+        }
+
+        #region IsInvalidWarehouse
+        /// <summary>
+        /// Kiểm tra sự hợp lệ kho với cửa hàng
+        /// </summary>
+        /// <param name="ma_cuahang"></param>
+        /// <param name="ma_kho"></param>
+        /// <returns></returns>
+        private bool IsInvalidWarehouse(string ma_cuahang, string ma_kho)
+        {
+            CoreService service = new CoreService();
+
+            // kiểm tra sự tồn tại của ma_kho và ma_cuahang trong bảng dmkho
+            string sql = "SELECT 1 FROM dmkho WHERE ma_cuahang = @ma_cuahang AND ma_kho = @ma_kho";
+            List<SqlParameter> parameters = new List<SqlParameter>
+            {
+                new SqlParameter
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_cuahang
+                },
+                new SqlParameter
+                {
+                    ParameterName = "@ma_kho",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_kho
+                }
+            };
+
+            // Thực thi truy vấn
+            var result = service.ExecSql2List<int>(sql, parameters);
+
+            // Nếu có kết quả (tồn tại), trả về false. Nếu không có kết quả, trả về true.
+            return result.Count == 0;
+        }
+        #endregion
     }
 }

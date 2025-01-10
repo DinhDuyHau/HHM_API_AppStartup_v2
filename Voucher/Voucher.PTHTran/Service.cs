@@ -50,7 +50,7 @@ namespace Voucher.PTHTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join vdmkh_acc b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_ca) as ma_ca,c.ten_ca,rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as Dien_giai,t_tien_nt,t_tt_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join vdmkh_acc b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -290,6 +290,21 @@ namespace Voucher.PTHTran
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += "\n\n";
+
+                //2025-01-04: cập nhật lại tài khoản trường hợp mã khách thuộc nhóm NBHH
+                query += $@"
+declare @tk_no_thuho varchar(33)
+if exists(select 1 from dmkh where ma_kh = @ma_kh and nh_kh3 = 'NBHH') begin
+	select @tk_no_thuho = rtrim(ma_td1) from dmkh where ma_kh = @ma_kh
+    update {prime_table} set tk = @tk_no_thuho where stt_rec = @stt_rec
+
+	update @{_DETAIL_PARA} set tk_co = rtriM(b.ma_td1) from @{_DETAIL_PARA} a 
+        inner join dmkh b on a.ma_kh_thuho = b.ma_kh where stt_rec = @stt_rec
+end
+";
+                //2025-01-04: end
+
                 query += "\n\n";
                 query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,dien_giai,tk_co,tien_nt,tien_nt,ma_kh_i,ma_vv,ma_sp,ma_bp,so_lsx,tt_qd,stt_rec_tt,tt_nt,tt_nt,ty_gia_ht2,tien_ht_nt,tien_ht,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9, ma_loai_thu_ho,  tien_hoa_hong, tien_hoa_hong_nt, ma_imei, ma_dvth, ma_kh_thuho from @{_DETAIL_PARA}";
             }
@@ -588,6 +603,21 @@ SELECT is_success, message FROM @check";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
                 query += $"update @{_DETAIL_PARA} SET tk_co = (select tk_du from #gdtien) ";
+                query += "\n\n";
+
+                //2025-01-04: cập nhật lại tài khoản trường hợp mã khách thuộc nhóm NBHH
+                query += $@"
+declare @tk_no_thuho varchar(33)
+if exists(select 1 from dmkh where ma_kh = @ma_kh and nh_kh3 = 'NBHH') begin
+	select @tk_no_thuho = rtrim(ma_td1) from dmkh where ma_kh = @ma_kh
+    update {prime_table} set tk = @tk_no_thuho where stt_rec = @stt_rec
+
+	update @{_DETAIL_PARA} set tk_co = rtriM(b.ma_td1) from @{_DETAIL_PARA} a 
+        inner join dmkh b on a.ma_kh_thuho = b.ma_kh where stt_rec = @stt_rec
+end
+";
+                //2025-01-04: end
+
                 query += "\n\n";
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";

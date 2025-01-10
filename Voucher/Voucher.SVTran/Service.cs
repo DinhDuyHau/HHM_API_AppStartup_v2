@@ -120,6 +120,7 @@ namespace Voucher.SVTran
             //khai báo list chi tiết hàng hóa và list chi tiết dịch vụ (for check)
             List<SVDetail>? list_hang_hoa = null;
             List<SVServiceModel>? list_dich_vu = null;
+            List<SVWarrantyModel>? list_goi_cuoc = null;
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -143,6 +144,8 @@ namespace Voucher.SVTran
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check tổng tiền hàng
+                                    
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -203,6 +206,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(warranty_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVWarrantyModel).Name;
+                                list_goi_cuoc = warranty_list;
                                 break;
                             default:
                                 break;
@@ -211,6 +215,22 @@ namespace Voucher.SVTran
                     }
                 }
                 index_value++;
+            }
+
+            // check tiền hợp lệ hay ko, phải khớp với nhau ko được lệch
+            if (validMoneyMerchandise(list_hang_hoa, list_dich_vu, list_goi_cuoc, vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_money_merchandise";
+                return result_model;
+            }
+
+            // check tổng tiền thanh toán với tiền còn nợ và tổng tiền đã thanh toán
+            if (validTotalPayment(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_total_payment";
+                return result_model;
             }
 
             //check các trường số lượng, giá, tiền trong grid hàng hóa và dịch vụ
@@ -373,7 +393,7 @@ namespace Voucher.SVTran
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat from @{_DETAIL_PARA} \r\n";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat,tl_ck09,tien_kb09,tien_max09,tien_ck09) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat, tl_ck09,tien_kb09,tien_max09,tien_ck09 from @{_DETAIL_PARA} \r\n";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _SERVICES_PARA))
             {
@@ -509,7 +529,7 @@ namespace Voucher.SVTran
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
 
-            //TẠM COMMENT ĐOẠN NÀY ĐỂ CHẠY TEST
+            //tạm cho phép cập nhật ngày quá khứ
             /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
             {
@@ -527,6 +547,10 @@ namespace Voucher.SVTran
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
             }
+
+            List<SVDetail>? list_hang_hoa = null;
+            List<SVServiceModel>? list_dich_vu = null;
+            List<SVWarrantyModel>? list_goi_cuoc = null;
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -558,6 +582,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(detail_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVDetail).Name;
+                                list_hang_hoa = detail_list;
                                 break;
                             case 2:
                                 List<SVServiceModel>? service_list = JsonSerializer.Deserialize<List<SVServiceModel>>((JsonElement)item_model.Data);
@@ -567,6 +592,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(service_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVServiceModel).Name;
+                                list_dich_vu = service_list;
                                 break;
                             case 3:
                                 List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
@@ -597,6 +623,7 @@ namespace Voucher.SVTran
                                     item_detail.Data.AddRange(warranty_list);
                                 }
                                 item_detail.Detail_Type = typeof(SVWarrantyModel).Name;
+                                list_goi_cuoc = warranty_list;
                                 break;
                             default:
                                 break;
@@ -606,8 +633,25 @@ namespace Voucher.SVTran
                 index_value++;
             }
 
+            // check tiền hợp lệ hay ko, phải khớp với nhau ko được lệch
+            if (validMoneyMerchandise(list_hang_hoa, list_dich_vu, list_goi_cuoc, vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_money_merchandise";
+                return result_model;
+            }
+
+            // check tổng tiền thanh toán với tiền còn nợ và tổng tiền đã thanh toán
+            if (validTotalPayment(vc_item))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_total_payment";
+                return result_model;
+            }
+
             //2024-10-28: kiểm tra imei duplicate
-            Dictionary<string, int> imei_group_count = imeis.GroupBy(x => x).Select(y => new
+            Dictionary<string, int> imei_group_count = imeis.Where(x => !string.IsNullOrWhiteSpace(x))
+                .GroupBy(x => x).Select(y => new
             {
                 y.Key,
                 Count = y.Count()
@@ -821,7 +865,7 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat from @{_DETAIL_PARA} \r\n";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat,tl_ck09,tien_kb09,tien_max09,tien_ck09) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,km_yn,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt2,gia2,tien_nt,tien,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien2,tien_nt2,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,gia_ban0,gia_ban_nt0,gia_ban,gia_ban_nt,tl_ck,gia_ck,gia_ck_nt,ck,ck_nt,sl_dh,sl_xuat,sl_giao,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_px,stt_rec0px,px_so,px_ln,stt_rec_gh,stt_rec0gh,stt_rec_pn,stt_rec0pn,tk_gv,tk_dt,tk_ck,tk_cpbh,px_gia_dd,ma_nvbh_i,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_thue,tk_thue_no,tk_thue_co,thue_suat,ma_imei,no_km_yn,ma_vt_kmtt,tien_kmqd,imei_mua, gia_vat,tl_ck09,tien_kb09,tien_max09,tien_ck09 from @{_DETAIL_PARA} \r\n";
             }
             if (voucherQuery.Details.Any(x => x.ParaName == _SERVICES_PARA))
             {
@@ -1654,5 +1698,30 @@ END";
             return result_model;
         }
 
+
+        public bool validMoneyMerchandise(
+            List<SVDetail> list_hang_hoa,
+            List<SVServiceModel> list_dich_vu,
+            List<SVWarrantyModel> list_goi_cuoc,
+            VoucherItem vc_item)
+        {
+            var totalHH = list_hang_hoa.Sum(x => x.tt);
+            var totalDV = list_dich_vu.Sum(x => x.tt);
+            var totalGC = list_goi_cuoc
+                .Where(e => e.naptien_hh_yn)
+                .Sum(x => x.tt);
+            var total = totalHH + totalDV + totalGC;
+
+            return total != vc_item.t_tt;
+        }
+
+        public bool validTotalPayment(VoucherItem vc_item)
+        {
+            var totalPayment = vc_item.fqty1;
+            var tienDaTra = vc_item.t_da_tra;
+            var tienConNo = vc_item.t_con_no;
+
+            return totalPayment != (tienConNo + tienDaTra);
+        }
     }
 }

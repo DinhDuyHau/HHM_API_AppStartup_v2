@@ -170,7 +170,7 @@ namespace Report.RptSalesServiceInvoiceListStore
             {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.ma_cuahang ?? ""
+                SqlValue = obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {

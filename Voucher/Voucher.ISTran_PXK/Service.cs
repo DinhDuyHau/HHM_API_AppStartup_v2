@@ -49,7 +49,7 @@ namespace Voucher.ISTran_PXK
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(Dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs, rtrim(a.ma_ca) as ma_ca,c.ten_ca,rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.Dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id ', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -146,9 +146,6 @@ namespace Voucher.ISTran_PXK
                 return result_model;
             }
 
-
-
-
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
             {
                 vc_item.ma_nt = "VND";
@@ -182,6 +179,19 @@ namespace Voucher.ISTran_PXK
                         detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
                         detail_list.ForEach(x => x.ma_ca = vc_item.ma_ca);
 
+                        // kiểm tra xem có cần asm duyệt ko trước khi xuất
+                        foreach (var x in detail_list)
+                        {
+                            if (IsEventApproved(x.ma_sukien))
+                            {
+                                if (string.IsNullOrEmpty(vc_item.fcode3))
+                                {
+                                    result_model.success = false;
+                                    result_model.message = "is_event_approved";
+                                    return result_model;
+                                }
+                            }
+                        }
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
@@ -395,6 +405,21 @@ namespace Voucher.ISTran_PXK
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                             }
                         });
+
+                        // kiểm tra xem có cần asm duyệt ko trước khi xuất
+                        foreach (var x in detail_list)
+                        {
+                            if (IsEventApproved(x.ma_sukien))
+                            {
+                                if (string.IsNullOrEmpty(vc_item.fcode3))
+                                {
+                                    result_model.success = false;
+                                    result_model.message = "is_event_approved";
+                                    return result_model;
+                                }
+                            }
+                        }
+
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -740,8 +765,8 @@ SELECT is_success, message FROM @check";
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.image from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join {3}' + @exp + ' c on a.so_ct = c.so_ct where a.stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, c.ten_sukien from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmsukien c on a1.ma_sukien = c.ma_sukien where stt_rec = @stt_rec'
+	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.image, d.comment as ten_nvbh from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join {3}' + @exp + ' c on a.so_ct = c.so_ct left join HHM_CORE_SYS..userinfo d on d.name = a.fcode3 where a.stt_rec = @stt_rec '
+	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt, d1.comment as ten_nvbh, c.ten_sukien from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt left join dmsukien c on a1.ma_sukien = c.ma_sukien left join HHM_CORE_SYS..userinfo d1 on d1.name = a1.ma_td3 where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ImageTable);
@@ -1041,5 +1066,29 @@ END";
             return new List<ImeiState>();
         }
         #endregion
+
+        /// <summary>
+        /// Kiểm tra sự kiện có cần asm duyệt hay ko
+        /// </summary>
+        /// <param name="ma_sukien"></param>
+        /// <returns></returns>
+        public bool IsEventApproved(string ma_sukien)
+        {
+            string sql = @"SELECT 1 FROM dmsukien WHERE ma_sukien = @ma_sukien AND duyet_yn = 1";
+
+            CoreService service = new CoreService();
+            List<SqlParameter> paras = new List<SqlParameter>
+            {
+                new SqlParameter
+                {
+                    ParameterName = "@ma_sukien",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_sukien.Replace("'", "''")
+                }
+            };
+
+            return service.ExecSql2List<int>(sql, paras).Any();
+        }
+
     }
 }

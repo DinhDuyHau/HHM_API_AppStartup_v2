@@ -80,9 +80,9 @@ namespace Imei
         /// <param name="vc_code"></param>
         /// <returns></returns>
         #region GetImeiInStore
-        public DataSet GetImeiInStore(string imei, string shop_id, string vc_code, string ma_kh)
+        public DataSet GetImeiInStore(string imei, string shop_id, string vc_code, string ma_kh, DateTime? ngay_ct = null)
         {
-            string sql = "exec Genbyte$IMEI$GetImeiInfo @imei, @shop_id, @vc_code, @ma_kh";
+            string sql = "exec Genbyte$IMEI$GetImeiInfo @imei, @shop_id, @vc_code, @ma_kh, @ngay_ct";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -107,6 +107,12 @@ namespace Imei
                 ParameterName = $"@ma_kh",
                 SqlDbType = SqlDbType.Char,
                 Value = ma_kh == null? DBNull.Value : ma_kh
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct == null ? DBNull.Value : ngay_ct.Value
             });
             return base.ExecSql2DataSet(sql, paras);
         }
@@ -455,6 +461,54 @@ namespace Imei
                 ParameterName = "@ma_imei",
                 SqlDbType = SqlDbType.VarChar,
                 Value = ma_imei
+            });
+            return base.ExecSql2Dictionary(sql, paras);
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy chiết khấu 09
+        /// </summary>
+        /// <param name="ma_kh"></param>
+        /// <param name="ma_hang"></param>
+        /// <param name="ngay_ct"></param>
+        /// <param name="ma_imei"></param>
+        /// <param name="ma_vt"></param>
+        /// <returns></returns>
+        #region GetDiscountRankCustomer
+        public List<Dictionary<string, object>> GetDiscountRankCustomer(string ma_kh, string ma_hang, DateTime ngay_ct, string ma_imei, string ma_vt)
+        {
+            string sql = "exec fs_Calc$Discount$RankCustomer @ma_kh, @ma_hang, @ngay_ct, @ma_imei, @ma_vt";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_hang",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_hang
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_imei",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_imei
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt
             });
             return base.ExecSql2Dictionary(sql, paras);
         }
