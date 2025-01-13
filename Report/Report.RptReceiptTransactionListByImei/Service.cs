@@ -65,25 +65,27 @@ namespace Report.RptReceiptTransactionListByImei
             string ma_nx = "";
             string tk_vt = "";
             string ma_loai_vt = "";
-            //string ma_nh = "";
-            //string ma_nh2 = "";
-            //string ma_nh3 = "";
-            string ma_nh4 = "";
-            string ma_nh5 = "";
+            string nh_vt4 = "";
+            string nh_vt5 = "";
+            string ma_nganh = "";
             string ma_hd = "";
             string ma_bp = "";
             string lenh_sx = "";
             string ma_sp = "";
             string so_ct1 = "";
             string so_ct2 = "";
-            string maxLength = "";
-            string maxLength_mo = "";
+            string ma_nh_kho = "";
+            int maxLength = 12;
+            int maxLength_mo = 12;
 
         sql = @"
-                select cast(@tu_ngay as smalldatetime) as tu_ngay, cast(@den_ngay as smalldatetime) as den_ngay
-                exec rs_rptReceiptTransactionListByImei @tu_ngay, @den_ngay, @loginShop, @ma_cuahang, @ma_vt, @ma_imei, @ma_kh, @ma_kho, @kho_hang_dc, @ma_vv, @ma_nx,
-                     @tk_vt, @ma_loai_vt, @ma_nh, @ma_nh2, @ma_nh3, @ma_nh4, @ma_nh5, '', 2, 'PNF', @so_ct1, @so_ct2, @ma_hd, @ma_bp, @lenh_sx, @ma_sp,
-                     @ma_dvcs, @maxLength, @maxLength_mo, 1, 'a.ma_kh', @loai_du_lieu, 'v', @user_id, @admin
+                 declare @voucherList varchar(512)
+                 select @voucherList = 'PNF' 
+                 select cast(@tu_ngay as smalldatetime) as tu_ngay, cast(@den_ngay as smalldatetime) as den_ngay
+                 exec rs_rptReceiptTransactionListByImei @tu_ngay, @den_ngay, @loginShop, @ma_cuahang, @ma_vt, @ma_imei, @ma_kh, @ma_kho, @kho_hang_dc, @ma_vv, @ma_nx, 
+                        @tk_vt, @ma_loai_vt, @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @nh_vt5, @ma_nganh, 2, @voucherList, @so_ct1, @so_ct2, @ma_hd, @ma_bp, @lenh_sx, @ma_sp,
+                        @ma_dvcs, @maxLength, @maxLength_mo, 1, 'a.ma_kh', 2, 'v', @user_id, @admin, @ma_nh_kho
+
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -154,33 +156,39 @@ namespace Report.RptReceiptTransactionListByImei
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_nh",
+                ParameterName = "@nh_vt1",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.nh_vt1
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_nh2",
+                ParameterName = "@nh_vt2",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.nh_vt2
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_nh3",
+                ParameterName = "@nh_vt3",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.nh_vt3
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_nh4",
+                ParameterName = "@nh_vt4",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_nh4
+                SqlValue = nh_vt4
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@ma_nh5",
+                ParameterName = "@nh_vt5",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_nh5
+                SqlValue = nh_vt5
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nganh",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_nganh
             });
             list_paras.Add(new SqlParameter
             {
@@ -227,20 +235,14 @@ namespace Report.RptReceiptTransactionListByImei
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@maxLength",
-                SqlDbType = SqlDbType.VarChar,
+                SqlDbType = SqlDbType.Int,
                 SqlValue = maxLength
             });
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@maxLength_mo",
-                SqlDbType = SqlDbType.VarChar,
+                SqlDbType = SqlDbType.Int,
                 SqlValue = maxLength_mo
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@loai_du_lieu",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.loai_du_lieu
             });
             list_paras.Add(new SqlParameter
             {
@@ -265,6 +267,12 @@ namespace Report.RptReceiptTransactionListByImei
                 ParameterName = "@loginShop",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = Startup.Shop
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_nh_kho",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = ma_nh_kho
             });
             return list_paras;
         }

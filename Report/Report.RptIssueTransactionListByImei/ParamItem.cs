@@ -14,9 +14,7 @@ namespace Report.RptIssueTransactionListByImei
         public string kho_hang_dc { get; set; } = "";
         public string loai_du_lieu { get; set; } = "2";
         public string nh_vt1 { get; set; } = "";
-
         public string nh_vt2 { get; set; } = "";
-
         public string nh_vt3 { get; set; } = "";
 
     }
