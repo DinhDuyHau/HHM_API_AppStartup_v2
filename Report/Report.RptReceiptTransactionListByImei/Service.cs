@@ -60,7 +60,7 @@ namespace Report.RptReceiptTransactionListByImei
             // lấy mặc định đăng nhập
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
-            string ma_dvcs = Startup.Unit;
+            string ma_dvcs = "";
             string ma_vv = "";
             string ma_nx = "";
             string tk_vt = "";
