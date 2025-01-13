@@ -148,7 +148,7 @@ namespace Report.RptStockBalanceImei
             {
                 ParameterName = "@ma_loai",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_loai
+                SqlValue = obj_param.ma_nh
             });
             return list_paras;
         }

@@ -316,7 +316,7 @@ namespace Servive
 
         public object GetRankCustomer(string ma_kh)
         {
-            string query = @"select a.ma_hang, b.mau_chu from dmkh a 
+            string query = @"select a.ma_hang, b.mau_chu, a.tl_tich_diem from loyalty_dmkh a 
             left join dmhangthanhvien b on b.ma_hang = a.ma_hang
             where ma_kh = @ma_kh";
             List<SqlParameter> paras = new List<SqlParameter>();
@@ -336,7 +336,8 @@ namespace Servive
                 result = new
                 {
                     ma_hang = row["ma_hang"].ToString().Trim(),
-                    mau_chu = row["mau_chu"].ToString().Trim()
+                    mau_chu = row["mau_chu"].ToString().Trim(),
+                    tl_tich_diem = row["tl_tich_diem"]
                 };
                 return result;
             }

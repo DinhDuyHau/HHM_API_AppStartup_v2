@@ -24,6 +24,6 @@ namespace Report.RptStockBalanceImei
         public string group { get; set; } = "";
         public int dataType { get; set; } = 0;
         public string ma_nganh { get; set; } = "";
-        public string ma_loai { get; set; } = "";
+        public string ma_nh { get; set; } = "";
     }
 }
