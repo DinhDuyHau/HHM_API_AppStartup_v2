@@ -223,7 +223,7 @@ namespace Report.RptLookupInventory
             {
                 ParameterName = "@ma_loai",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_loai
+                SqlValue = obj_param.ma_nh
             });
             return list_paras;
         }

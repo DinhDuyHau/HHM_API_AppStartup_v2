@@ -1,4 +1,15 @@
-﻿using Genbyte.Component.Category;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using Genbyte.Component.Category;
+using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 
 namespace Category.Dmnhkho
@@ -25,6 +36,33 @@ namespace Category.Dmnhkho
         /// <returns>true: cho phép thực hiện insert</returns>
         public bool Inserting(Dictionary<string, object> data)
         {
+            //Khởi tạo service xử lý dữ liệu
+            DataService data_service = new DataService();
+
+            //convert dữ liệu đầu vào sang thực thể theo khai báo của danh mục
+            EntityItem entity_item = Converter.DictionaryToObject<EntityItem>(data);
+
+            //check null
+            if (entity_item == null)
+                throw new Exception(ApiReponseMessage.isNullResult);
+
+            //check sql injection
+            if (!data_service.IsSQLInjectionValid(entity_item.ma_nh))
+                throw new Exception(ApiReponseMessage.Error_InputData);
+
+            //check tồn tại dữ liệu trong db theo khóa chính
+            string sql = "select 1 from dmnhkho where ma_nh = @ma_nh";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_nh",
+                SqlDbType = SqlDbType.Char,
+                Value = entity_item.ma_nh
+            });
+            DataSet ds = data_service.ExecSql2DataSet(sql, paras);
+            if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                return false;
+
             //hợp lệ => trả về true
             return true;
         }
@@ -145,7 +183,26 @@ namespace Category.Dmnhkho
         /// <returns>true: cho phép thực hiện update</returns>
         public bool Updating(Dictionary<string, object> data)
         {
-            return true;
+            bool is_valid = false;
+
+            //kiểm tra tồn tại record theo khóa chính
+            EntityItem entity_item = Converter.DictionaryToObject<EntityItem>(data);
+            if (entity_item == null)
+                return false;
+
+            DataService db_service = new DataService();
+            string sql = "select * from dmnhkho where ma_nh = @ma_nh";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_nh",
+                SqlDbType = SqlDbType.Char,
+                Value = entity_item.ma_nh
+            });
+            List<EntityItem> check_list = db_service.ExecSql2List<EntityItem>(sql, paras);
+            is_valid = check_list != null && check_list.Count > 0;
+
+            return is_valid;
         }
 
         /// <summary>

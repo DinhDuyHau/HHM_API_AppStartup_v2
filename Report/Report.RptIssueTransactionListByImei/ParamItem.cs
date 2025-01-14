@@ -16,6 +16,7 @@ namespace Report.RptIssueTransactionListByImei
         public string nh_vt1 { get; set; } = "";
         public string nh_vt2 { get; set; } = "";
         public string nh_vt3 { get; set; } = "";
+        public int mau_bc { get; set; } = 10;
 
     }
 }

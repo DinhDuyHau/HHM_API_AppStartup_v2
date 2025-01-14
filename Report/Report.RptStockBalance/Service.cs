@@ -128,7 +128,7 @@ namespace Report.RptStockBalance
             {
                 ParameterName = "@ma_loai",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = obj_param.ma_loai
+                SqlValue = obj_param.ma_nh
             });
             list_paras.Add(new SqlParameter
             {
