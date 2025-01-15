@@ -1250,7 +1250,7 @@ END";
             return model;
         }
 
-        public CommonObjectModel CalculateDiscount(string ma_cuahang, string ma_kh, DateTime? ngay_lap, string hang_mua)
+        public CommonObjectModel CalculateDiscount(string ma_cuahang, string ma_kh, DateTime? ngay_lap, string hang_mua, string ma_ct = "")
         {
             CommonObjectModel model = new CommonObjectModel()
             {
@@ -1266,7 +1266,7 @@ END";
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
             string sql = @"declare @buy_item nvarchar(max) = @hang_mua
-        exec fs_Calc$Discount$BHA @ma_cuahang, @ma_kh, @ngay_lap, @buy_item";
+        exec fs_Calc$Discount$BHA @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
@@ -1292,6 +1292,12 @@ END";
                 ParameterName = "@hang_mua",
                 SqlDbType = SqlDbType.NVarChar,
                 Value = hang_mua.Replace("'", "''").Trim()
+            },
+            new SqlParameter()
+            {
+                ParameterName = "@ma_ct",
+                SqlDbType = SqlDbType.NVarChar,
+                Value = ma_ct.Trim() ?? ""
             }});
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
 

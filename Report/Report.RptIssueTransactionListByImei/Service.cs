@@ -65,9 +65,6 @@ namespace Report.RptIssueTransactionListByImei
             string ma_nx = "";
             string tk_vt = "";
             string ma_loai_vt = "";
-            string nh_vt1 = "";
-            string nh_vt2 = "";
-            string nh_vt3 = "";
             string ma_hd = "";
             string ma_bp = "";
             string lenh_sx = "";
@@ -75,7 +72,7 @@ namespace Report.RptIssueTransactionListByImei
             string so_ct1 = "";
             string so_ct2 = "";
             int maxLength = 12;
-            int maxLength_mo = 12;
+            int maxLength_mo = 16;
             string ma_nh_kho = "";
 
             sql = @"
@@ -84,7 +81,7 @@ namespace Report.RptIssueTransactionListByImei
                 select cast(@tu_ngay as smalldatetime) as tu_ngay, cast(@den_ngay as smalldatetime) as den_ngay
                 exec rs_rptIssueTransactionListByImei @tu_ngay, @den_ngay, @loginShop, @ma_cuahang, @ma_vt, @ma_imei, @ma_kh, @ma_kho, @kho_hang_dc, @ma_vv, @ma_nx, @tk_vt, 
                   @ma_loai_vt, @nh_vt1, @nh_vt2, @nh_vt3, 3, @voucherList, @so_ct1, @so_ct2, @ma_hd, @ma_bp, @lenh_sx, 
-                  @ma_sp, @ma_dvcs, @maxLength, @maxLength_mo, 2, 'a.ma_kh', @loai_du_lieu, 'v', @user_id, @admin, @ma_nh_kho
+                  @ma_sp, @ma_dvcs, @maxLength, @maxLength_mo, 2, 'a.ma_kh', @loai_du_lieu, 'v', @user_id, @admin, @ma_nh_kho, @mau_bc
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -260,6 +257,12 @@ namespace Report.RptIssueTransactionListByImei
                 ParameterName = "@ma_nh_kho",
                 SqlDbType = SqlDbType.Char,
                 SqlValue = ma_nh_kho
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@mau_bc",
+                SqlDbType = SqlDbType.Int,
+                SqlValue = obj_param.mau_bc
             });
             return list_paras;
         }
