@@ -20,5 +20,7 @@ namespace Voucher.SVTran_BHK
 
         //Lưu tổng tiền hàng bán mới sau VAT
         public decimal s4 { get; set; }
+        public string ma_hang { get; set; }
+        public decimal tl_tich_diem { get; set; }
     }
 }
