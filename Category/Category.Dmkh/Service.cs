@@ -47,17 +47,20 @@ namespace Category.Dmkh
             if (entity_item == null)
                 throw new Exception(ApiReponseMessage.isNullResult);
 
-            // check length 10 character
-            if (entity_item.ma_kh.Length < 10)
-                return false;
+            if(entity_item.ma_ct == "" || entity_item.ma_ct != "BHC")
+            {
+                // check length 10 character
+                if (entity_item.ma_kh.Length < 10)
+                    return false;
+
+                // Check ký tự đặc biệt
+                if (ContainsSpecialCharacters(entity_item.ma_kh))
+                    throw new Exception(ApiReponseMessage.Error_InputData);
+            }
 
             //check sql injection
             if (!data_service.IsSQLInjectionValid(entity_item.ma_kh))
                 throw new Exception(ApiReponseMessage.Error_InputData);
-            // Check ký tự đặc biệt
-            if (ContainsSpecialCharacters(entity_item.ma_kh))
-                throw new Exception(ApiReponseMessage.Error_InputData);
-
 
             //check tồn tại dữ liệu trong db theo khóa chính
             string sql = "select 1 from dmkh where ma_kh = @ma_kh";
