@@ -654,7 +654,7 @@ SELECT is_success, message FROM @check";
             string prime_table = this.PrimeTable.Trim() + expression;
             query += "\n\n";
             query += $"update {prime_table} set status = @status, ma_ca = @ma_ca, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_nt = @ma_nt," +
-                $" ty_gia = @ty_gia, ma_kho = @ma_kho, ma_khon = @ma_khon, t_so_luong = @t_so_luong, t_tien = @t_tien, t_tien_nt = @t_tien_nt," +
+                $" ty_gia = @ty_gia, ma_kho = @ma_kho, ma_khon = @ma_khon, t_so_luong = @t_so_luong, t_tien = @t_tien, t_tien_nt = @t_tien_nt, ma_cuahang_n = @ma_cuahang_n," +
                 $" ma_gd = @ma_gd, loai_ct = '{this.loai_ct}', user_id2 = {user_id}, datetime2 = getdate(),";
             query += $" fcode1 = @fcode1, fcode2 = @fcode2, fcode3 = @fcode3";
             query += $" where stt_rec = @stt_rec";
