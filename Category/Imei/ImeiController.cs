@@ -572,6 +572,33 @@ namespace Imei
         }
         #endregion
 
+        [HttpGet("soldinfo_return/")]
+        #region GetImeiSoldInfoReturn
+        public IActionResult GetImeiSoldInfoReturn(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "", bool? tra_lai_cod = false)
+        {
+            try
+            {
+                Service _service = new Service(_configuration);
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang) || !_service.IsSQLInjectionValid(loai_tra_lai))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
+                //lấy trạng thái & thông tin imei
+                CommonObjectModel model = _service.GetImeiSoldInfoReturn(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0, loai_tra_lai ?? "", tra_lai_cod ?? false);
+                if (model.result != null)
+                    model.success = true;
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/GetImeiSoldInfoReturn", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
         [HttpGet("warranty-out-info/")]
         #region GetImeiSoldInfo
         public IActionResult GetWarrantyOutInfo(string ma_imei, string ma_cuahang)
