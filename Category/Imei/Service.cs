@@ -538,7 +538,7 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfo_v2 @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod";
 
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
