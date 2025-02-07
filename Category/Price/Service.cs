@@ -204,5 +204,49 @@ namespace Price
             List<ServiceBuyBackModel> entities = base.ExecSql2List<ServiceBuyBackModel>(sql, paras);
             return entities.FirstOrDefault();
         }
+
+        public List<RepurchaseAdjustPriceModel> GetRepurchaseAdjustBuyPrice(DateTime ngay_ct, string ma_ncc, string ma_loai, string ma_vt_mua, decimal gia_mua, decimal gia_dc)
+        {
+            string sql = "exec Genbyte$Price$AdjustRangePrice @ngay_ct, @ma_ncc, @ma_loai, @ma_vt_mua, @gia_mua, @gia_dc";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ncc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_ncc ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_loai",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_loai
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt_mua",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt_mua
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@gia_mua",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_mua
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@gia_dc",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_dc
+            });
+            List<RepurchaseAdjustPriceModel> entities = base.ExecSql2List<RepurchaseAdjustPriceModel>(sql, paras);
+            return entities;
+        }
     }
 }

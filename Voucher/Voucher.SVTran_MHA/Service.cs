@@ -113,6 +113,12 @@ namespace Voucher.SVTran_MHA
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fcode1 == "3" && detail_list.Count > 1)
+                        {
+                            detail_list = new List<SVDetail> { detail_list.First() }; // Chỉ giữ lại phần tử đầu tiên
+                        }
+
                         //cập nhật ngày chứng từ
                         detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -327,6 +333,12 @@ namespace Voucher.SVTran_MHA
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fcode1 == "3" && detail_list.Count > 1)
+                        {
+                            detail_list = new List<SVDetail> { detail_list.First() }; // Chỉ giữ lại phần tử đầu tiên
+                        }
+
                         detail_list.ForEach((item) =>
                         {
                             if (item.ma_imei != null && item.ma_imei != "")

@@ -152,6 +152,46 @@ namespace Price
         #endregion
 
         /// <summary>
+        /// Check tỉ lệ tăng hoặc giảm có hợp lệ hay không
+        /// </summary>
+        [HttpGet("repurchase_adjust_buy_price")]
+        #region GetRenewAdjustBuyPrice
+        public IActionResult GetRepurchaseAdjustBuyPrice(DateTime ngay_ct, string ma_ncc, string loai_hang_mua, string ma_vt_mua, decimal gia_ban, decimal gia_dc)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_ncc) || !_service.IsSQLInjectionValid(loai_hang_mua)
+                    || !_service.IsSQLInjectionValid(ma_vt_mua))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                List<RepurchaseAdjustPriceModel> entity = _service.GetRepurchaseAdjustBuyPrice(ngay_ct, ma_ncc, loai_hang_mua, ma_vt_mua, gia_ban, gia_dc);
+                if (entity != null)
+                {
+                    model.success = true;
+                    model.result = entity;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetRepurchaseAdjustBuyPrice", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
         /// Lấy giá bán của hàng bán trả lại
         /// </summary>
         /// <param name="ma_vt">mã hàng cần lấy thông tin</param>
