@@ -193,6 +193,14 @@ namespace Voucher.OPTran
                                             return result_model;
                                         }
                                     }
+                                    // Kiểm tra tất cả các tài khoản ma_td1 phải giống nhau
+                                    string? firstAccount = detail_list.First().ma_td1;
+                                    if (detail_list.Any(x => x.ma_td1 != firstAccount))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "account_mismatch";
+                                        return result_model;
+                                    }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
                                     detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
