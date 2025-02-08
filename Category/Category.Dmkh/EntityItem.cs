@@ -47,6 +47,8 @@ namespace Category.Dmkh
         public string ten_cty { get; set; }
         // Nhóm 3
         public string nh_kh3 { get; set; }
+
+        [IgnoreDbUpdate(true)]
         public string ma_ct { get; set; }
     }
 }

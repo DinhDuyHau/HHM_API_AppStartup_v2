@@ -15,5 +15,7 @@ namespace Voucher.DRTran.Models
         public decimal tien_cl { get; set; }
         public string stt_rec_tt { get; set; }
         public decimal con_lai { get; set; }
+
+        public decimal tat_toan { get; set; } = 0;
     }
 }

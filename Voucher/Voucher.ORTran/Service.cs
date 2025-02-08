@@ -288,7 +288,7 @@ namespace Voucher.ORTran
                 //2024-12-20: Nếu khai báo ma_phi => thực hiện cập nhật tài khoản có = tk_cp trong dmphi
                 query += $@"
 IF EXISTS(SELECT 1 FROM @{_DETAIL_PARA} WHERE ma_phi IS NOT NULL AND ma_phi <> '') BEGIN
-	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE tk_co END
+	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE a.tk_co END
 		FROM @{_DETAIL_PARA} a INNER JOIN dmphi b ON a.ma_phi = b.ma_phi
 END";
                 query += "\n\n";
@@ -595,7 +595,7 @@ SELECT is_success, message FROM @check";
                 //2024-12-20: Nếu khai báo ma_phi => thực hiện cập nhật tài khoản có = tk_cp trong dmphi
                 query += $@"
 IF EXISTS(SELECT 1 FROM @{_DETAIL_PARA} WHERE ma_phi IS NOT NULL AND ma_phi <> '') BEGIN
-	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE tk_co END
+	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE a.tk_co END
 		FROM @{_DETAIL_PARA} a INNER JOIN dmphi b ON a.ma_phi = b.ma_phi
 END";
                 query += "\n\n";

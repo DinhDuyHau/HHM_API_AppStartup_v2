@@ -165,5 +165,33 @@ namespace Customer
         }
         #endregion
 
+        #region GetAllDebitPayment
+        public List<PaymentDebtModel> GetAllDebitPayment(string ma_kh, string ma_dvcs, DateTime ngay_ct)
+        {
+            string sql = "exec Genbyte$Customer$GetAllDebitPayment @ma_kh, @ma_dvcs, @ngay_ct";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_dvcs",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_dvcs
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            List<PaymentDebtModel> entities = base.ExecSql2List<PaymentDebtModel>(sql, paras, ConnectType.Report);
+            return entities;
+        }
+        #endregion
+
     }
 }

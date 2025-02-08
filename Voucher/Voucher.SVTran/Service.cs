@@ -668,7 +668,7 @@ namespace Voucher.SVTran
 )
 DECLARE @status_older CHAR(1)
 INSERT INTO @check (is_success, message) VALUES (1, '')
-SELECT @status_older = (SELECT status FROM " + this.MasterTable + @" WHERE stt_rec = @vc_id)
+SELECT @status_older = status FROM " + this.MasterTable + @" WHERE stt_rec = @vc_id
 IF @status_older is NULL
 BEGIN
 	UPDATE @check SET is_success = 0, message = 'voucher_not_exists'
@@ -678,6 +678,12 @@ END
 
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
     UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
+	SELECT * FROM @check
+	RETURN
+END
+
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
 END

@@ -316,9 +316,7 @@ namespace Servive
 
         public object GetRankCustomer(string ma_kh)
         {
-            string query = @"select a.ma_hang, b.mau_chu, a.tl_tich_diem from loyalty_dmkh a 
-            left join dmhangthanhvien b on b.ma_hang = a.ma_hang
-            where ma_kh = @ma_kh";
+            string query = @"EXEC Genbyte$Loyalty$GetCustomerRanking @ma_kh";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
@@ -328,7 +326,7 @@ namespace Servive
                 Value = ma_kh.Trim()
             }
             });
-            var dataSet = this.ExecSql2DataSet(query, paras, ConnectType.Accounting);
+            var dataSet = this.ExecSql2DataSet(query, paras);
             object result = new object { };
             if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
             {
