@@ -116,7 +116,9 @@ namespace Voucher.SVTran_MHA
                         // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
                         if (vc_item.fcode1 == "3" && detail_list.Count > 1)
                         {
-                            detail_list = new List<SVDetail> { detail_list.First() }; // Chỉ giữ lại phần tử đầu tiên
+                            result_model.success = false;
+                            result_model.message = "imei_exceeds_limit";
+                            return result_model;
                         }
 
                         //cập nhật ngày chứng từ
@@ -336,7 +338,9 @@ namespace Voucher.SVTran_MHA
                         // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
                         if (vc_item.fcode1 == "3" && detail_list.Count > 1)
                         {
-                            detail_list = new List<SVDetail> { detail_list.First() }; // Chỉ giữ lại phần tử đầu tiên
+                            result_model.success = false;
+                            result_model.message = "imei_exceeds_limit";
+                            return result_model;
                         }
 
                         detail_list.ForEach((item) =>
