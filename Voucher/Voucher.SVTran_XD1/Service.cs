@@ -1211,7 +1211,7 @@ END";
         }
         */
 
-        public CommonObjectModel CalculateDiscount(string ma_cuahang, string ma_kh, DateTime? ngay_lap, string hang_mua)
+        public CommonObjectModel CalculateDiscount(string ma_cuahang, string ma_kh, DateTime? ngay_lap, string hang_mua, string ma_ct = "")
         {
             return null;
         }

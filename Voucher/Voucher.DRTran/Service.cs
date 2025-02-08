@@ -767,7 +767,8 @@ END";
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PRDetail> pr_detail = ds.Tables[1].ToList<PRDetail>();
                 IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
-                List<PaymentDebtModel> paymentDebtModels = new Customer.Service().GetPaymentDebit(vc_item.ma_kh, vc_item.ma_dvcs, (DateTime)vc_item.ngay_ct);
+
+                List<PaymentDebtModel> paymentDebtModels = new Customer.Service().GetAllDebitPayment(vc_item.ma_kh, vc_item.ma_dvcs, (DateTime)vc_item.ngay_ct);
 
                 List<ORDetailFinding> or_detail_finding = null;
                 if(paymentDebtModels != null)
@@ -795,7 +796,8 @@ END";
                         da_tt = e.da_tt_nt,
                         tien_cl = e.cl_nt,
                         con_lai = 0,
-                        ma_td3 = d.ma_td3
+                        ma_td3 = d.ma_td3,
+                        tat_toan = e.tat_toan
                     }).ToList();
                 }
                 else
@@ -832,7 +834,7 @@ END";
                     
                 or_detail_finding.ForEach(item =>
                 {
-                    item.con_lai = item.tien_cl - item.tien_nt;
+                    item.con_lai = item.tat_toan != 0 ? 0 : item.tien_cl - item.tien_nt;
                 });
 
 

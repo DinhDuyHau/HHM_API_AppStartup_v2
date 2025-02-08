@@ -12,6 +12,8 @@ namespace Category.Dmphi
         public string ten_phi2 { get; set; }
         public string tk_cp { get; set; }
 
+        public string tk_co { get; set; }
+
         //[IgnoreDbUpdate(true)]
 
     }
