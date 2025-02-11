@@ -749,7 +749,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select * from {1}' + @exp + ' where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select d1.* , d0.ten_dv, d0.vt_ton_kho from {2}' + @exp + ' d1 inner join dmdichvu d0 on d1.ma_dv = d0.ma_dv where stt_rec = @stt_rec'
-	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt, p.ten_pos as ten_may_pos from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, DetailTtTable);

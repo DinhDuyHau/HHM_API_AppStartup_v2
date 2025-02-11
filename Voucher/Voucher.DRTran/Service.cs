@@ -748,7 +748,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join vdmkh_acc b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select * from {2}' + @exp + ' where stt_rec = @stt_rec'
-SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, p.ten_pos as ten_may_pos from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable);
