@@ -759,7 +759,7 @@ END";
             {
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PTCDetailFinding> pr_detail = ds.Tables[1].ToList<PTCDetailFinding>();
-                IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
+                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
 
                 //Kiểm tra ngay_tra (ngày trả) nếu < 01-01-2020 set value = null
                 if(pr_detail[0].ngay_tra < new DateTime(2020, 1, 1))

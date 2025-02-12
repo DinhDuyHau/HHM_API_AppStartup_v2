@@ -766,7 +766,7 @@ END";
             {
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PRDetail> pr_detail = ds.Tables[1].ToList<PRDetail>();
-                IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
+                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
 
                 List<PaymentDebtModel> paymentDebtModels = new Customer.Service().GetAllDebitPayment(vc_item.ma_kh, vc_item.ma_dvcs, (DateTime)vc_item.ngay_ct);
 

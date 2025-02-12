@@ -787,7 +787,7 @@ END";
             {
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PRDetail> pr_detail = ds.Tables[1].ToList<PRDetail>();
-                IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
+                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
 
                 BaseModel invoice_model = new BaseModel();
                 invoice_model.masterInfo = vc_item;
