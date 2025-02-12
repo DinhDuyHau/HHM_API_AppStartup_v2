@@ -316,6 +316,12 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	SELECT * FROM @check
+	RETURN
+END
+
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
 	UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
