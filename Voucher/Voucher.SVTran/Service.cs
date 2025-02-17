@@ -142,8 +142,11 @@ namespace Voucher.SVTran
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check hàng khuyến mại
+                                    CheckKhuyenMai(detail_list);
+
                                     // check tổng tiền hàng
-                                    
+
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -569,6 +572,9 @@ namespace Voucher.SVTran
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check hàng khuyến mại
+                                    CheckKhuyenMai(detail_list);
+
                                     detail_list.ForEach((item) =>
                                     {
                                         if (item.ma_imei != null && item.ma_imei != "")
@@ -1733,5 +1739,17 @@ END";
 
             return totalPayment != (tienConNo + tienDaTra);
         }
+
+        private void CheckKhuyenMai(List<SVDetail> detailList)
+        {
+            detailList.ForEach(x =>
+            {
+                if (x.km_yn == 1 && !string.IsNullOrEmpty(x.ma_imei))
+                {
+                    x.no_km_yn = false;
+                }
+            });
+        }
+
     }
 }
