@@ -183,13 +183,19 @@ namespace Voucher.OPTran
                                 List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
-                                    //Kiểm tra ma_phi có tồn tại hay không
+                                    //Kiểm tra ma_phi, ma_td1 có tồn tại hay không
                                     foreach (var x in detail_list)
                                     {
                                         if (string.IsNullOrEmpty(x.ma_phi))
                                         {
                                             result_model.success = false;
                                             result_model.message = "not_exist_ma_phi";
+                                            return result_model;
+                                        }
+                                        if(string.IsNullOrEmpty(x.ma_td1))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "not_exist_tk";
                                             return result_model;
                                         }
                                     }
