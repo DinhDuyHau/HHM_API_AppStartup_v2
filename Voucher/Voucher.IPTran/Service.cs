@@ -637,6 +637,7 @@ end";
                 service.ExecuteNonQuery(queryIMEI);
             }
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
+            /*
             if (vc_item.status == "2")
             {
                 //string json = JsonSerializer.Serialize(list_imei);
@@ -646,6 +647,9 @@ end";
                 queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
+            */
+            queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
+            service.ExecuteNonQuery(queryIMEI);
 
             model.success = true;
             model.message = "edit_voucher_success";
