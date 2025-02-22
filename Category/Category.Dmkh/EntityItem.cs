@@ -50,5 +50,7 @@ namespace Category.Dmkh
 
         [IgnoreDbUpdate(true)]
         public string ma_ct { get; set; }
+        [IgnoreDbUpdate(true)]
+        public string s4 { get; set; }
     }
 }
