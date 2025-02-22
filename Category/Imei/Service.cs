@@ -1083,11 +1083,11 @@ namespace Imei
         /// <param name="ma_ck"></param>
         /// <param name="rec"></param>
         /// <returns></returns>
-        public List<GiftItem> GetAllGiftPromotionsForImei(string imeiId, string ma_ck, int rec)
+        public List<GiftItem> GetAllGiftPromotionsForImei(string imeiId, string ma_ck, int rec, string ma_vt_tang)
         {
             CoreService core_service = new CoreService();
 
-            string sql = @"exec Genbyte$IMEI$GiftPromotionsForImei @ma_imei, @ma_ck, @rec, @ma_cuahang";
+            string sql = @"exec Genbyte$IMEI$GiftPromotionsForImei @ma_imei, @ma_ck, @rec, @ma_cuahang, @ma_vt_tang";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter()
@@ -1113,6 +1113,12 @@ namespace Imei
                     ParameterName = "@ma_cuahang",
                     SqlDbType = SqlDbType.VarChar,
                     Value = Startup.Shop
+                },
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_vt_tang",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_vt_tang
                 }
             });
             List<GiftItem> gifts = core_service.ExecSql2List<GiftItem>(sql, paras);
