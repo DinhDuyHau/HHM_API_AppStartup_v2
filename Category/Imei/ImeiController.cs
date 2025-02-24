@@ -670,7 +670,7 @@ namespace Imei
 
         [HttpGet("change-gift-promotions")]
         #region ChangePromotionsForImei
-        public IActionResult ChangePromotionsForImei(string ma_imei, string ma_ck, int rec)
+        public IActionResult ChangePromotionsForImei(string ma_imei, string ma_ck, int rec, string ma_vt_tang)
         {
             try
             {
@@ -689,7 +689,7 @@ namespace Imei
 
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                List<GiftItem> result = _service.GetAllGiftPromotionsForImei(ma_imei, ma_ck, rec);
+                List<GiftItem> result = _service.GetAllGiftPromotionsForImei(ma_imei, ma_ck, rec, ma_vt_tang);
                 if(result != null && result.Count > 0)
                 {
                     model.success = true;
