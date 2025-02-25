@@ -40,6 +40,16 @@ namespace Report.RptEndofShiftReport
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);
             CommonObjectModel raw_model = data_utis.GetPdfReport(sysid, service_url, controller, controllerReport, form_id, sql, list_paras);
+
+            // log người in
+            if(raw_model.success)
+            {
+                string ma_cuahang = Startup.Shop;
+                int user_id = Startup.UserId;
+                string ma_ca = Startup.Shift;
+                data_utis.InsertLogPrint(user_id, ma_cuahang, ma_ca, this.controller);
+            }
+
             return raw_model;
         }
 
@@ -66,7 +76,7 @@ namespace Report.RptEndofShiftReport
             sql = @"declare @StoreName nvarchar(250), @ShiftName nvarchar(250)
 select @StoreName = ten_cuahang from dmcuahang where ma_cuahang = @ma_cuahang
 select @ShiftName = ten_ca from dmca where ma_ca = @ma_ca
-select cast(@tu_ngay as smalldatetime) as date_to, @ma_cuahang as ma_cuahang, @ma_ca as ma_ca, @StoreName as ten_cuahang, @ShiftName as ten_ca
+select cast(@tu_ngay as smalldatetime) as date_to, @ma_cuahang as ma_cuahang, @ma_ca as ma_ca, @StoreName as ten_cuahang, @ShiftName as ten_ca, GETDATE() AS date_sys
 exec rs_rptEndofShiftReport @tu_ngay, @ma_cuahang, @ma_ca, 'v', @user_id, @admin
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
@@ -103,6 +113,5 @@ exec rs_rptEndofShiftReport @tu_ngay, @ma_cuahang, @ma_ca, 'v', @user_id, @admin
 
             return list_paras;
         }
-
     }
 }
