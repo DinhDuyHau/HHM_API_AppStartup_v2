@@ -56,7 +56,7 @@ namespace Report.RptStockBalanceImei
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
+            //string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
             int loai_ky = 2;    //1: đầu kỳ, 2: cuối kỳ
@@ -75,7 +75,7 @@ namespace Report.RptStockBalanceImei
             {
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.Char,
-                SqlValue = ma_cuahang
+                SqlValue = obj_param.ma_cuahang
             });
             list_paras.Add(new SqlParameter
             {
