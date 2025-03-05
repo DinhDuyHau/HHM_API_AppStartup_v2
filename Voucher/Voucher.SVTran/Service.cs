@@ -120,6 +120,15 @@ namespace Voucher.SVTran
             List<SVServiceModel>? list_dich_vu = null;
             List<SVWarrantyModel>? list_goi_cuoc = null;
 
+            // kiểm tra vận chuyển
+            string valid_transport = validTransport(vc_item);
+            if (!string.IsNullOrEmpty(valid_transport))
+            {
+                result_model.message = valid_transport;
+                result_model.success = false;
+                return result_model;
+            }
+
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
             int index_value = 1;
@@ -552,6 +561,15 @@ namespace Voucher.SVTran
             List<SVDetail>? list_hang_hoa = null;
             List<SVServiceModel>? list_dich_vu = null;
             List<SVWarrantyModel>? list_goi_cuoc = null;
+
+            // kiểm tra vận chuyển
+            string valid_transport = validTransport(vc_item);
+            if (!string.IsNullOrEmpty(valid_transport))
+            {
+                result_model.message = valid_transport;
+                result_model.success = false;
+                return result_model;
+            }
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -1749,6 +1767,19 @@ END";
                     x.no_km_yn = false;
                 }
             });
+        }
+
+        private string validTransport(VoucherItem vc_item)
+        {
+            if(vc_item.ma_loaivc == "01" && vc_item.t_con_no == 0)
+            {
+                return "warning_transport_cod_no_debt";
+            }
+            if (vc_item.ma_loaivc == "02" && vc_item.t_con_no != 0)
+            {
+                return "warning_transport_non_cod_with_debt";
+            }
+            return "";
         }
 
     }

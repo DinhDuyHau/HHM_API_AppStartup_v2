@@ -222,6 +222,18 @@ namespace Voucher.SVTran_BHW
                                     //cập nhật ngày chứng từ
                                     transportModels.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
+                                    // kiểm tra vận chuyển
+                                    foreach (var x in transportModels)
+                                    {
+                                        string valid_transport = validTransport(vc_item, x);
+                                        if (!string.IsNullOrEmpty(valid_transport))
+                                        {
+                                            result_model.message = valid_transport;
+                                            result_model.success = false;
+                                            return result_model;
+                                        }
+                                    };
+
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(transportModels);
                                 }
@@ -609,6 +621,19 @@ namespace Voucher.SVTran_BHW
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(transportModels);
                                 }
+
+                                // kiểm tra vận chuyển
+                                foreach (var x in transportModels)
+                                {
+                                    string valid_transport = validTransport(vc_item, x);
+                                    if (!string.IsNullOrEmpty(valid_transport))
+                                    {
+                                        result_model.message = valid_transport;
+                                        result_model.success = false;
+                                        return result_model;
+                                    }
+                                };
+
                                 item_detail.Detail_Type = typeof(SVTransportModel).Name;
                                 break;
                             case 7:
@@ -1706,6 +1731,19 @@ END";
                     x.no_km_yn = false;
                 }
             });
+        }
+
+        private string validTransport(VoucherItem vc_item, SVTransportModel sVTransport)
+        {
+            if (sVTransport.ma_loaivc == "01" && vc_item.t_con_no == 0)
+            {
+                return "warning_transport_cod_no_debt";
+            }
+            if (sVTransport.ma_loaivc == "02" && vc_item.t_con_no != 0)
+            {
+                return "warning_transport_non_cod_with_debt";
+            }
+            return "";
         }
     }
 }
