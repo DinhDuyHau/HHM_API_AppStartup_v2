@@ -133,6 +133,13 @@ namespace Voucher.SVTran_XD1
                                     // check hàng khuyến mại
                                     CheckKhuyenMai(detail_list);
 
+                                    if (detail_list.Any(x => x.gia_ban == 0 || x.tt == 0))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "invalid_giaban_tongtien";
+                                        return result_model;
+                                    }
+
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -425,6 +432,13 @@ namespace Voucher.SVTran_XD1
                                 {
                                     // check hàng khuyến mại
                                     CheckKhuyenMai(detail_list);
+
+                                    if (detail_list.Any(x => x.gia_ban == 0 || x.tt == 0))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "invalid_giaban_tongtien";
+                                        return result_model;
+                                    }
 
                                     detail_list.ForEach((item) =>
                                     {
