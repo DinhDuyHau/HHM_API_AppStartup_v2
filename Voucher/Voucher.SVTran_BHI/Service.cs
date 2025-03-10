@@ -569,11 +569,8 @@ SELECT is_success, message FROM @check";
             }
 
             //post xử lý gạch nợ quà trên các đơn hàng bán
-            if(vc_item.status == "2")
-            {
-                query = $"exec Genbyte$Promotion$PostRepayGift '{stt_rec}'";
-                service.ExecuteNonQuery(query);
-            }
+            query = $"exec Genbyte$Promotion$PostRepayGift '{stt_rec}'";
+            service.ExecuteNonQuery(query);
 
             model.success = true;
             model.message = "";

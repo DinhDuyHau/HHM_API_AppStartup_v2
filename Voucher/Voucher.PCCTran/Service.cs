@@ -250,6 +250,9 @@ namespace Voucher.PCCTran
             query += $"ELSE set @tk = (select tk from dmtknh where tknh = @tknh and ma_dvcs = @ma_dvcs )";
             query += $"{insert_prime_table_query}";
 
+            //2025-02-25: update lại mã đvcs theo mã cửa hàng
+            query += $"\n\nupdate {prime_table} set ma_dvcs = b.ma_dvcs from {prime_table} a inner join dmcuahang b on a.ma_cuahang = b.ma_cuahang where a.stt_rec = @stt_rec";
+
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
             string detail_table = "";
