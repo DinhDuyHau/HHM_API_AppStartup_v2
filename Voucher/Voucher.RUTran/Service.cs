@@ -318,6 +318,12 @@ namespace Voucher.RUTran
                     }
                 }
             }
+            // post lsgd imei
+            if(vc_item.status == "0" || vc_item.status == "1")
+            {
+                query = $"exec fs_Voucher$PostTran$ImeiOrder '{vc_item.stt_rec}', '{vc_item.ma_ct}'";
+                service.ExecuteNonQuery(query);
+            }
             if (vc_item.status != "2")
             {
                 string json = JsonSerializer.Serialize(list_imei);
@@ -656,6 +662,12 @@ SELECT is_success, message FROM @check";
                         }
                     }
                 }
+            }
+            // post lsgd imei
+            if (vc_item.status == "0" || vc_item.status == "1")
+            {
+                query = $"exec fs_Voucher$PostTran$ImeiOrder '{vc_item.stt_rec}', '{vc_item.ma_ct}'";
+                service.ExecuteNonQuery(query);
             }
             if (vc_item.status != "2")
             {
