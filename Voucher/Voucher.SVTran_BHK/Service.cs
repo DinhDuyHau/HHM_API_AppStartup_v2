@@ -17,6 +17,7 @@ using Genbyte.Sys.AppAuth;
 using Genbyte.Component.Voucher.Model;
 using Genbyte.Base.Security;
 using Microsoft.Extensions.Configuration;
+using Voucher.SVTran_BHK.Models;
 
 namespace Voucher.SVTran_BHK
 {
@@ -1296,7 +1297,7 @@ END";
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<DVDetail> dv_detail = ds.Tables[2].ToList<DVDetail>();
                 IList<CKDetail> ck_detail = ds.Tables[3].ToList<CKDetail>();
-                IList<PaidDetailBaseResponse> tt_detail = ds.Tables[4].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> tt_detail = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<HtcDetail> htc_detail = ds.Tables[6].ToList<HtcDetail>();
                 tt_detail.ToList().ForEach(x => {

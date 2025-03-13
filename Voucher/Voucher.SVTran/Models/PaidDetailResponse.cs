@@ -1,8 +1,8 @@
 ﻿using Genbyte.Component.Voucher;
 
-namespace Voucher.SVTran
+namespace Voucher.SVTran.Models
 {
-    public class SVPaidModel: PaidDetailBase
+    public class PaidDetailResponse : PaidDetailBaseResponse
     {
         public string gc_td1 { get; set; }
         public string gc_td2 { get; set; }
