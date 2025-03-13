@@ -713,6 +713,16 @@ END";
                 });
                 DataSet ds1 = core_service.ExecSql2DataSet(sql, paras1, ConnectType.Report);
 
+                //2025-03-10: encrypt stt_rec_hd trước khi response
+                if(pr_detail != null && pr_detail.Count > 0)
+                {
+                    foreach(SVDetail item in pr_detail)
+                    {
+                        item.stt_rec_hd = APIService.EncryptForWebApp(item.stt_rec_hd, this.aes_key, this.aes_iv);
+                    }
+                }
+                //2024-03-10: end
+
                 IList<EInvoiceInfo> einvoice = ds1.Tables[0].ToList<EInvoiceInfo>();
 
                 BaseModel invoice_model = new BaseModel();
