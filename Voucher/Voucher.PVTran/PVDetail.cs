@@ -39,5 +39,9 @@ namespace Voucher.PVTran
         public decimal tien0 { get; set; }
         public decimal tien_nt0 { get; set; }
         public string so_dh_i { get; set; }
+        public decimal ck { get; set; }
+        public decimal ck_nt { get; set; }
+        public decimal thue_ck { get; set; }
+        public decimal thue_ck_nt { get; set; }
     }
 }

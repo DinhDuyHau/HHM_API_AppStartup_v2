@@ -188,6 +188,23 @@ namespace Voucher.ISTran_PXK
                             }
                         }
 
+                        // Kiểm tra trùng ma_imei
+                        var imeiSet = new HashSet<string>();
+                        var duplicatedImeis = detail_list
+                            .Where(x => !string.IsNullOrEmpty(x.ma_imei) && !imeiSet.Add(x.ma_imei.Trim()))
+                            .Select(x => x.ma_imei.Trim())
+                            .ToList();
+
+                        if (duplicatedImeis.Any())
+                        {
+                            return new CommonObjectModel
+                            {
+                                success = false,
+                                message = "err_imei_duplicate",
+                                result = new List<ResultMessageError> { new() { name = "%imei", value = string.Join(", ", duplicatedImeis) } }
+                            };
+                        }
+
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -413,6 +430,23 @@ namespace Voucher.ISTran_PXK
                                     return result_model;
                                 }
                             }
+                        }
+
+                        // Kiểm tra trùng ma_imei
+                        var imeiSet = new HashSet<string>();
+                        var duplicatedImeis = detail_list
+                            .Where(x => !string.IsNullOrEmpty(x.ma_imei) && !imeiSet.Add(x.ma_imei.Trim()))
+                            .Select(x => x.ma_imei.Trim())
+                            .ToList();
+
+                        if (duplicatedImeis.Any())
+                        {
+                            return new CommonObjectModel
+                            {
+                                success = false,
+                                message = "err_imei_duplicate",
+                                result = new List<ResultMessageError> { new() { name = "%imei", value = string.Join(", ", duplicatedImeis) } }
+                            };
                         }
 
                         item_detail.Data = new List<DetailEntity>();
