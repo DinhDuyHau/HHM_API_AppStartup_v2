@@ -43,5 +43,7 @@ namespace Voucher.PVTran
         public decimal ck_nt { get; set; }
         public decimal thue_ck { get; set; }
         public decimal thue_ck_nt { get; set; }
+        public decimal s4 { get; set; } // đơn giá gốc
+        public string gc_td1 { get; set; } // 1: đã điều chỉnh giá, 0 chưa điều chỉnh giá
     }
 }
