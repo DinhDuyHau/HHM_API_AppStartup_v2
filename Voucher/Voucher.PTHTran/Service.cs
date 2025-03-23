@@ -88,6 +88,8 @@ namespace Voucher.PTHTran
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
 
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
             //Check tồn  trạng thái chứng từ thuộc danh sách trạng thái được phép thêm
             string sql = @"DECLARE @check TABLE (
@@ -379,6 +381,9 @@ end
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
             }
+
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: PRDetail
