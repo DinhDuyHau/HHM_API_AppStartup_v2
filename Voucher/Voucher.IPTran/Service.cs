@@ -649,7 +649,7 @@ end";
             }
             */
             queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
-            service.ExecuteNonQueryWithRetry(queryIMEI, maxRetry: 3);
+            service.ExecuteNonQuery(queryIMEI);
 
             model.success = true;
             model.message = "edit_voucher_success";
