@@ -162,6 +162,22 @@ namespace Voucher.SVTran_DV1
                     item_detail.Detail_Type = typeof(TTDetail).Name;
                 }
             }
+
+            // Check còn key không
+            CommonObjectModel checkModel = new CommonObjectModel();
+            checkModel.success = true;
+            if (serviceModels != null && serviceModels.Count > 0)
+            {
+                checkModel = CommonService.checkServiceValid(serviceModels);
+            }
+            if (!checkModel.success)
+            {
+                result_model.success = false;
+                result_model.message = checkModel.message;
+                return result_model;
+            }
+            // End
+
             CommonService.checkPaid(vc_item, _DETAIL_TT_PARA);
             if (!result_model.success)
             {
@@ -469,6 +485,22 @@ SELECT is_success, message FROM @check";
                 result_model.message = check_result.message;
                 return result_model;
             }
+
+            // Check còn key không
+            CommonObjectModel checkModel = new CommonObjectModel();
+            checkModel.success = true;
+            if (serviceModels != null && serviceModels.Count > 0)
+            {
+                checkModel = CommonService.checkServiceValid(serviceModels);
+            }
+            if (!checkModel.success)
+            {
+                result_model.success = false;
+                result_model.message = checkModel.message;
+                return result_model;
+            }
+            // End
+
             CommonService.checkPaid(vc_item, _DETAIL_TT_PARA);
             if (!result_model.success)
             {
