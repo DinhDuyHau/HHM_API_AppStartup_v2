@@ -174,5 +174,33 @@ namespace Option
             }
         }
         #endregion
+
+        /// Lấy ngày chứng từ
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("getdate")]
+        public IActionResult getDate()
+        {
+            try
+            {
+                var currentDate = DateTime.Now;
+                //var testDate = new DateTime(2025, 3, 27, 20, 0, 0);
+
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = currentDate != default(DateTime),
+                    message = currentDate != default(DateTime) ? "" : "Runtime_err",
+                    result = currentDate
+                };
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Shop, $"GET -- OptionController/getDate", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
     }
 }
