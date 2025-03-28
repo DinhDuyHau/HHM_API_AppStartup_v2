@@ -114,6 +114,8 @@ namespace Voucher.SVTran
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
 
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
             //khai báo list chi tiết hàng hóa và list chi tiết dịch vụ (for check)
             List<SVDetail>? list_hang_hoa = null;
@@ -570,6 +572,9 @@ namespace Voucher.SVTran
                 result_model.success = false;
                 return result_model;
             }
+
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail

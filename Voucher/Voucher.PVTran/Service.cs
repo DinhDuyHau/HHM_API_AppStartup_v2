@@ -577,7 +577,7 @@ SELECT is_success, message FROM @check";
 
         #endregion
 
-        #region Updated
+            #region Updated
 
         public CommonObjectModel Updated(object voucherItem, Query voucherQuery, int user_id)
         {
@@ -610,7 +610,7 @@ SELECT is_success, message FROM @check";
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
             query += "\n\n";
-            query += $"update {prime_table} set ma_ca = @ma_ca, ma_tt = @ma_tt, ma_gd = @ma_gd, ma_kh = @ma_kh, dien_giai = @dien_giai, status = @status, user_id2 = {user_id}, datetime2 = getdate(), t_ck = @t_ck_nt, t_ck_nt = @t_ck_nt, t_tt = @t_tt_nt, t_tt_nt = @t_tt_nt, s4 = @s4";
+            query += $"update {prime_table} set ma_ca = @ma_ca, ma_tt = @ma_tt, ma_gd = @ma_gd, ma_kh = @ma_kh, dien_giai = @dien_giai, status = @status, user_id2 = {user_id}, datetime2 = getdate(), t_ck = @t_ck_nt, t_ck_nt = @t_ck_nt, t_tt = @t_tt_nt, t_tt_nt = @t_tt_nt, s4 = @s4, t_tien_nt = @t_tien_nt, t_tien = @t_tien_nt, t_thue_nt = @t_thue_nt, t_thue = @t_thue_nt";
             query += $" where stt_rec = @stt_rec";
 
             //xóa và insert lại các bảng chi tiết
@@ -631,7 +631,7 @@ SELECT is_success, message FROM @check";
 
                 query += $"\ndelete from {detail_table} where stt_rec = @stt_rec \n";
                 // sửa lại dữ liệu imei và một số các dữ liệu khác
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1, ck, ck_nt, thue_ck, thue_ck_nt) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1, ck, ck_nt, thue_ck, thue_ck_nt from @{_DETAIL_PARA} \r\n";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1, ck, ck_nt, thue_ck, thue_ck_nt, s4, gc_td1) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1, ck, ck_nt, thue_ck, thue_ck_nt, s4, gc_td1 from @{_DETAIL_PARA} \r\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 //query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
@@ -774,6 +774,11 @@ end";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
 
             service.ExecuteNonQuery(query);
+
+            // cập nhật lại phiếu DO bản QT nếu có sửa giá
+            string queryUpdateDO = "";
+            queryUpdateDO = $"exec rs_Update$Voucher$Data$DOTran '{stt_rec}', 'DO1' \n";
+            service.ExecuteNonQuery(queryUpdateDO, null, ConnectType.Accounting);
 
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
             string queryIMEI = "";
