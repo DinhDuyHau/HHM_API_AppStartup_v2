@@ -335,7 +335,7 @@ namespace Servive
                 {
                     ma_hang = row["ma_hang"].ToString().Trim(),
                     mau_chu = row["mau_chu"].ToString().Trim(),
-                    tl_tich_diem = row["tl_tich_diem"]
+                    tl_tich_diem = row["tl_tich_diem"] != DBNull.Value && decimal.TryParse(row["tl_tich_diem"].ToString(), out var tlValue) ? tlValue : 0
                 };
                 return result;
             }
