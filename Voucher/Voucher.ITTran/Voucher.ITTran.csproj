@@ -14,8 +14,8 @@
 
 	<ItemGroup>
 		<Reference Include="Genbyte.Base.CoreLib">
-			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
-			<Private>False</Private>
+		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
+		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Base.Security">
 		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
