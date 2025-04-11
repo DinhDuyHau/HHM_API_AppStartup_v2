@@ -44,5 +44,6 @@ namespace Voucher.CRTran_PCG.Models
         public DateTime? s8 { get; set; }
         public DateTime? s9 { get; set; }
         public string ten_phi { get; set; }
+        public decimal tien_phi_baokim { get; set; }
     }
 }
