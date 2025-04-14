@@ -552,12 +552,12 @@ namespace Voucher.SVTran
             // gạch voucher đã sử dụng bằng api, cho chạy ngầm
             if (model.success)
             {
-                List<string> vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
+                var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
                 if (vouchers.Count > 0)
                 {
-                    foreach (var item in vouchers)
+                    foreach (var (maVoucher, soCt) in vouchers)
                     {
-                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(item, vc_item.so_ct)).ConfigureAwait(false);
+                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(maVoucher, soCt)).ConfigureAwait(false);
                     }
                 }
             }
@@ -1138,12 +1138,12 @@ SELECT is_success, message FROM @check";
             // gạch voucher đã sử dụng bằng api, cho chạy ngầm
             if (model.success)
             {
-                List<string> vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
+                var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
                 if(vouchers.Count > 0)
                 {
-                    foreach (var item in vouchers)
+                    foreach (var (maVoucher, soCt) in vouchers)
                     {
-                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(item, vc_item.so_ct)).ConfigureAwait(false);
+                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(maVoucher, soCt)).ConfigureAwait(false);
                     }
                 }
             }
