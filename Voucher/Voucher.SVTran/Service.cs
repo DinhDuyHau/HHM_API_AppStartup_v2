@@ -549,8 +549,8 @@ namespace Voucher.SVTran
             model.message = "";
             model.result = vc_item;
 
-            // gạch voucher đã sử dụng bằng api, cho chạy ngầm
-            if (model.success)
+            // gạch voucher đã sử dụng bằng api, cho chạy ngầm khi thành công và trạng thái hoàn thành
+            if (model.success && vc_item.status == "2")
             {
                 var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
                 if (vouchers.Count > 0)
@@ -1135,8 +1135,8 @@ SELECT is_success, message FROM @check";
             model.message = "";
             model.result = vc_item;
 
-            // gạch voucher đã sử dụng bằng api, cho chạy ngầm
-            if (model.success)
+            // gạch voucher đã sử dụng bằng api, cho chạy ngầm khi thành công và trạng thái hoàn thành
+            if (model.success && vc_item.status == "2")
             {
                 var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
                 if(vouchers.Count > 0)
