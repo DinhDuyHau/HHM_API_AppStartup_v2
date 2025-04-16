@@ -284,5 +284,30 @@ namespace Customer
             }
         }
         #endregion
+
+        [HttpPost("phonecheck/{phone}")]
+        #region PhoneCheck
+        public async Task<dynamic> PhoneCheck(string phone)
+        {
+            try
+            {
+                var response = await Service.PhoneCheck(phone);
+                var content = await response.Content.ReadAsStringAsync();
+                var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = content,
+                    ContentType = contentType
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- CustomerController/PhoneCheck", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }
