@@ -9,5 +9,6 @@
         public string tk_ngan_hang { get; set; }
         public string ten_tk_nganhang { get; set; }
         public string ten_nganhang { get; set; }
+        public string ma_gd_baokim { get; set; }
     }
 }
