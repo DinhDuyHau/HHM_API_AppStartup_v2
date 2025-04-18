@@ -16,8 +16,12 @@ namespace VoucherWebsite
             try
             {
                 var response = await Service.VoucherCheckV2(payload);
-                var content = await response.Content.ReadAsStringAsync();
+                var raw = await response.Content.ReadAsStringAsync();
                 var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
+                var content = contentType.Contains("json") ? Service.TryFormatJson(raw) : raw;
+
+                // log request
+                Service.LogVoucherRequest(payload.Voucher, content, HttpContext, payload);
 
                 return new ContentResult
                 {
