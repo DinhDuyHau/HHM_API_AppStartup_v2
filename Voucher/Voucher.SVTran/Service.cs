@@ -187,6 +187,21 @@ namespace Voucher.SVTran
                                 List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
                                 if (discount_list != null && discount_list.Count > 0)
                                 {
+                                    // kiểm tra mã voucher code xem đã được sử dụng chưa nếu phiếu hoàn thành
+                                    foreach (var x in discount_list)
+                                    {
+                                        if (x.ma_ck == "VOUCHERWEB" && vc_item.status == "2")
+                                        {
+                                            string msg = CommonService.CheckVoucherUsing(x.imei_hang_mua);
+                                            if (!string.IsNullOrEmpty(msg))
+                                            {
+                                                result_model.success = false;
+                                                result_model.message = msg;
+                                                return result_model;
+                                            }
+                                        }
+                                    };
+
                                     //cập nhật ngày chứng từ
                                     discount_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -666,6 +681,21 @@ namespace Voucher.SVTran
                                 List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
                                 if (discount_list != null && discount_list.Count > 0)
                                 {
+                                    // kiểm tra mã voucher code xem đã được sử dụng chưa nếu phiếu hoàn thành
+                                    foreach (var x in discount_list)
+                                    {
+                                        if(x.ma_ck == "VOUCHERWEB" && vc_item.status == "2")
+                                        {
+                                            string msg = CommonService.CheckVoucherUsing(x.imei_hang_mua);
+                                            if(!string.IsNullOrEmpty(msg))
+                                            {
+                                                result_model.success = false;
+                                                result_model.message = msg;
+                                                return result_model;
+                                            }
+                                        }
+                                    };
+
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(discount_list);
                                 }
@@ -1193,6 +1223,7 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.PaidTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.WarrantyTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailKMTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"delete from {this.VoucherCodeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
