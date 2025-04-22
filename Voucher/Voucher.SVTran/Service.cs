@@ -740,6 +740,14 @@ namespace Voucher.SVTran
                 index_value++;
             }
 
+            // check hạng thành viên của phiếu
+            if (vc_item.status == "2" && CommonService.validVoucherCustomerMember(vc_item.ma_kh, vc_item.ma_hang, vc_item.ngay_ct))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_voucher_customer_member";
+                return result_model;
+            }
+
             // check tiền hợp lệ hay ko, phải khớp với nhau ko được lệch
             if (validMoneyMerchandise(list_hang_hoa, list_dich_vu, list_goi_cuoc, vc_item))
             {
