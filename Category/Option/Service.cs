@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Option.Model;
+using Genbyte.Sys.Common;
 
 namespace Option
 {
@@ -35,6 +36,31 @@ namespace Option
                 Value = ma_phan_he
             });
             return base.ExecSql2List<OptionModel>(sql, paras, ConnectType.App);
+        }
+
+        /** Lấy danh sách voucher */
+        public List<DiscountVoucherModel> GetDiscountVoucherCode(DateTime ngay_ct) 
+        {
+            DataService service = new DataService();
+
+            string sql = @"
+                SELECT TOP 1 a.*, b.ten_loai
+                FROM dmck2 a
+                LEFT JOIN dmloaick b ON b.ma_loai = a.loai_ck
+                WHERE a.loai_ck = 10
+                  AND @ngay_ct >= a.ngay_bd
+                  AND @ngay_ct <= a.ngay_kt
+                ORDER BY a.ngay_bd DESC";
+
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+
+            return service.ExecSql2List<DiscountVoucherModel>(sql, paras, ConnectType.Accounting);
         }
     }
 }

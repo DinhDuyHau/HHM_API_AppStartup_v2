@@ -54,6 +54,9 @@ namespace Voucher.SVTran
         public string WarrantyTable { get; } = "d581bh$";
         private const string _WARRANTY_PARA = "d581bh";
         public string DetailKMTable { get; } = "r590_km$";
+        // bảng lưu dữ liệu chi tiết của chiết khấu
+        public string VoucherCodeTable { get; } = "d581ctck$";
+        private const string _VOUCHER_CODE_PARA = "d581ctck";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d581,d581,d581";
@@ -184,6 +187,21 @@ namespace Voucher.SVTran
                                 List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
                                 if (discount_list != null && discount_list.Count > 0)
                                 {
+                                    // kiểm tra mã voucher code xem đã được sử dụng chưa nếu phiếu hoàn thành
+                                    foreach (var x in discount_list)
+                                    {
+                                        if (x.ma_ck == "VOUCHERWEB" && vc_item.status == "2")
+                                        {
+                                            string msg = CommonService.CheckVoucherUsing(x.imei_hang_mua);
+                                            if (!string.IsNullOrEmpty(msg))
+                                            {
+                                                result_model.success = false;
+                                                result_model.message = msg;
+                                                return result_model;
+                                            }
+                                        }
+                                    };
+
                                     //cập nhật ngày chứng từ
                                     discount_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -219,6 +237,15 @@ namespace Voucher.SVTran
                                 }
                                 item_detail.Detail_Type = typeof(SVWarrantyModel).Name;
                                 list_goi_cuoc = warranty_list;
+                                break;
+                            case 7:
+                                List<SVVoucherCodeModel>? voucherCode_list = JsonSerializer.Deserialize<List<SVVoucherCodeModel>>((JsonElement)item_model.Data);
+                                if (voucherCode_list != null && voucherCode_list.Count > 0)
+                                {
+                                    item_detail.Data = new List<DetailEntity>();
+                                    item_detail.Data.AddRange(voucherCode_list);
+                                }
+                                item_detail.Detail_Type = typeof(SVVoucherCodeModel).Name;
                                 break;
                             default:
                                 break;
@@ -463,6 +490,21 @@ namespace Voucher.SVTran
                 //query += $"insert into {warranty_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_ttbh, ma_imei, hang_sx, ma_vt) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_ttbh, ma_imei, hang_sx, ma_vt from @{_WARRANTY_PARA}";
                 query += $"{insert_warranty_query}";
             }
+            if (voucherQuery.Details.Any(x => x.ParaName == _VOUCHER_CODE_PARA))
+            {
+                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _VOUCHER_CODE_PARA);
+                discount_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string update_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), discount_table, _VOUCHER_CODE_PARA, 2);
+
+                query += "\n\n";
+                query += detail_query?.QueryString;
+                query += "\n";
+                query += $"{update_discount_query}";
+            }
+            else
+            {
+                query += VoucherUtils.getDeleteQuery(this.VoucherCodeTable + expression);
+            }
 
             //insert km
             var sale_table = "r590_km$" + expression;
@@ -521,6 +563,20 @@ namespace Voucher.SVTran
             model.success = true;
             model.message = "";
             model.result = vc_item;
+
+            // gạch voucher đã sử dụng bằng api, cho chạy ngầm khi thành công và trạng thái hoàn thành
+            if (model.success && vc_item.status == "2")
+            {
+                var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
+                if (vouchers.Count > 0)
+                {
+                    foreach (var (maVoucher, soCt) in vouchers)
+                    {
+                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(maVoucher, soCt)).ConfigureAwait(false);
+                    }
+                }
+            }
+
             return model;
         }
         #endregion
@@ -625,6 +681,21 @@ namespace Voucher.SVTran
                                 List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
                                 if (discount_list != null && discount_list.Count > 0)
                                 {
+                                    // kiểm tra mã voucher code xem đã được sử dụng chưa nếu phiếu hoàn thành
+                                    foreach (var x in discount_list)
+                                    {
+                                        if(x.ma_ck == "VOUCHERWEB" && vc_item.status == "2")
+                                        {
+                                            string msg = CommonService.CheckVoucherUsing(x.imei_hang_mua);
+                                            if(!string.IsNullOrEmpty(msg))
+                                            {
+                                                result_model.success = false;
+                                                result_model.message = msg;
+                                                return result_model;
+                                            }
+                                        }
+                                    };
+
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(discount_list);
                                 }
@@ -651,6 +722,15 @@ namespace Voucher.SVTran
                                 }
                                 item_detail.Detail_Type = typeof(SVWarrantyModel).Name;
                                 list_goi_cuoc = warranty_list;
+                                break;
+                            case 7:
+                                List<SVVoucherCodeModel>? voucherCode_list = JsonSerializer.Deserialize<List<SVVoucherCodeModel>>((JsonElement)item_model.Data);
+                                if (voucherCode_list != null && voucherCode_list.Count > 0)
+                                {
+                                    item_detail.Data = new List<DetailEntity>();
+                                    item_detail.Data.AddRange(voucherCode_list);
+                                }
+                                item_detail.Detail_Type = typeof(SVVoucherCodeModel).Name;
                                 break;
                             default:
                                 break;
@@ -996,6 +1076,21 @@ SELECT is_success, message FROM @check";
             {
                 query += VoucherUtils.getDeleteQuery(this.WarrantyTable + expression);
             }
+            if (voucherQuery.Details.Any(x => x.ParaName == _VOUCHER_CODE_PARA))
+            {
+                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _VOUCHER_CODE_PARA);
+                discount_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string update_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), discount_table, _VOUCHER_CODE_PARA, 2);
+
+                query += "\n\n";
+                query += detail_query?.QueryString;
+                query += "\n";
+                query += $"{update_discount_query}";
+            }
+            else
+            {
+                query += VoucherUtils.getDeleteQuery(this.VoucherCodeTable + expression);
+            }
 
             //insert km
             var sale_table = "r590_km$" + expression;
@@ -1077,6 +1172,20 @@ SELECT is_success, message FROM @check";
             model.success = true;
             model.message = "";
             model.result = vc_item;
+
+            // gạch voucher đã sử dụng bằng api, cho chạy ngầm khi thành công và trạng thái hoàn thành
+            if (model.success && vc_item.status == "2")
+            {
+                var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
+                if(vouchers.Count > 0)
+                {
+                    foreach (var (maVoucher, soCt) in vouchers)
+                    {
+                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(maVoucher, soCt)).ConfigureAwait(false);
+                    }
+                }
+            }
+
             return model;
         }
 
@@ -1122,6 +1231,7 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.PaidTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.WarrantyTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailKMTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"delete from {this.VoucherCodeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1184,9 +1294,10 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select c1.*, c0.ten_ck, c0.loai_ck, c2.ten_loai from {4}' + @exp + ' c1 inner join dmck2 c0 on c1.ma_ck = c0.ma_ck inner join dmloaick c2 on c2.ma_loai = c0.loai_ck where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt, p.ten_pos as ten_may_pos from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi, b2.ten_dv from {6}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh left join dmdichvu b2 on b1.ma_dv = b2.ma_dv where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select * from {7}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.VoucherCodeTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1205,6 +1316,7 @@ END";
                 IList<SVDiscountModel> pr_discount = ds.Tables[3].ToList<SVDiscountModel>();
                 IList<PaidDetailResponse> pr_paid = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
+                IList<SVVoucherCodeModel> pr_vouchercode = ds.Tables[6].ToList<SVVoucherCodeModel>();
 
                 pr_paid.ToList().ForEach(x => {
                     x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
@@ -1236,6 +1348,11 @@ END";
                     Id = 5,
                     Name = _WARRANTY_PARA,
                     Data = pr_warranty
+                }, new DetailItemModel()
+                {
+                    Id = 7,
+                    Name = _VOUCHER_CODE_PARA,
+                    Data = pr_vouchercode
                 }
                 });
 
