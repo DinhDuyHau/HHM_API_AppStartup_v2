@@ -716,6 +716,14 @@ namespace Voucher.SVTran_BHK
                 }
             }
 
+            // check hạng thành viên của phiếu
+            if (vc_item.status == "2" && CommonService.invalidVoucherCustomerMember(vc_item.ma_kh, vc_item.ma_hang, vc_item.ngay_ct))
+            {
+                result_model.success = false;
+                result_model.message = "invalid_voucher_customer_member";
+                return result_model;
+            }
+
             //2024-10-28: kiểm tra imei duplicate hàng hóa
             Dictionary<string, int> imei_group_count = imeis.GroupBy(x => x).Select(y => new
             {

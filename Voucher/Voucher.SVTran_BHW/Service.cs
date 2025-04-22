@@ -654,7 +654,7 @@ namespace Voucher.SVTran_BHW
             }
 
             // check hạng thành viên của phiếu
-            if (vc_item.status == "2" && CommonService.validVoucherCustomerMember(vc_item.ma_kh, vc_item.ma_hang, vc_item.ngay_ct))
+            if (vc_item.status == "2" && CommonService.invalidVoucherCustomerMember(vc_item.ma_kh, vc_item.ma_hang, vc_item.ngay_ct))
             {
                 result_model.success = false;
                 result_model.message = "invalid_voucher_customer_member";
