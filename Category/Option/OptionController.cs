@@ -202,5 +202,47 @@ namespace Option
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }
+
+        /// <summary>
+        /// Lấy chiết khấu voucher website
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("getdiscountvouchercode")]
+        public IActionResult GetDiscountVoucherCode([FromQuery] DateTime ngay_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel();
+                model.success = false;
+                model.message = "";
+                model.result = null;
+
+                if (ngay_ct == null || ngay_ct == default(DateTime))
+                {
+                    model.message = "Ngày chứng từ không được để trống";
+                    return Ok(model);
+                }
+
+                Service _service = new Service();
+                List<DiscountVoucherModel> vouchers = _service.GetDiscountVoucherCode(ngay_ct);
+
+                if (vouchers != null && vouchers.Any())
+                {
+                    model.success = true;
+                    model.result = vouchers;
+                }
+                else
+                {
+                    model.message = "Không tìm thấy voucher nào hợp lệ.";
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- OptionController/getdiscountvouchercode", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
     }
 }

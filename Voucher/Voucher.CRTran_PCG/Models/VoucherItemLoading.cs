@@ -1,4 +1,4 @@
-﻿namespace Voucher.CRTran_PTG.Models
+﻿namespace Voucher.CRTran_PCG.Models
 {
     public class VoucherItemLoading : VoucherItem
     {
@@ -6,9 +6,6 @@
         public string so_cccd { get; set; }
         public DateTime ngay_cap_cccd { get; set; }
         public string noi_cap_cccd { get; set; }
-        public string tk_ngan_hang { get; set; }
-        public string ten_tk_nganhang { get; set; }
-        public string ten_nganhang { get; set; }
         public string ma_gd_baokim { get; set; }
     }
 }

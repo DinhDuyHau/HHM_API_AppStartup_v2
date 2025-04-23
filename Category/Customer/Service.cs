@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using Customer.Model;
 using Newtonsoft.Json;
 using System.Reflection.Metadata;
+using Newtonsoft.Json.Linq;
 
 namespace Customer
 {
     public class Service : CoreService
     {
+        private static readonly HttpClient client = new HttpClient();
+
         #region GetPaymentDebit
         public List<PaymentDebtModel> GetPaymentDebit(string ma_kh, string ma_dvcs, DateTime ngay_ct)
         {
@@ -193,5 +196,35 @@ namespace Customer
         }
         #endregion
 
+        #region PhoneCheck
+        public static async Task<HttpResponseMessage> PhoneCheck(string phone)
+        {
+            var domain = "";
+            var path = "";
+            var token = "";
+
+            CoreService service = new CoreService();
+            string query = "select top 1 * from api_hhm where type = 'customer' and name = 'phonecheck'";
+            var result = service.ExecSql2Dictionary(query, null);
+            if (result != null && result.Count > 0)
+            {
+                domain = result[0]["domain"]?.ToString();
+                path = result[0]["path"]?.ToString();
+                token = result[0]["token"]?.ToString();
+            }
+            var url_request = "https://" + domain + path + $"/{phone}";
+
+            var requestBody = new JObject
+            {
+            };
+            var content = new StringContent(requestBody.ToString(), Encoding.UTF8, "application/json");
+
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Add("token", token);
+
+            var response = await client.PostAsync(url_request, content);
+            return response;
+        }
+        #endregion
     }
 }

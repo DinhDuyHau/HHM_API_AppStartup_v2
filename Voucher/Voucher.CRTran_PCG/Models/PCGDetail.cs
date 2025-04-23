@@ -1,8 +1,8 @@
 ﻿using Genbyte.Component.Voucher;
 
-namespace Voucher.CRTran_PTG.Models
+namespace Voucher.CRTran_PCG.Models
 {
-    public class PTGDetail : DetailEntity
+    public class PCGDetail : DetailEntity
     {
         public string dien_giai { get; set; }
         public string tk_co { get; set; }
