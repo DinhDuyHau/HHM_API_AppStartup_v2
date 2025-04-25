@@ -111,7 +111,7 @@ namespace Report.RptBankingBK
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ngan_hang",
-                SqlDbType = SqlDbType.Int,
+                SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ngan_hang
             });
             list_paras.Add(new SqlParameter

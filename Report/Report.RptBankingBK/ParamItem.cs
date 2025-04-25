@@ -13,7 +13,7 @@ namespace Report.RptBankingBK
 
         public DateTime den_ngay { get; set; }
 
-        public int ngan_hang { get; set; } = 1;
+        public string ngan_hang { get; set; } = "";
 
         public string ma_cuahang { get; set; } = "";
 
