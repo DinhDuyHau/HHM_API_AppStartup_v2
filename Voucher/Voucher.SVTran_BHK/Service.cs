@@ -66,6 +66,10 @@ namespace Voucher.SVTran_BHK
         public string EInvoiceTable { get; } = "hddt$";
         private const string _EINVOICE_INFO = "hddt";
 
+        // bảng lưu dữ liệu chi tiết của chiết khấu
+        public string VoucherCodeTable { get; } = "d589ctck$";
+        private const string _VOUCHER_CODE_PARA = "d589ctck";
+
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d589,d589,d589";
 
@@ -281,6 +285,28 @@ namespace Voucher.SVTran_BHK
                     item_detail.Detail_Type = typeof(HtcDetail).Name;
                 }
             }
+            //convert dữ liệu chi tiết ctck
+            // id = 8 ==> type: SVVoucherCodeModel
+            var index_ctck_value = 8;
+            if (data.details.Any(x => x.Id == index_ctck_value) && vc_item.details.Any(x => x.Id == index_ctck_value))
+            {
+                DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_ctck_value);
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_ctck_value);
+
+                if (item_model != null && item_detail != null)
+                {
+                    List<SVVoucherCodeModel>? detail_list = JsonSerializer.Deserialize<List<SVVoucherCodeModel>>((JsonElement)item_model.Data);
+                    if (detail_list != null && detail_list.Count > 0)
+                    {
+                        //cập nhật ngày chứng từ
+                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+
+                        item_detail.Data = new List<DetailEntity>();
+                        item_detail.Data.AddRange(detail_list);
+                    }
+                    item_detail.Detail_Type = typeof(SVVoucherCodeModel).Name;
+                }
+            }
             result_model = CommonService.checkPaid(vc_item, _DETAIL_TT_PARA);
             if (!result_model.success)
             {
@@ -460,6 +486,21 @@ namespace Voucher.SVTran_BHK
                 query += $" select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv,tk_vt,so_luong,gia_nt,gia,gia_nt0,gia0,tien_nt,tien,ma_thue,tk_thue,thue_suat,thue,thue_nt,tt,tt_nt,xstatus,xaction,tien0,tien_nt0,ma_thue_nk,thue_suat_nk,tk_thue_nk,nk,nk_nt,ma_thue_ttdb,thue_suat_ttdb,tk_thue_ttdb,ttdb,ttdb_nt,cp_bh,cp_bh_nt,cp_vc,cp_vc_nt,cp_khac,cp_khac_nt,cp,cp_nt,stt_rec_ct,stt_rec0ct,ct_so,ct_ln,stt_rec_dh,stt_rec0dh,dh_so,dh_ln,stt_rec_pn,stt_rec0pn,pn_so,pn_ln,tien_hang,tien_hang_nt,line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,gia_ck_nt,gia_ck,tien_ck_nt,tien_ck,tl_ck,ck_nt,ck,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,ma_loai,new_imei_yn from @{_DETAIL_HTC_PARA}";
             }
 
+            //insert ctck
+            DetailQuery? ctck_query = null;
+            string ctck_table = "";
+            if (voucherQuery.Details.Any(x => x.ParaName == _VOUCHER_CODE_PARA))
+            {
+                ctck_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _VOUCHER_CODE_PARA);
+                ctck_table = ctck_query?.TableName + (ctck_query.Partition_yn ? expression : "");
+                string insert_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), ctck_table, _VOUCHER_CODE_PARA, 1);
+
+                query += "\n\n";
+                query += ctck_query?.QueryString;
+                query += "\n";
+                query += $"{insert_discount_query}";
+            }
+
             query += "\n\n";
             query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
@@ -497,6 +538,10 @@ namespace Voucher.SVTran_BHK
             if (!string.IsNullOrEmpty(detail_bh_table))
             {
                 query += $"exec fs_UpdateNullToTable '{detail_bh_table}', '{detail_bh_table}', 'stt_rec = ''{stt_rec}''' \n";
+            }
+            if (!string.IsNullOrEmpty(ctck_table))
+            {
+                query += $"exec fs_UpdateNullToTable '{ctck_table}', '{ctck_table}', 'stt_rec = ''{stt_rec}''' \n";
             }
             service.ExecuteNonQuery(query);
 
@@ -713,6 +758,28 @@ namespace Voucher.SVTran_BHK
                         item_detail.Data.AddRange(detail_list);
                     }
                     item_detail.Detail_Type = typeof(HtcDetail).Name;
+                }
+            }
+            //convert dữ liệu chi tiết ctck
+            // id = 8 ==> type: SVVoucherCodeModel
+            var index_ctck_value = 8;
+            if (data.details.Any(x => x.Id == index_ctck_value) && vc_item.details.Any(x => x.Id == index_ctck_value))
+            {
+                DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_ctck_value);
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == index_ctck_value);
+
+                if (item_model != null && item_detail != null)
+                {
+                    List<SVVoucherCodeModel>? detail_list = JsonSerializer.Deserialize<List<SVVoucherCodeModel>>((JsonElement)item_model.Data);
+                    if (detail_list != null && detail_list.Count > 0)
+                    {
+                        //cập nhật ngày chứng từ
+                        detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+
+                        item_detail.Data = new List<DetailEntity>();
+                        item_detail.Data.AddRange(detail_list);
+                    }
+                    item_detail.Detail_Type = typeof(SVVoucherCodeModel).Name;
                 }
             }
 
@@ -943,6 +1010,18 @@ SELECT is_success, message FROM @check";
             }
             VoucherItem vc_item = (VoucherItem)voucherItem;
 
+            // gạch voucher đã sử dụng bằng api, trạng thái hoàn thành
+            if (vc_item.status == "2" && !string.IsNullOrEmpty(vc_item.stt_rec) && !string.IsNullOrEmpty(vc_item.ma_ct))
+            {
+                var result = CommonService.MarkAllVouchersAsUsed(vc_item.stt_rec, vc_item.ma_ct);
+                if (!result.Success)
+                {
+                    model.success = false;
+                    model.message = result.Message;
+                    return model;
+                }
+            }
+
             //create query
             string query = voucherQuery.Prime;
 
@@ -1098,6 +1177,23 @@ SELECT is_success, message FROM @check";
                 query += VoucherUtils.getDeleteQuery(this.DetailHtcTable + expression);
             }
 
+            var ctck_table = "";
+            if (voucherQuery.Details.Any(x => x.ParaName == _VOUCHER_CODE_PARA))
+            {
+                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _VOUCHER_CODE_PARA);
+                ctck_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string update_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), ctck_table, _VOUCHER_CODE_PARA, 2);
+
+                query += "\n\n";
+                query += detail_query?.QueryString;
+                query += "\n";
+                query += $"{update_discount_query}";
+            }
+            else
+            {
+                query += VoucherUtils.getDeleteQuery(this.VoucherCodeTable + expression);
+            }
+
             query += "\n\n";
             query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
@@ -1139,6 +1235,10 @@ SELECT is_success, message FROM @check";
             if (!string.IsNullOrEmpty(detail_htc_table))
             {
                 query += $"exec fs_UpdateNullToTable '{detail_htc_table}', '{detail_htc_table}', 'stt_rec = ''{stt_rec}''' \n";
+            }
+            if (!string.IsNullOrEmpty(ctck_table))
+            {
+                query += $"exec fs_UpdateNullToTable '{ctck_table}', '{ctck_table}', 'stt_rec = ''{stt_rec}''' \n";
             }
             service.ExecuteNonQuery(query);
 
@@ -1222,6 +1322,7 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.DetailTtTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailbhTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailHtcTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"delete from {this.VoucherCodeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1285,10 +1386,11 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt, p.ten_pos as ten_may_pos from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi, b2.ten_dv from {6}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh left join dmdichvu b2 on b1.ma_dv = b2.ma_dv where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select x1.*, x2.ten_vt from {7}' + @exp + ' x1 inner join dmvt x2 on x1.ma_vt = x2.ma_vt where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select * from {8}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.DetailDVTable,
-                this.DetailCkTable, this.DetailTtTable, this.DetailbhTable, this.DetailHtcTable);
+                this.DetailCkTable, this.DetailTtTable, this.DetailbhTable, this.DetailHtcTable, this.VoucherCodeTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1308,6 +1410,7 @@ END";
                 IList<PaidDetailResponse> tt_detail = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<HtcDetail> htc_detail = ds.Tables[6].ToList<HtcDetail>();
+                IList<SVVoucherCodeModel> pr_vouchercode = ds.Tables[7].ToList<SVVoucherCodeModel>();
                 tt_detail.ToList().ForEach(x => {
                     x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                 });
@@ -1382,6 +1485,12 @@ END";
                     Id = 10,
                     Name = _EINVOICE_INFO,
                     Data = einvoice
+                });
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 8,
+                    Name = _VOUCHER_CODE_PARA,
+                    Data = pr_vouchercode
                 });
                 model.result = invoice_model;
             }

@@ -421,7 +421,7 @@ namespace Voucher.SVTran
 
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
-            string detail_table = "", services_table = "", discount_table = "", paid_table = "", warranty_table = "";
+            string detail_table = "", services_table = "", discount_table = "", paid_table = "", warranty_table = "", ctck_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -493,17 +493,13 @@ namespace Voucher.SVTran
             if (voucherQuery.Details.Any(x => x.ParaName == _VOUCHER_CODE_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _VOUCHER_CODE_PARA);
-                discount_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
-                string update_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), discount_table, _VOUCHER_CODE_PARA, 2);
+                ctck_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string insert_ctck_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), ctck_table, _VOUCHER_CODE_PARA, 2);
 
                 query += "\n\n";
                 query += detail_query?.QueryString;
                 query += "\n";
-                query += $"{update_discount_query}";
-            }
-            else
-            {
-                query += VoucherUtils.getDeleteQuery(this.VoucherCodeTable + expression);
+                query += $"{insert_ctck_query}";
             }
 
             //insert km
@@ -544,6 +540,8 @@ namespace Voucher.SVTran
                 query += $"exec fs_UpdateNullToTable '{paid_table}', '{paid_table}', 'stt_rec = ''{stt_rec}''' \n";
             if (warranty_table != "")
                 query += $"exec fs_UpdateNullToTable '{warranty_table}', '{warranty_table}', 'stt_rec = ''{stt_rec}''' \n";
+            if (ctck_table != "")
+                query += $"exec fs_UpdateNullToTable '{ctck_table}', '{ctck_table}', 'stt_rec = ''{stt_rec}''' \n";
             if (!string.IsNullOrEmpty(sale_table))
             {
                 query += $"exec fs_UpdateNullToTable '{sale_table}', '{sale_table}', 'stt_rec = ''{stt_rec}''' \n";
@@ -563,20 +561,6 @@ namespace Voucher.SVTran
             model.success = true;
             model.message = "";
             model.result = vc_item;
-
-            // gạch voucher đã sử dụng bằng api, cho chạy ngầm khi thành công và trạng thái hoàn thành
-            if (model.success && vc_item.status == "2")
-            {
-                var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
-                if (vouchers.Count > 0)
-                {
-                    foreach (var (maVoucher, soCt) in vouchers)
-                    {
-                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(maVoucher, soCt)).ConfigureAwait(false);
-                    }
-                }
-            }
-
             return model;
         }
         #endregion
@@ -952,6 +936,18 @@ SELECT is_success, message FROM @check";
             }
             VoucherItem vc_item = (VoucherItem)voucherItem;
 
+            // gạch voucher đã sử dụng bằng api, trạng thái hoàn thành
+            if (vc_item.status == "2" && !string.IsNullOrEmpty(vc_item.stt_rec) && !string.IsNullOrEmpty(vc_item.ma_ct))
+            {
+                var result = CommonService.MarkAllVouchersAsUsed(vc_item.stt_rec, vc_item.ma_ct);
+                if (!result.Success)
+                {
+                    model.success = false;
+                    model.message = result.Message;
+                    return model;
+                }
+            }
+
             //create query
             string query = voucherQuery.Prime;
 
@@ -968,7 +964,7 @@ SELECT is_success, message FROM @check";
 
             //xóa và insert lại các bảng chi tiết
             DetailQuery? detail_query = null;
-            string detail_table = "", service_table = "", discount_table = "", paid_table = "", warranty_table = "";
+            string detail_table = "", service_table = "", discount_table = "", paid_table = "", warranty_table = "", ctck_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 //2024-08-10: bổ sung query gọi store reset trạng thái đặt hàng của các imei có trong phiếu trước khi update
@@ -1079,8 +1075,8 @@ SELECT is_success, message FROM @check";
             if (voucherQuery.Details.Any(x => x.ParaName == _VOUCHER_CODE_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _VOUCHER_CODE_PARA);
-                discount_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
-                string update_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), discount_table, _VOUCHER_CODE_PARA, 2);
+                ctck_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string update_discount_query = VoucherUtils.getDiscountQuery(new SVVoucherCodeModel(), ctck_table, _VOUCHER_CODE_PARA, 2);
 
                 query += "\n\n";
                 query += detail_query?.QueryString;
@@ -1146,6 +1142,10 @@ SELECT is_success, message FROM @check";
             {
                 query += $"exec fs_UpdateNullToTable '{sale_table}', '{sale_table}', 'stt_rec = ''{stt_rec}''' \n";
             }
+            if (!string.IsNullOrEmpty(ctck_table))
+            {
+                query += $"exec fs_UpdateNullToTable '{ctck_table}', '{ctck_table}', 'stt_rec = ''{stt_rec}''' \n";
+            }
             service.ExecuteNonQuery(query);
 
             //Update dữ liệu thanh toán và key đối với dịch vụ
@@ -1172,20 +1172,6 @@ SELECT is_success, message FROM @check";
             model.success = true;
             model.message = "";
             model.result = vc_item;
-
-            // gạch voucher đã sử dụng bằng api, cho chạy ngầm khi thành công và trạng thái hoàn thành
-            if (model.success && vc_item.status == "2")
-            {
-                var vouchers = CommonService.GetVoucherCodeBySttRec(vc_item.stt_rec, vc_item.ma_ct);
-                if(vouchers.Count > 0)
-                {
-                    foreach (var (maVoucher, soCt) in vouchers)
-                    {
-                        _ = Task.Run(async () => await CommonService.MarkVoucherAsUsed(maVoucher, soCt)).ConfigureAwait(false);
-                    }
-                }
-            }
-
             return model;
         }
 
