@@ -350,7 +350,7 @@ namespace Voucher.SVTran_BHW
                 , paid_table = this.PaidTable.Trim() + expression
                 , warranty_table = this.WarrantyTable.Trim() + expression
                 , transporst_table = this.TransportTable.Trim() + expression
-                , ctck_table = this.VoucherCode.Trim() + expression;
+                , ctck_table = this.VoucherCodeTable.Trim() + expression;
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -1216,7 +1216,7 @@ SELECT is_success, message FROM @check";
             sql += $"delete from {this.WarrantyTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.TransportTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
             sql += $"delete from {this.DetailKMTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
-            sql += $"delete from {this.VoucherCode + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
+            sql += $"delete from {this.VoucherCodeTable + ngay_ct.ToString("yyyyMM")} where stt_rec = @vc_id \n";
 
             paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
