@@ -105,7 +105,8 @@
         public decimal gia_tra_lai { get; set; }
         public decimal tien_giam { get; set; }
         public decimal ty_le_giam { get; set; }
-
         public bool nhap_tra_lai_yn { get; set; }
+        public string ma_khon { get; set; }
+
     }
 }
