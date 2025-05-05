@@ -939,7 +939,7 @@ SELECT is_success, message FROM @check";
             // gạch voucher đã sử dụng bằng api, trạng thái hoàn thành
             if (vc_item.status == "2" && !string.IsNullOrEmpty(vc_item.stt_rec) && !string.IsNullOrEmpty(vc_item.ma_ct))
             {
-                var result = CommonService.MarkAllVouchersAsUsed(vc_item.stt_rec, vc_item.ma_ct);
+                var result = CommonService.MarkAllVouchersAsUsed(vc_item.stt_rec, vc_item.ma_ct, vc_item.details[2].Data);
                 if (!result.Success)
                 {
                     model.success = false;
