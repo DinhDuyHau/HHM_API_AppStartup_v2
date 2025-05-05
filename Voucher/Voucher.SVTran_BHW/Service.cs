@@ -940,7 +940,7 @@ SELECT is_success, message FROM @check";
                             , paid_table = this.PaidTable.Trim() + expression
                             , warranty_table = this.WarrantyTable.Trim() + expression
                             , transporst_table = this.TransportTable.Trim() + expression
-                            , ctck_table = this.VoucherCode.Trim() + expression;
+                            , ctck_table = this.VoucherCodeTable.Trim() + expression;
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 //2024-08-10: bổ sung query gọi store reset trạng thái đặt hàng của các imei có trong phiếu trước khi update

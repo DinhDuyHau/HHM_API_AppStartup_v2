@@ -295,6 +295,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Report.RptSellHcare", "..\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Category.Dmphi", "..\Category\Category.Dmphi\Category.Dmphi.csproj", "{A92ABA4D-304F-438D-8803-E118F9D47BED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoucherWebsite", "..\Category\VoucherWebsite\VoucherWebsite.csproj", "{C99A678B-B3E3-4233-A943-0C221D139715}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -873,6 +875,10 @@ Global
 		{A92ABA4D-304F-438D-8803-E118F9D47BED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A92ABA4D-304F-438D-8803-E118F9D47BED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A92ABA4D-304F-438D-8803-E118F9D47BED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C99A678B-B3E3-4233-A943-0C221D139715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C99A678B-B3E3-4233-A943-0C221D139715}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C99A678B-B3E3-4233-A943-0C221D139715}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C99A678B-B3E3-4233-A943-0C221D139715}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1010,6 +1016,7 @@ Global
 		{C3C7EEC8-C67A-4710-9473-5B89630A0172} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 		{47E7AE08-C34E-4FAF-AC54-308B753F5AC9} = {99C7C2A8-3ADB-4A5C-AFBA-3DEC194419DE}
 		{A92ABA4D-304F-438D-8803-E118F9D47BED} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
+		{C99A678B-B3E3-4233-A943-0C221D139715} = {D7CDE845-7D16-4D7B-9FF4-5882CF9F38F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F0E17B6E-CA2A-417C-80DA-E1AC45372208}
