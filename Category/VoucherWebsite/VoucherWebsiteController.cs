@@ -1,4 +1,5 @@
-﻿using Genbyte.Sys.AppAuth;
+﻿using Genbyte.Component.Voucher;
+using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Microsoft.AspNetCore.Mvc;
 using VoucherWebsite.Model;
@@ -21,7 +22,7 @@ namespace VoucherWebsite
                 var content = contentType.Contains("json") ? Service.TryFormatJson(raw) : raw;
 
                 // log request
-                Service.LogVoucherRequest(payload.Voucher, content, HttpContext, payload);
+                CommonService.LogVoucherRequest(payload.Voucher, content, HttpContext, payload);
 
                 return new ContentResult
                 {
