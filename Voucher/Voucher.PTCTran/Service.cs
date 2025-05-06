@@ -174,6 +174,14 @@ namespace Voucher.PTCTran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fnote3 == "2" && detail_list.Count > 1)
+                        {
+                            result_model.success = false;
+                            result_model.message = "item_exceeds_limit";
+                            return result_model;
+                        }
+
                         //cập nhật ngày chứng từ
                         detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
                         detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
@@ -378,6 +386,13 @@ namespace Voucher.PTCTran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fnote3 == "2" && detail_list.Count > 1)
+                        {
+                            result_model.success = false;
+                            result_model.message = "item_exceeds_limit";
+                            return result_model;
+                        }
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -396,6 +411,7 @@ namespace Voucher.PTCTran
                     List<ORPaidModel>? paid_list = JsonSerializer.Deserialize<List<ORPaidModel>>((JsonElement)item_model.Data);
                     if (paid_list != null && paid_list.Count > 0)
                     {
+
                         //cập nhật ngày chứng từ
                         paid_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
