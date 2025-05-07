@@ -27,6 +27,8 @@
 
         public bool cod_yn { get; set; }
 
+        public bool freedelivery_yn { get; set; }
+
         public string so_dh_vc { get; set; }
         public string ma_nvvc { get; set; }
         public string ma_van_don { get; set; }
