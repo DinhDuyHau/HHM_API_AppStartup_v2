@@ -1388,7 +1388,7 @@ END";
             paras.Add(new SqlParameter()
             {
                 ParameterName = "@json",
-                SqlDbType = SqlDbType.Char,
+                SqlDbType = SqlDbType.VarChar,
                 Value = jsonResult
             });
             List<ImeiCheck> check_results = service.ExecSql2List<ImeiCheck>(sql, paras);

@@ -966,7 +966,7 @@ END";
                     foreach (var item in item_detail.Data)
                     {
                         var svDetail = item as PNWDetail;
-                        if (!Regex.IsMatch(svDetail.ma_imei, @"^[a-zA-Z0-9]+$"))
+                        if (!Regex.IsMatch(svDetail.ma_imei, @"^[a-zA-Z0-9.+\-*\/_?%$&]+$"))
                         {
                             result_model.success = false;
                             result_model.message = "error_imei";
