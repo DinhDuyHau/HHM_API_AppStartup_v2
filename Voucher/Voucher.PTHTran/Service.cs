@@ -151,6 +151,13 @@ namespace Voucher.PTHTran
                 vc_item.ty_gia = 1;
             }
 
+            // Nếu t_con_no khác 0 => không cho lưu
+            if (vc_item.t_con_no != 0)
+            {
+                result_model.success = false;
+                result_model.message = "Tiền nợ phải bằng 0";
+            }
+
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
@@ -519,6 +526,13 @@ SELECT is_success, message FROM @check";
             {
                 //Gán mã ca theo thông tin đăng nhập
                 vc_item.ma_ca = Startup.Shift;
+
+                // Nếu t_con_no khác 0 => không cho lưu
+                if (vc_item.t_con_no != 0)
+                {
+                    result_model.success = false;
+                    result_model.message = "Tiền nợ phải bằng 0";
+                }
 
                 //Gán lại các thông tin từ chứng từ cũ trước khi sửa: ma_dvcs, ma_cuahang, ma_ca, ngay_ct
                 //(không cho sửa các trường này)
