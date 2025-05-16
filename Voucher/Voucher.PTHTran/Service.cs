@@ -133,6 +133,12 @@ namespace Voucher.PTHTran
                 SqlDbType = SqlDbType.Char,
                 Value = vc_item.status.Replace("'", "''")
             });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_kh",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.ma_kh.Replace("'", "''")
+            });
             #endregion
             CheckResult check_result = service.ExecSql2List<CheckResult>(sql, paras).FirstOrDefault()!;
             if (!check_result.is_success)
@@ -151,8 +157,31 @@ namespace Voucher.PTHTran
                 vc_item.ty_gia = 1;
             }
 
-            // Nếu t_con_no khác 0 => không cho lưu
-            if (vc_item.t_con_no != 0)
+            sql = @"SELECT 
+                            CASE 
+                                WHEN EXISTS (SELECT 1 FROM dmcuahang WHERE ma_cuahang = @vc_kh)
+                                THEN CAST(1 AS BIT)
+                                ELSE CAST(0 AS BIT)
+                            END AS is_success,
+                            CASE 
+                                WHEN EXISTS (SELECT 1 FROM dmcuahang WHERE ma_cuahang = @vc_kh)
+                                THEN N'Khách hàng là cửa hàng'
+                                ELSE N'Khách hàng không phải cửa hàng'
+                            END AS message
+";
+            paras = new List<SqlParameter>();
+            #region add parameters
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_kh",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.ma_kh.Replace("'", "''")
+            });
+            #endregion
+            CheckResult result = service.ExecSql2List<CheckResult>(sql, paras).FirstOrDefault()!;
+
+            // Nếu t_con_no khác 0 và không phải cửa hàng => không cho lưu
+            if (vc_item.t_con_no != 0 && result.is_success == false)
             {
                 result_model.success = false;
                 result_model.message = "Tiền nợ phải bằng 0";
@@ -527,8 +556,31 @@ SELECT is_success, message FROM @check";
                 //Gán mã ca theo thông tin đăng nhập
                 vc_item.ma_ca = Startup.Shift;
 
-                // Nếu t_con_no khác 0 => không cho lưu
-                if (vc_item.t_con_no != 0)
+                sql = @"SELECT 
+                            CASE 
+                                WHEN EXISTS (SELECT 1 FROM dmcuahang WHERE ma_cuahang = @vc_kh)
+                                THEN CAST(1 AS BIT)
+                                ELSE CAST(0 AS BIT)
+                            END AS is_success,
+                            CASE 
+                                WHEN EXISTS (SELECT 1 FROM dmcuahang WHERE ma_cuahang = @vc_kh)
+                                THEN N'Khách hàng là cửa hàng'
+                                ELSE N'Khách hàng không phải cửa hàng'
+                            END AS message
+";
+                paras = new List<SqlParameter>();
+                #region add parameters
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@vc_kh",
+                    SqlDbType = SqlDbType.Char,
+                    Value = vc_item.ma_kh.Replace("'", "''")
+                });
+                #endregion
+                CheckResult result = service.ExecSql2List<CheckResult>(sql, paras).FirstOrDefault()!;
+
+                // Nếu t_con_no khác 0 và không phải cửa hàng => không cho lưu
+                if (vc_item.t_con_no != 0 && result.is_success == false)
                 {
                     result_model.success = false;
                     result_model.message = "Tiền nợ phải bằng 0";
