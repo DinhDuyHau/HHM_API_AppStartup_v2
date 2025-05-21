@@ -581,6 +581,15 @@ namespace Voucher.SVTran
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
 
+            // lấy trạng thái hiện tại và trạng thái update để check xem có được pass qua hay ko
+            VoucherMasterModel voucherMasterModel = CommonService.GetVoucherStatus(vc_item.stt_rec);
+            if(voucherMasterModel.status == "1" && vc_item.status == "0")
+            {
+                result_model.success = false;
+                result_model.message = "status_changed_cannot_edit";
+                return result_model;
+            }
+
             //tạm cho phép cập nhật ngày quá khứ
             /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
@@ -783,7 +792,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
