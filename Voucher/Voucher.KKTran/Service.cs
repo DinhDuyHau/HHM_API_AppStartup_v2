@@ -17,6 +17,8 @@ using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
 using Voucher.KKTran.Models;
 using Genbyte.Component.Voucher.Model;
+using Genbyte.Base.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace Voucher.KKTran
 {
@@ -44,7 +46,7 @@ namespace Voucher.KKTran
         /// <summary>
         /// Chuỗi truy vấn khi load chứng từ
         /// </summary>
-        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(a.ma_ca) as ma_ca,c.ten_ca, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "'''";
+        public string LoadingQuery { get; } = "exec MokaOnline$App$Voucher$Loading '@@VOUCHER_CODE', '@@MASTER_TABLE', '@@PRIME_TABLE', 'ngay_ct', 'convert(char(6), {0}, 112)', '000000', 0, 'stt_rec', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(ma_ca) as ma_ca,ngay_ct,rtrim(so_ct) as so_ct,rtrim(ma_kh) as ma_kh,rtrim(ma_cuahang) as ma_cuahang,rtrim(dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(ma_ct) as ma_ct,rtrim(status) as status,rtrim(user_id0) as user_id0,rtrim(user_id2) as user_id2,datetime0,datetime2', 'rtrim(stt_rec) as stt_rec,rtrim(ma_dvcs) as ma_dvcs,rtrim(a.ma_ca) as ma_ca,c.ten_ca, rtrim(a.ma_cuahang) as ma_cuahang, ngay_ct,rtrim(so_ct) as so_ct,rtrim(a.ma_kh) as ma_kh,b.ten_kh,rtrim(a.dien_giai) as dien_giai, t_so_luong,t_tien_nt,rtrim(ma_nt) as ma_nt,rtrim(a.ma_ct) as ma_ct,rtrim(a.status) as status,rtrim(a.user_id0) as user_id0,rtrim(a.user_id2) as user_id2,a.datetime0,a.datetime2,x.statusname,y.comment,z.comment2,'''' as Hash', 'a left join dmkh b on a.ma_kh = b.ma_kh left join dmca c on a.ma_ca = c.ma_ca left join dmttct x on a.status = x.status and a.ma_ct = x.ma_ct left join @@SYSDATABASE..userinfo y on a.user_id0 = y.id left join @@SYSDATABASE..userinfo z on a.user_id2 = z.id', '@@ORDER_BY', @@ADMIN, @@USER_ID, 1, 0, '', '', 'ma_cuahang = ''" + Startup.Shop + "''', '@@SYSID'";
 
         /// <summary>
         /// Khai báo các hành động của user tác động đến service hiện tại: addnew, edit, read, delete
@@ -55,17 +57,21 @@ namespace Voucher.KKTran
         /// Khai báo quyền truy cập cho các xử lý CRUD
         /// </summary>
         public AccessRight VoucherRight { get; set; }
+        private readonly IConfiguration _configuration;
 
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
 
-        public Service()
+        public Service(IConfiguration configuration, string sysid)
         {
+            Authoriztion authoriztion = CommonService.GetAuthoriztion(sysid);
             VoucherRight = new AccessRight();
-            VoucherRight.AllowRead = true;
-            VoucherRight.AllowCreate = true;
-            VoucherRight.AllowUpdate = true;
-            VoucherRight.AllowDelete = true;
+            VoucherRight.AllowReadAll = authoriztion.view_yn;
+            VoucherRight.AllowRead = authoriztion.access_yn;
+            VoucherRight.AllowCreate = authoriztion.add_yn;
+            VoucherRight.AllowUpdate = authoriztion.edit_yn;
+            VoucherRight.AllowDelete = authoriztion.del_yn;
+            this._configuration = configuration;
 
         }
 
@@ -732,6 +738,72 @@ SELECT is_success, message FROM @check";
                 result = data
             };
 
+            //convert
+            LoadingParam param = Converter.DictionaryToGenericEntityParam<LoadingParam>(data);
+
+            CoreService core_service = new CoreService();
+
+            //get sys database name
+            string sys_dbname = "";
+            using (SqlConnection sys_conn = core_service.CreateDbConn(ConnectType.Sys))
+            {
+                sys_dbname = sys_conn.Database;
+            }
+
+            //lọc trường fnote2 tại bảng m585 với giá trị 1 hoặc 2 (1: luân chuyển kho tại cửa hàng, 2: điều chuyển hàng lỗi về cty)
+            string filter_fnote2 = "1,2";
+
+            string sql = this.LoadingQuery.Replace("@@VOUCHER_CODE", this.VoucherCode);
+            sql = sql.Replace("@@MASTER_TABLE", this.MasterTable);
+            sql = sql.Replace("@@PRIME_TABLE", this.PrimeTable);
+            sql = sql.Replace("@@ORDER_BY", param.order_by);
+            sql = sql.Replace("@@SYSDATABASE", sys_dbname);
+            sql = sql.Replace("@@ADMIN", Startup.Admin.ToString());
+            sql = sql.Replace("@@USER_ID", Startup.UserId.ToString());
+            sql = sql.Replace("@@SHOP_ID", Startup.Shop.ToString());
+            sql = sql.Replace("@@PRIME_EXT_FILTER", filter_fnote2);
+            sql = sql.Replace("@@SYSID", "ITTran_PXB2");
+
+            DataSet dataset = core_service.ExecSql2DataSet(sql);
+
+            // Chuyển đổi dataset thành List<Dictionary<string, object>>
+            List<Dictionary<string, object>> dataByTable = new List<Dictionary<string, object>>();
+
+            // Tên bảng response
+            string[] tableNames = { "voucher", "payment_method", "authorization" };
+
+            for (int i = 0; i < dataset.Tables.Count; i++)
+            {
+                DataTable table = dataset.Tables[i];
+                List<Dictionary<string, object>> tableData = this.ConvertDataTableToList(table);
+
+                // Mã hóa trường stt_rec trong từng bảng
+                tableData.ForEach(x =>
+                {
+                    // check nếu có stt_rec mới thực hiện mã hóa
+                    if (x.ContainsKey("stt_rec") && x["stt_rec"] is string sttRecValue)
+                    {
+                        x["stt_rec"] = APIService.EncryptForWebApp(
+                            (string)x["stt_rec"],
+                            _configuration["Security:KeyAES"],
+                            _configuration["Security:IVAES"]
+                        );
+                    }
+                });
+
+                string tableName = (i < tableNames.Length) ? tableNames[i] : $"data_{i}";
+                dataByTable.Add(new Dictionary<string, object>
+                {
+                    { tableName, tableData }
+                });
+            }
+
+            if (dataByTable != null && dataByTable.Count > 0)
+            {
+                model.success = true;
+                model.result = dataByTable;
+            }
+
             return model;
         }
 
@@ -911,8 +983,22 @@ END";
         }
         #endregion
 
-        
-
-        
+        /** Hàm chuyển đổi DataTable thành List<Dictionary<string, object>> */
+        #region ConvertDataTableToList
+        public List<Dictionary<string, object>> ConvertDataTableToList(DataTable table)
+        {
+            List<Dictionary<string, object>> list = new List<Dictionary<string, object>>();
+            foreach (DataRow row in table.Rows)
+            {
+                Dictionary<string, object> dict = new Dictionary<string, object>();
+                foreach (DataColumn col in table.Columns)
+                {
+                    dict[col.ColumnName] = row[col];
+                }
+                list.Add(dict);
+            }
+            return list;
+        }
+        #endregion
     }
 }

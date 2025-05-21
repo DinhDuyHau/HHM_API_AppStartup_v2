@@ -24,6 +24,10 @@
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.CoreLib.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="Genbyte.Base.Security">
+		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Base.Security.dll</HintPath>
+		  <Private>False</Private>
+		</Reference>
 		<Reference Include="Genbyte.Component.Voucher">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Component.Voucher.dll</HintPath>
 			<Private>False</Private>

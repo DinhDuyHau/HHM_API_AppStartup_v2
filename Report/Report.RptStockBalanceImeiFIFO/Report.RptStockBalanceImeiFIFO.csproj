@@ -4,7 +4,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<BaseOutputPath>D:\WORKSPACE\Genbyte\HH\BACK_END\RUN-API</BaseOutputPath>
+		<BaseOutputPath>.\..\..\..\RUN-API</BaseOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
