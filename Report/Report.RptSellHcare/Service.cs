@@ -66,8 +66,8 @@ namespace Report.RptSellHcare
             string ma_dvcs = Startup.Unit;
       
             sql = @"select cast(@tu_ngay as smalldatetime) as date_from, cast(@den_ngay as smalldatetime) as date_to, @ma_cuahang ma_cuahang
-                    exec rs_rptSellHcare @tu_ngay, @den_ngay, @ma_cuahang, @loai_dv, @ma_dvcs, 
-                         @nh_vt1, @nh_vt2, @nh_vt3, @nh_vt4, @nh_vt5, @ma_nganh, 'v', @user_id, @admin, @loginShop
+                    exec rs_rptSellHcare @tu_ngay, @den_ngay, @ma_cuahang, @ma_dv, @loai_dv, @ma_dvcs, 
+                         @nh_dv1, @nh_dv2, @nh_dv3, 'v', @user_id, @admin, @loginShop
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -90,45 +90,34 @@ namespace Report.RptSellHcare
             });
             list_paras.Add(new SqlParameter
             {
+                ParameterName = "@ma_dv",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_dv
+            });
+            list_paras.Add(new SqlParameter
+            {
                 ParameterName = "@loai_dv",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_loai_dv
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_vt1",
+                ParameterName = "@nh_dv1",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.nh_vt1
+                SqlValue = obj_param.nh_dv1
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_vt2",
+                ParameterName = "@nh_dv2",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.nh_vt2
+                SqlValue = obj_param.nh_dv2
             });
             list_paras.Add(new SqlParameter
             {
-                ParameterName = "@nh_vt3",
+                ParameterName = "@nh_dv3",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.nh_vt3
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@nh_vt4",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.nh_vt4
-            });
-            list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@nh_vt5",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.nh_vt5
-            }); list_paras.Add(new SqlParameter
-            {
-                ParameterName = "@ma_nganh",
-                SqlDbType = SqlDbType.VarChar,
-                SqlValue = obj_param.ma_nganh
-            });
+                SqlValue = obj_param.nh_dv3
+            });   
             list_paras.Add(new SqlParameter
             {
                 ParameterName = "@ma_dvcs",

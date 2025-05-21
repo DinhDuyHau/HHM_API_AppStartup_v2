@@ -351,6 +351,12 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	SELECT * FROM @check
+	RETURN
+END
+
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
 	UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
@@ -565,11 +571,8 @@ SELECT is_success, message FROM @check";
             }
 
             //post xử lý gạch nợ quà trên các đơn hàng bán
-            if(vc_item.status == "2")
-            {
-                query = $"exec Genbyte$Promotion$PostRepayGift '{stt_rec}'";
-                service.ExecuteNonQuery(query);
-            }
+            query = $"exec Genbyte$Promotion$PostRepayGift '{stt_rec}'";
+            service.ExecuteNonQuery(query);
 
             model.success = true;
             model.message = "";
@@ -711,6 +714,16 @@ END";
                     Value = vc_item.ngay_ct
                 });
                 DataSet ds1 = core_service.ExecSql2DataSet(sql, paras1, ConnectType.Report);
+
+                //2025-03-10: encrypt stt_rec_hd trước khi response
+                if(pr_detail != null && pr_detail.Count > 0)
+                {
+                    foreach(SVDetail item in pr_detail)
+                    {
+                        item.stt_rec_hd = APIService.EncryptForWebApp(item.stt_rec_hd, this.aes_key, this.aes_iv);
+                    }
+                }
+                //2024-03-10: end
 
                 IList<EInvoiceInfo> einvoice = ds1.Tables[0].ToList<EInvoiceInfo>();
 

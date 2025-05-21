@@ -19,5 +19,7 @@ namespace Customer.Model
         public string dien_giai { get; set; }
 
         public string ma_cuahang { get; set; }
+
+        public decimal tat_toan { get; set; } = 0;
     }
 }

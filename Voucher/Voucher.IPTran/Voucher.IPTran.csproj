@@ -26,8 +26,8 @@
 		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Sys.AppAuth">
-			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
-			<Private>False</Private>
+		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.AppAuth.dll</HintPath>
+		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Genbyte.Sys.Common">
 			<HintPath>..\..\..\RUN-API\Debug\net6.0\Genbyte.Sys.Common.dll</HintPath>

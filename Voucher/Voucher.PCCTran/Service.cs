@@ -255,6 +255,9 @@ namespace Voucher.PCCTran
             query += $"ELSE set @tk = (select tk from dmtknh where tknh = @tknh and ma_dvcs = @ma_dvcs )";
             query += $"{insert_prime_table_query}";
 
+            //2025-02-25: update lại mã đvcs theo mã cửa hàng
+            query += $"\n\nupdate {prime_table} set ma_dvcs = b.ma_dvcs from {prime_table} a inner join dmcuahang b on a.ma_cuahang = b.ma_cuahang where a.stt_rec = @stt_rec";
+
             //insert các bảng chi tiết
             DetailQuery? detail_query = null;
             string detail_table = "";
@@ -379,6 +382,12 @@ namespace Voucher.PCCTran
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN

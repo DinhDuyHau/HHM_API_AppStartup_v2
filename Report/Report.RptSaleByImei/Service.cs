@@ -34,7 +34,7 @@ namespace Report.RptSaleByImei
             string sql = "";
             List<SqlParameter> list_paras = init(obj_param, out sql);
             DataUtils data_utis = new DataUtils(MemoryCache, Configuration);        
-            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, M_TABLE_VIEW_INDEX, connectType);
+            CommonObjectModel raw_model = data_utis.GetDataPaging(this.controller, sql, list_paras, obj_param, M_TABLE_VIEW_INDEX, connectType, obj_param.order_by);
             return raw_model;
         }
 

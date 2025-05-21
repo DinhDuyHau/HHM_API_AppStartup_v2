@@ -321,6 +321,12 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	SELECT * FROM @check
+	RETURN
+END
+
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
 	UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
@@ -636,6 +642,7 @@ end";
                 service.ExecuteNonQuery(queryIMEI);
             }
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
+            /*
             if (vc_item.status == "2")
             {
                 //string json = JsonSerializer.Serialize(list_imei);
@@ -645,6 +652,9 @@ end";
                 queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
                 service.ExecuteNonQuery(queryIMEI);
             }
+            */
+            queryIMEI = $"exec Genbyte$IMEI$PNF$Update '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}'";
+            service.ExecuteNonQuery(queryIMEI);
 
             model.success = true;
             model.message = "edit_voucher_success";

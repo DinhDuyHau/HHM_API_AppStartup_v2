@@ -105,6 +105,8 @@ namespace Voucher.SVTran_XD1
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
 
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
             //khai báo list chi tiết hàng hóa và list chi tiết dịch vụ (for check)
             List<SVDetail>? list_hang_hoa = null;
@@ -132,6 +134,16 @@ namespace Voucher.SVTran_XD1
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check hàng khuyến mại
+                                    CheckKhuyenMai(detail_list);
+
+                                    if (detail_list.Any(x => x.gia_ban == 0 || x.tt == 0))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "invalid_giaban_tongtien";
+                                        return result_model;
+                                    }
+
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -403,6 +415,9 @@ namespace Voucher.SVTran_XD1
                 vc_item.ty_gia = 1;
             }
 
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
+
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
             int index_value = 1;
@@ -422,6 +437,16 @@ namespace Voucher.SVTran_XD1
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check hàng khuyến mại
+                                    CheckKhuyenMai(detail_list);
+
+                                    if (detail_list.Any(x => x.gia_ban == 0 || x.tt == 0))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "invalid_giaban_tongtien";
+                                        return result_model;
+                                    }
+
                                     detail_list.ForEach((item) =>
                                     {
                                         if (item.ma_imei != null && item.ma_imei != "")
@@ -472,6 +497,12 @@ END
 
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
     UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
+	SELECT * FROM @check
+	RETURN
+END
+
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
 END
@@ -1213,9 +1244,20 @@ END";
         }
         */
 
-        public CommonObjectModel CalculateDiscount(string ma_cuahang, string ma_kh, DateTime? ngay_lap, string hang_mua)
+        public CommonObjectModel CalculateDiscount(string ma_cuahang, string ma_kh, DateTime? ngay_lap, string hang_mua, string ma_ct = "")
         {
             return null;
+        }
+
+        private void CheckKhuyenMai(List<SVDetail> detailList)
+        {
+            detailList.ForEach(x =>
+            {
+                if (x.km_yn == 1 && !string.IsNullOrEmpty(x.ma_imei))
+                {
+                    x.no_km_yn = false;
+                }
+            });
         }
     }
 }

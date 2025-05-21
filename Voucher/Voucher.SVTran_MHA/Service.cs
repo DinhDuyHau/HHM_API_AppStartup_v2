@@ -118,6 +118,14 @@ namespace Voucher.SVTran_MHA
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fcode1 == "3" && detail_list.Count > 1)
+                        {
+                            result_model.success = false;
+                            result_model.message = "imei_exceeds_limit";
+                            return result_model;
+                        }
+
                         //cập nhật ngày chứng từ
                         detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -332,6 +340,14 @@ namespace Voucher.SVTran_MHA
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fcode1 == "3" && detail_list.Count > 1)
+                        {
+                            result_model.success = false;
+                            result_model.message = "imei_exceeds_limit";
+                            return result_model;
+                        }
+
                         detail_list.ForEach((item) =>
                         {
                             if (item.ma_imei != null && item.ma_imei != "")
@@ -398,6 +414,12 @@ END
 
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
     UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
+	SELECT * FROM @check
+	RETURN
+END
+
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
 END

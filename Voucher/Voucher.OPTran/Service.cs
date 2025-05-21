@@ -188,7 +188,7 @@ namespace Voucher.OPTran
                                 List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
-                                    //Kiểm tra ma_phi có tồn tại hay không
+                                    //Kiểm tra ma_phi, ma_td1 có tồn tại hay không
                                     foreach (var x in detail_list)
                                     {
                                         if (string.IsNullOrEmpty(x.ma_phi))
@@ -197,6 +197,20 @@ namespace Voucher.OPTran
                                             result_model.message = "not_exist_ma_phi";
                                             return result_model;
                                         }
+                                        if(string.IsNullOrEmpty(x.ma_td1))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "not_exist_tk";
+                                            return result_model;
+                                        }
+                                    }
+                                    // Kiểm tra tất cả các tài khoản ma_td1 phải giống nhau
+                                    string? firstAccount = detail_list.First().ma_td1;
+                                    if (detail_list.Any(x => x.ma_td1 != firstAccount))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "account_mismatch";
+                                        return result_model;
                                     }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
@@ -492,6 +506,12 @@ namespace Voucher.OPTran
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN

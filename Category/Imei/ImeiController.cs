@@ -572,9 +572,9 @@ namespace Imei
         }
         #endregion
 
-        [HttpGet("soldinfo_return/")]
-        #region GetImeiSoldInfoReturn
-        public IActionResult GetImeiSoldInfoReturn(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "", bool? tra_lai_cod = false)
+        [HttpGet("soldinfo_change_item/")]
+        #region GetImeiSoldInfo
+        public IActionResult GetImeiSoldInfoChGetImeiSoldInfoChangeItemange(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "", bool? tra_lai_cod = false)
         {
             try
             {
@@ -585,7 +585,34 @@ namespace Imei
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                CommonObjectModel model = _service.GetImeiSoldInfoReturn(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0, loai_tra_lai ?? "", tra_lai_cod ?? false);
+                CommonObjectModel model = _service.GetImeiSoldInfoChangeItem(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0, loai_tra_lai ?? "", tra_lai_cod ?? false);
+                if (model.result != null)
+                    model.success = true;
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/GetImeiSoldInfoChangeItem", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        [HttpGet("soldinfo_return/")]
+        #region GetImeiSoldInfoReturn
+        public IActionResult GetImeiSoldInfoReturn(string ma_imei, string ma_cuahang, string? ma_ct = "", decimal? rate = null, decimal? tien_giam = 0, string? loai_tra_lai = "", bool? tra_lai_cod = false, bool? tra_lai_freedelivery = false)
+        {
+            try
+            {
+                Service _service = new Service(_configuration);
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang) || !_service.IsSQLInjectionValid(loai_tra_lai))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                ma_imei = HttpUtility.UrlDecode(ma_imei);
+                //lấy trạng thái & thông tin imei
+                CommonObjectModel model = _service.GetImeiSoldInfoReturn(ma_imei, ma_cuahang, ma_ct ?? "", rate ?? -1, tien_giam ?? 0, loai_tra_lai ?? "", tra_lai_cod ?? false, tra_lai_freedelivery ?? false);
                 if (model.result != null)
                     model.success = true;
 
@@ -643,7 +670,7 @@ namespace Imei
 
         [HttpGet("change-gift-promotions")]
         #region ChangePromotionsForImei
-        public IActionResult ChangePromotionsForImei(string ma_imei, string ma_ck, int rec)
+        public IActionResult ChangePromotionsForImei(string ma_imei, string ma_ck, int rec, string ma_vt_tang)
         {
             try
             {
@@ -662,7 +689,7 @@ namespace Imei
 
                 ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
-                List<GiftItem> result = _service.GetAllGiftPromotionsForImei(ma_imei, ma_ck, rec);
+                List<GiftItem> result = _service.GetAllGiftPromotionsForImei(ma_imei, ma_ck, rec, ma_vt_tang);
                 if(result != null && result.Count > 0)
                 {
                     model.success = true;

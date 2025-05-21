@@ -93,6 +93,8 @@ namespace Voucher.PTHTran
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
 
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
             //Check tồn  trạng thái chứng từ thuộc danh sách trạng thái được phép thêm
             string sql = @"DECLARE @check TABLE (
@@ -385,6 +387,9 @@ end
                 vc_item.ty_gia = 1;
             }
 
+            // cập nhật lại dvcs theo cửa hàng đăng nhập
+            vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
+
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: PRDetail
             int index_value = 1;
@@ -451,6 +456,12 @@ end
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
@@ -774,7 +785,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join vdmkh_acc b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_td as ten_loai_thu_ho, c.ten_dvth, d.ten_kh as ten_kh_thuho from {2}' + @exp + ' a left join dmtd2 b on a.ma_loai_thu_ho = b.ma_td left join dmdvthuho c on a.ma_dvth = c.ma_dvth left join dmkh d on a.ma_kh_thuho = d.ma_kh where stt_rec = @stt_rec'
-    SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, p.ten_pos as ten_may_pos from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable);

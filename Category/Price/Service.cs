@@ -204,5 +204,149 @@ namespace Price
             List<ServiceBuyBackModel> entities = base.ExecSql2List<ServiceBuyBackModel>(sql, paras);
             return entities.FirstOrDefault();
         }
+
+
+        /// <summary>
+        /// Lấy khoảng giá được phép điều chỉnh
+        /// </summary>
+        /// <param name="ma_dichvu"></param>
+        /// <returns></returns>
+        public List<RepurchaseAdjustPriceModel> GetRepurchaseAdjustBuyPrice(DateTime ngay_ct, string ma_ncc, string ma_loai, string ma_vt_mua, decimal gia_mua, decimal gia_dc)
+        {
+            string sql = "exec Genbyte$Price$AdjustRangePrice @ngay_ct, @ma_ncc, @ma_loai, @ma_vt_mua, @gia_mua, @gia_dc";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ncc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_ncc ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_loai",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_loai
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt_mua",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt_mua
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@gia_mua",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_mua
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@gia_dc",
+                SqlDbType = SqlDbType.Decimal,
+                Value = gia_dc
+            });
+            List<RepurchaseAdjustPriceModel> entities = base.ExecSql2List<RepurchaseAdjustPriceModel>(sql, paras);
+            return entities;
+        }
+
+        /// <summary>
+        /// Lấy chương trình thu cũ
+        /// </summary>
+        /// <param name="ma_ncc">mã nhà cung cấp</param>
+        /// <param name="ngay_ct">ngày chứng từ</param>
+        /// <returns></returns>
+        public OldProgram GetOldProgram(string ma_ncc, DateTime ngay_ct)
+        {
+            string sql = @"SELECT TOP 1 * FROM dmctthucu WHERE ma_ncc = @ma_ncc AND @ngay_ct BETWEEN ngay_bd AND ngay_kt ORDER BY ngay_bd DESC";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ncc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_ncc ?? ""
+            });
+            DataSet dataSet = base.ExecSql2DataSet(sql, paras);
+                
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                DataRow row = dataSet.Tables[0].Rows[0];
+                return new OldProgram
+                {
+                    ma_cttc = row[0].ToString().Trim(),
+                    ten_cttc = row[1].ToString().Trim(),
+                    ma_ncc = row[2].ToString().Trim(),
+                    ngay_bd = Convert.ToDateTime(row[3]),
+                    ngay_kt = Convert.ToDateTime(row[4]),
+                };
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Lấy giá trị loai_kho_nhap từ bảng dmkbht_hangcu
+        /// </summary>
+        /// <param name="ma_cttc">Mã chương trình thu cũ</param>
+        /// <param name="ma_kh">Mã khách hàng</param>
+        /// <param name="ngay_ct">Ngày chứng từ</param>
+        /// <returns></returns>
+        public Dictionary<string, string> GetTypeStock(string ma_cttc, string ma_kh, DateTime ngay_ct)
+        {
+            string sql = @"
+                SELECT TOP 1 a.loai_kho_nhap, b.ten_loai 
+                FROM dmkbht_hangcu a 
+                LEFT JOIN dmloaikho b ON b.ma_loai = a.loai_kho_nhap
+                WHERE a.ma_cttc = @ma_cttc 
+                AND a.ma_kh = @ma_kh 
+                AND @ngay_ct BETWEEN a.ngay_bd AND a.ngay_kt 
+                ORDER BY a.ngay_bd DESC";
+
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_cttc",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_cttc ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+
+            DataSet dataSet = base.ExecSql2DataSet(sql, paras, ConnectType.Accounting);
+
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                DataRow row = dataSet.Tables[0].Rows[0];
+                return new Dictionary<string, string>
+                {
+                    { "loai_kho_nhap", row["loai_kho_nhap"].ToString().Trim() },
+                    { "ten_loai", row["ten_loai"].ToString().Trim() }
+                };
+            }
+
+            return null;
+        }
+
     }
 }

@@ -18,5 +18,7 @@ namespace Voucher.SVTran_HDF
         public bool tra_lai_cod { get; set; }
         public string so_dh_vc { get; set; }
         public string ma_van_don { get; set; }
+
+        public bool tra_lai_freedelivery { get; set; }
     }
 }

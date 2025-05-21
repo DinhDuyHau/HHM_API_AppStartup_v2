@@ -15,19 +15,15 @@ namespace Report.RptSellHcare
 
         public string ma_cuahang { get; set; } = "";
 
+        public string ma_dv { get; set; } = "";
+
         public string ma_loai_dv { get; set; } = "";
 
-        public string nh_vt1 { get; set; } = "";
+        public string nh_dv1 { get; set; } = "";
 
-        public string nh_vt2 { get; set; } = "";
+        public string nh_dv2 { get; set; } = "";
 
-        public string nh_vt3 { get; set; } = "";
-
-        public string nh_vt4 { get; set; } = "";
-
-        public string nh_vt5 { get; set; } = "";
-
-        public string ma_nganh { get; set; } = "";
+        public string nh_dv3 { get; set; } = "";
 
     }
 }

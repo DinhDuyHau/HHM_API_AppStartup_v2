@@ -538,7 +538,181 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfo @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfo_v2 @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod";
+
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+            new SqlParameter()
+            {
+                ParameterName = "@ma_imei",
+                SqlDbType = SqlDbType.NVarChar,
+                Value = imeiId.Trim()
+            },new SqlParameter()
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.NVarChar,
+                Value = ma_cuahang.Trim()
+            },new SqlParameter()
+            {
+                ParameterName = "@ma_ct",
+                SqlDbType = SqlDbType.NVarChar,
+                Value = ma_ct.Trim()
+            }
+            ,new SqlParameter()
+            {
+                ParameterName = "@rate",
+                SqlDbType = SqlDbType.Decimal,
+                Value = rate
+            }
+            ,new SqlParameter()
+            {
+                ParameterName = "@tien_giam",
+                SqlDbType = SqlDbType.Decimal,
+                Value = tien_giam
+            },
+            new SqlParameter()
+            {
+                ParameterName = "@loai_tra_lai",
+                SqlDbType = SqlDbType.Char,
+                Value = loai_tra_lai.Trim()
+            },
+            new SqlParameter()
+            {
+                ParameterName = "@tra_lai_cod",
+                SqlDbType = SqlDbType.Bit,
+                Value = tra_lai_cod
+            }
+            });
+            DataSet ds = core_service.ExecSql2DataSet(sql, paras);
+
+            if (ds != null && ds.Tables.Count >= 1)
+            {
+                VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
+                IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
+                IList<DVDetail> dv_detail = ds.Tables[2].ToList<DVDetail>();
+                IList<CKDetail> ck_detail = ds.Tables[3].ToList<CKDetail>();
+                IList<TTDetail> tt_detail = ds.Tables[4].ToList<TTDetail>();
+                IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
+                IList<KMDetail> km_detail = ds.Tables[6].ToList<KMDetail>();
+                IList<EInvoiceInfo> einvoice_info = ds.Tables[7].ToList<EInvoiceInfo>();
+
+                vc_item.stt_rec = APIService.EncryptForWebApp(vc_item.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                pr_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    v.stt_rec_ct = !string.IsNullOrWhiteSpace(v.stt_rec_ct) ? APIService.EncryptForWebApp(v.stt_rec_ct, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_dh = !string.IsNullOrWhiteSpace(v.stt_rec_dh) ? APIService.EncryptForWebApp(v.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_gh = !string.IsNullOrWhiteSpace(v.stt_rec_gh) ? APIService.EncryptForWebApp(v.stt_rec_gh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_pn = !string.IsNullOrWhiteSpace(v.stt_rec_pn) ? APIService.EncryptForWebApp(v.stt_rec_pn, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_px = !string.IsNullOrWhiteSpace(v.stt_rec_px) ? APIService.EncryptForWebApp(v.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                });
+
+                dv_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    v.stt_rec_ct = !string.IsNullOrWhiteSpace(v.stt_rec_ct) ? APIService.EncryptForWebApp(v.stt_rec_ct, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_dh = !string.IsNullOrWhiteSpace(v.stt_rec_dh) ? APIService.EncryptForWebApp(v.stt_rec_dh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_gh = !string.IsNullOrWhiteSpace(v.stt_rec_gh) ? APIService.EncryptForWebApp(v.stt_rec_gh, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_pn = !string.IsNullOrWhiteSpace(v.stt_rec_pn) ? APIService.EncryptForWebApp(v.stt_rec_pn, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                    v.stt_rec_px = !string.IsNullOrWhiteSpace(v.stt_rec_px) ? APIService.EncryptForWebApp(v.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                });
+
+                ck_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+
+                tt_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+                bh_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+                km_detail.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    v.stt_rec_tq = !string.IsNullOrWhiteSpace(v.stt_rec_tq) ? APIService.EncryptForWebApp(v.stt_rec_tq, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]) : "";
+                });
+
+                einvoice_info.ToList().ForEach(v =>
+                {
+                    v.stt_rec = APIService.EncryptForWebApp(v.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                });
+
+                BaseModel invoice_model = new BaseModel();
+                invoice_model.masterInfo = vc_item;
+                invoice_model.details = new List<DetailItemModel>();
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 1,
+                    Name = "Items",
+                    Data = pr_detail
+                });
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 2,
+                    Name = "Services",
+                    Data = dv_detail
+                });
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 3,
+                    Name = "Discounts",
+                    Data = ck_detail
+                });
+
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 4,
+                    Name = "Payments",
+                    Data = tt_detail
+                });
+
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 5,
+                    Name = "Warranty",
+                    Data = bh_detail
+                });
+
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 6,
+                    Name = "Ext",
+                    Data = km_detail
+                });
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 7,
+                    Name = "Einvoice",
+                    Data = einvoice_info
+                });
+                model.result = invoice_model;
+            }
+            return model;
+        }
+        #endregion
+
+        /// <summary>
+        /// GetImeiSoldInfoChangeItem
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        #region GetImeiSoldInfoChangeItem
+        public CommonObjectModel GetImeiSoldInfoChangeItem(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "", bool tra_lai_cod = false)
+        {
+            CommonObjectModel model = new CommonObjectModel()
+            {
+                success = false,
+                message = "",
+                result = null
+            };
+            CoreService core_service = new CoreService();
+
+            //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
+            string sql = @"exec Genbyte$IMEI$GetSoldInfo$ChangeItem @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod";
 
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
@@ -702,7 +876,7 @@ namespace Imei
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         #region GetImeiSoldInfoReturn
-        public CommonObjectModel GetImeiSoldInfoReturn(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "", bool tra_lai_cod = false)
+        public CommonObjectModel GetImeiSoldInfoReturn(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "", bool tra_lai_cod = false, bool tra_lai_freedelivery = false)
         {
             CommonObjectModel model = new CommonObjectModel()
             {
@@ -713,7 +887,7 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfoReturn @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfoReturn @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod, @tra_lai_freedelivery";
 
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
@@ -756,6 +930,12 @@ namespace Imei
                 ParameterName = "@tra_lai_cod",
                 SqlDbType = SqlDbType.Bit,
                 Value = tra_lai_cod
+            },
+            new SqlParameter()
+            {
+                ParameterName = "@tra_lai_freedelivery",
+                SqlDbType = SqlDbType.Bit,
+                Value = tra_lai_freedelivery
             }
             });
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
@@ -909,11 +1089,11 @@ namespace Imei
         /// <param name="ma_ck"></param>
         /// <param name="rec"></param>
         /// <returns></returns>
-        public List<GiftItem> GetAllGiftPromotionsForImei(string imeiId, string ma_ck, int rec)
+        public List<GiftItem> GetAllGiftPromotionsForImei(string imeiId, string ma_ck, int rec, string ma_vt_tang)
         {
             CoreService core_service = new CoreService();
 
-            string sql = @"exec Genbyte$IMEI$GiftPromotionsForImei @ma_imei, @ma_ck, @rec, @ma_cuahang";
+            string sql = @"exec Genbyte$IMEI$GiftPromotionsForImei @ma_imei, @ma_ck, @rec, @ma_cuahang, @ma_vt_tang";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
                 new SqlParameter()
@@ -939,6 +1119,12 @@ namespace Imei
                     ParameterName = "@ma_cuahang",
                     SqlDbType = SqlDbType.VarChar,
                     Value = Startup.Shop
+                },
+                new SqlParameter()
+                {
+                    ParameterName = "@ma_vt_tang",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_vt_tang
                 }
             });
             List<GiftItem> gifts = core_service.ExecSql2List<GiftItem>(sql, paras);

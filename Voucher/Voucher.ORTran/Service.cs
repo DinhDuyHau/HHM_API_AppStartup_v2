@@ -293,7 +293,7 @@ namespace Voucher.ORTran
                 //2024-12-20: Nếu khai báo ma_phi => thực hiện cập nhật tài khoản có = tk_cp trong dmphi
                 query += $@"
 IF EXISTS(SELECT 1 FROM @{_DETAIL_PARA} WHERE ma_phi IS NOT NULL AND ma_phi <> '') BEGIN
-	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE tk_co END
+	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE a.tk_co END
 		FROM @{_DETAIL_PARA} a INNER JOIN dmphi b ON a.ma_phi = b.ma_phi
 END";
                 query += "\n\n";
@@ -443,6 +443,12 @@ END";
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
@@ -600,7 +606,7 @@ SELECT is_success, message FROM @check";
                 //2024-12-20: Nếu khai báo ma_phi => thực hiện cập nhật tài khoản có = tk_cp trong dmphi
                 query += $@"
 IF EXISTS(SELECT 1 FROM @{_DETAIL_PARA} WHERE ma_phi IS NOT NULL AND ma_phi <> '') BEGIN
-	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE tk_co END
+	UPDATE @{_DETAIL_PARA} SET tk_co = CASE WHEN ISNULL(b.tk_cp, '') <> '' THEN b.tk_cp ELSE a.tk_co END
 		FROM @{_DETAIL_PARA} a INNER JOIN dmphi b ON a.ma_phi = b.ma_phi
 END";
                 query += "\n\n";
@@ -761,7 +767,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join vdmkh_acc b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_phi from {2}' + @exp + ' a left join dmphi b on b.ma_phi = a.ma_phi where a.stt_rec = @stt_rec'
-SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, p.ten_pos as ten_may_pos from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable);

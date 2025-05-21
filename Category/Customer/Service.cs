@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using Customer.Model;
 using Newtonsoft.Json;
 using System.Reflection.Metadata;
+using Newtonsoft.Json.Linq;
 
 namespace Customer
 {
     public class Service : CoreService
     {
+        private static readonly HttpClient client = new HttpClient();
+
         #region GetPaymentDebit
         public List<PaymentDebtModel> GetPaymentDebit(string ma_kh, string ma_dvcs, DateTime ngay_ct)
         {
@@ -165,5 +168,63 @@ namespace Customer
         }
         #endregion
 
+        #region GetAllDebitPayment
+        public List<PaymentDebtModel> GetAllDebitPayment(string ma_kh, string ma_dvcs, DateTime ngay_ct)
+        {
+            string sql = "exec Genbyte$Customer$GetAllDebitPayment @ma_kh, @ma_dvcs, @ngay_ct";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_kh
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_dvcs",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_dvcs
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct
+            });
+            List<PaymentDebtModel> entities = base.ExecSql2List<PaymentDebtModel>(sql, paras, ConnectType.Report);
+            return entities;
+        }
+        #endregion
+
+        #region PhoneCheck
+        public static async Task<HttpResponseMessage> PhoneCheck(string phone)
+        {
+            var domain = "";
+            var path = "";
+            var token = "";
+
+            CoreService service = new CoreService();
+            string query = "select top 1 * from api_hhm where type = 'customer' and name = 'phonecheck'";
+            var result = service.ExecSql2Dictionary(query, null);
+            if (result != null && result.Count > 0)
+            {
+                domain = result[0]["domain"]?.ToString();
+                path = result[0]["path"]?.ToString();
+                token = result[0]["token"]?.ToString();
+            }
+            var url_request = "https://" + domain + path + $"/{phone}";
+
+            var requestBody = new JObject
+            {
+            };
+            var content = new StringContent(requestBody.ToString(), Encoding.UTF8, "application/json");
+
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Add("token", token);
+
+            var response = await client.PostAsync(url_request, content);
+            return response;
+        }
+        #endregion
     }
 }

@@ -153,6 +153,9 @@ namespace Voucher.SVTran_BHC
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check hàng khuyến mại
+                                    CheckKhuyenMai(detail_list);
+
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -552,6 +555,9 @@ namespace Voucher.SVTran_BHC
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check hàng khuyến mại
+                                    CheckKhuyenMai(detail_list);
+
                                     detail_list.ForEach((item) =>
                                     {
                                         if (item.ma_imei != null && item.ma_imei != "")
@@ -657,6 +663,12 @@ END
 
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
     UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
+	SELECT * FROM @check
+	RETURN
+END
+
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
 END
@@ -1658,6 +1670,17 @@ END";
                 }
             }
             return result_model;
+        }
+
+        private void CheckKhuyenMai(List<SVDetail> detailList)
+        {
+            detailList.ForEach(x =>
+            {
+                if (x.km_yn == 1 && !string.IsNullOrEmpty(x.ma_imei))
+                {
+                    x.no_km_yn = false;
+                }
+            });
         }
     }
 }

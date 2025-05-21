@@ -9,7 +9,9 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Genbyte.Base.CoreLib;
 using Genbyte.Component.Category;
+using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 
@@ -96,6 +98,7 @@ namespace Category.Dmkh
         /// <returns>giá trị result là object đã được insert</returns>
         public CommonObjectModel Inserted(object entity)
         {
+
             if(entity == null)
             {
                 return new CommonObjectModel()
@@ -105,6 +108,27 @@ namespace Category.Dmkh
                     result = entity
                 };
             }
+
+            // xử lý update ma_cuahang
+            CoreService service = new CoreService();
+            var maKhProperty = entity.GetType().GetProperty("ma_kh");
+            string maKhValue = maKhProperty?.GetValue(entity)?.ToString()?.Trim();
+            string sql = "update dmkh set ma_cuahang = @ma_cuahang where ma_kh = @ma_kh";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_kh",
+                SqlDbType = SqlDbType.VarChar,
+                Value = maKhValue ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.Char,
+                Value = Startup.Shop ?? ""
+            });
+            service.ExecuteNonQuery(sql, paras, ConnectType.Accounting);
+
             return new CommonObjectModel()
             {
                 message = "save_category_success",

@@ -115,7 +115,7 @@ namespace Price
         /// </summary>
         [HttpGet("renew_adjust_buy_price")]
         #region GetRenewAdjustBuyPrice
-        public IActionResult GetRenewAdjustBuyPrice(DateTime ngay_ct, string? ma_cttc, string ma_ncc, string loai_hang_mua, string ma_vt_mua, string ma_vt_ban, decimal gia_ban, decimal gia_dc, string ma_td3)
+        public IActionResult GetRenewAdjustBuyPrice(DateTime ngay_ct, string? ma_cttc, string ma_ncc, string loai_hang_mua, string ma_vt_mua, string ma_vt_ban, decimal gia_ban, decimal gia_dc, string? ma_td3 = "")
         {
             try
             {
@@ -134,7 +134,7 @@ namespace Price
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
 
                 //lấy giá dịch vụ
-                List<AdjustPriceModel> entity = _service.GetRenewAdjustBuyPrice(ngay_ct, ma_cttc, ma_ncc, loai_hang_mua, ma_vt_mua, ma_vt_ban, gia_ban, gia_dc, ma_td3);
+                List<AdjustPriceModel> entity = _service.GetRenewAdjustBuyPrice(ngay_ct, ma_cttc, ma_ncc, loai_hang_mua, ma_vt_mua, ma_vt_ban, gia_ban, gia_dc, string.IsNullOrEmpty(ma_td3) ? "" : ma_td3);
                 if (entity != null)
                 {
                     model.success = true;
@@ -146,6 +146,46 @@ namespace Price
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- PriceController/GetRenewAdjustBuyPrice", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Check tỉ lệ tăng hoặc giảm có hợp lệ hay không
+        /// </summary>
+        [HttpGet("repurchase_adjust_buy_price")]
+        #region GetRenewAdjustBuyPrice
+        public IActionResult GetRepurchaseAdjustBuyPrice(DateTime ngay_ct, string ma_ncc, string loai_hang_mua, string ma_vt_mua, decimal gia_ban, decimal gia_dc)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_ncc) || !_service.IsSQLInjectionValid(loai_hang_mua)
+                    || !_service.IsSQLInjectionValid(ma_vt_mua))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                List<RepurchaseAdjustPriceModel> entity = _service.GetRepurchaseAdjustBuyPrice(ngay_ct, ma_ncc, loai_hang_mua, ma_vt_mua, gia_ban, gia_dc);
+                if (entity != null)
+                {
+                    model.success = true;
+                    model.result = entity;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetRepurchaseAdjustBuyPrice", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }
@@ -229,6 +269,90 @@ namespace Price
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- PriceController/GetTaxOfServiceBuyback?ma_dichvu={ma_dichvu}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy chương trình thu cũ
+        /// </summary>
+        /// <param name="ma_ncc">mã nhà cung cấp</param>
+        /// <param name="ngay_ct">ngày chứng từ</param>
+        /// <returns></returns>
+        [HttpGet("get_old_program")]
+        #region GetOldProgram
+        public IActionResult GetOldProgram(string ma_ncc, DateTime ngay_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_ncc))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                //lấy chương trình thu cũ
+                OldProgram oldProgram = _service.GetOldProgram(ma_ncc, ngay_ct);
+                if (oldProgram != null)
+                {
+                    model.success = true;
+                    model.result = oldProgram;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetOldProgram?ma_ncc={ma_ncc}&ngay_ct={ngay_ct}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy chương trình thu cũ
+        /// </summary>
+        /// <param name="ma_cttc">Mã chương trình thu cũ</param>
+        /// <param name="ma_kh">Mã khách hàng</param>
+        /// <param name="ngay_ct">Ngày chứng từ</param>
+        /// <returns></returns>
+        [HttpGet("get_type_stock")]
+        #region GetTypeStock
+        public IActionResult GetTypeStock(string ma_cttc, string ma_ncc, DateTime ngay_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_ncc) || !_service.IsSQLInjectionValid(ma_cttc))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                Dictionary<string, string> loai_kho = _service.GetTypeStock(ma_cttc, ma_ncc, ngay_ct);
+                if (loai_kho != null)
+                {
+                    model.success = true;
+                    model.result = loai_kho;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- PriceController/GetTypeStock?ma_cttc={ma_cttc}&ma_ncc={ma_ncc}&ngay_ct={ngay_ct}", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

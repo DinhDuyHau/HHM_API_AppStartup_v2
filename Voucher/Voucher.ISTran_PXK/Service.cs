@@ -193,6 +193,23 @@ namespace Voucher.ISTran_PXK
                             }
                         }
 
+                        // Kiểm tra trùng ma_imei
+                        var imeiSet = new HashSet<string>();
+                        var duplicatedImeis = detail_list
+                            .Where(x => !string.IsNullOrEmpty(x.ma_imei) && !imeiSet.Add(x.ma_imei.Trim()))
+                            .Select(x => x.ma_imei.Trim())
+                            .ToList();
+
+                        if (duplicatedImeis.Any())
+                        {
+                            return new CommonObjectModel
+                            {
+                                success = false,
+                                message = "err_imei_duplicate",
+                                result = new List<ResultMessageError> { new() { name = "%imei", value = string.Join(", ", duplicatedImeis) } }
+                            };
+                        }
+
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -420,6 +437,23 @@ namespace Voucher.ISTran_PXK
                             }
                         }
 
+                        // Kiểm tra trùng ma_imei
+                        var imeiSet = new HashSet<string>();
+                        var duplicatedImeis = detail_list
+                            .Where(x => !string.IsNullOrEmpty(x.ma_imei) && !imeiSet.Add(x.ma_imei.Trim()))
+                            .Select(x => x.ma_imei.Trim())
+                            .ToList();
+
+                        if (duplicatedImeis.Any())
+                        {
+                            return new CommonObjectModel
+                            {
+                                success = false,
+                                message = "err_imei_duplicate",
+                                result = new List<ResultMessageError> { new() { name = "%imei", value = string.Join(", ", duplicatedImeis) } }
+                            };
+                        }
+
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -452,6 +486,12 @@ namespace Voucher.ISTran_PXK
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN

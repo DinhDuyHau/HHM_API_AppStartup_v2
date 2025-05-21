@@ -179,6 +179,14 @@ namespace Voucher.PTCTran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fnote3 == "2" && detail_list.Count > 1)
+                        {
+                            result_model.success = false;
+                            result_model.message = "item_exceeds_limit";
+                            return result_model;
+                        }
+
                         //cập nhật ngày chứng từ
                         detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
                         detail_list.ForEach(x => x.ma_cuahang = vc_item.ma_cuahang);
@@ -383,6 +391,13 @@ namespace Voucher.PTCTran
                     List<PRDetail>? detail_list = JsonSerializer.Deserialize<List<PRDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // Nếu vc_item.fcode1 == 3 thì chỉ cho phép 1 phần tử trong danh sách
+                        if (vc_item.fnote3 == "2" && detail_list.Count > 1)
+                        {
+                            result_model.success = false;
+                            result_model.message = "item_exceeds_limit";
+                            return result_model;
+                        }
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -401,6 +416,7 @@ namespace Voucher.PTCTran
                     List<ORPaidModel>? paid_list = JsonSerializer.Deserialize<List<ORPaidModel>>((JsonElement)item_model.Data);
                     if (paid_list != null && paid_list.Count > 0)
                     {
+
                         //cập nhật ngày chứng từ
                         paid_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -436,6 +452,12 @@ namespace Voucher.PTCTran
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
@@ -746,7 +768,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join vdmkh_acc b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_ctr, c.ten_vt from {2}' + @exp + ' a left join phctrmoban b on a.ma_ctr = b.ma_ctr left join dmvt c on a.ma_vt = c.ma_vt  where stt_rec = @stt_rec'
-	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, p.ten_pos as ten_may_pos from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable);

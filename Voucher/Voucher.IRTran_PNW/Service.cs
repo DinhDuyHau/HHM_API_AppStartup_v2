@@ -436,6 +436,12 @@ namespace Voucher.IRTran_PNW
 	             RETURN
             END
 
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
+            END
+
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
 	            UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	            SELECT * FROM @check
@@ -943,6 +949,13 @@ END";
 
         CommonObjectModel checkImeiInsert(VoucherItem vc_item)
         {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+
             var listImei = new List<string>();
             var ma_cuahang = "";
             if (vc_item.details.Any(x => x.Id == 1))
@@ -951,24 +964,27 @@ END";
 
                 if (item_detail != null)
                 {
+
                     foreach (var item in item_detail.Data)
                     {
                         var svDetail = item as PNWDetail;
+                        if (!Regex.IsMatch(svDetail.ma_imei, @"^[a-zA-Z0-9.+\-*\/_?%$&]+$"))
+                        {
+                            result_model.success = false;
+                            result_model.message = "error_imei";
+                            result_model.result = "";
+                            return result_model;
+                        }
                         if (svDetail != null && !string.IsNullOrEmpty(svDetail.ma_imei))
                         {
-                            if(!svDetail.doi_bh_yn) listImei.Add(svDetail.ma_imei.Trim());
+                            
+                            if (!svDetail.doi_bh_yn) listImei.Add(svDetail.ma_imei.Trim());
                             ma_cuahang = svDetail.ma_cuahang;
                         }
                     }
-
                 }
             }
-            CommonObjectModel result_model = new CommonObjectModel()
-            {
-                success = true,
-                message = "",
-                result = null
-            };
+            
             var imeiService = new Imei.Service();
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();

@@ -445,6 +445,12 @@ namespace Voucher.DRTran
 	             RETURN
             END
 
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
+            END
+
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
 	            UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	            SELECT * FROM @check
@@ -750,7 +756,7 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
 	SELECT @q = 'select a.*, b.ten_kh from {1}' + @exp + ' a left join vdmkh_acc b on a.ma_kh = b.ma_kh where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select * from {2}' + @exp + ' where stt_rec = @stt_rec'
-SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan where stt_rec = @stt_rec'
+SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, p.ten_pos as ten_may_pos from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable);
@@ -769,7 +775,8 @@ END";
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PRDetail> pr_detail = ds.Tables[1].ToList<PRDetail>();
                 IList<ORPaidModel> pr_paid = ds.Tables[2].ToList<ORPaidModel>();
-                List<PaymentDebtModel> paymentDebtModels = new Customer.Service().GetPaymentDebit(vc_item.ma_kh, vc_item.ma_dvcs, (DateTime)vc_item.ngay_ct);
+
+                List<PaymentDebtModel> paymentDebtModels = new Customer.Service().GetAllDebitPayment(vc_item.ma_kh, vc_item.ma_dvcs, (DateTime)vc_item.ngay_ct);
 
                 List<ORDetailFinding> or_detail_finding = null;
                 if(paymentDebtModels != null)
@@ -797,7 +804,8 @@ END";
                         da_tt = e.da_tt_nt,
                         tien_cl = e.cl_nt,
                         con_lai = 0,
-                        ma_td3 = d.ma_td3
+                        ma_td3 = d.ma_td3,
+                        tat_toan = e.tat_toan
                     }).ToList();
                 }
                 else
@@ -834,7 +842,7 @@ END";
                     
                 or_detail_finding.ForEach(item =>
                 {
-                    item.con_lai = item.tien_cl - item.tien_nt;
+                    item.con_lai = item.tat_toan != 0 ? 0 : item.tien_cl - item.tien_nt;
                 });
 
 

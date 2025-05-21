@@ -17,6 +17,7 @@ using Genbyte.Sys.AppAuth;
 using Voucher.PVTran.Model;
 using Microsoft.VisualBasic;
 using Genbyte.Component.Voucher.Model;
+using Genbyte.Base.Security;
 using Microsoft.Extensions.Configuration;
 
 namespace Voucher.PVTran
@@ -42,6 +43,10 @@ namespace Voucher.PVTran
         public string TaxTable { get; } = "m571ext$";
         private const string _TAX_PARA = "m571ext";
 
+        // bảng lưu dữ liệu chi tiết của chiết khấu
+        public string DiscountTable { get; } = "d571ck$";
+        private const string _DISCOUNT_PARA = "d571ck";
+
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
 
@@ -61,7 +66,6 @@ namespace Voucher.PVTran
         /// Khai báo quyền truy cập cho các xử lý CRUD
         /// </summary>
         public AccessRight VoucherRight { get; set; }
-
         private readonly IConfiguration _configuration;
 
         public Service(IConfiguration configuration, string sysid)
@@ -367,6 +371,38 @@ namespace Voucher.PVTran
                                 }
                                 item_detail.Detail_Type = typeof(TaxDetail).Name;
                                 break;
+                            case 3:
+                                List<SVDiscountModel>? discount_list = JsonSerializer.Deserialize<List<SVDiscountModel>>((JsonElement)item_model.Data);
+                                if (discount_list != null && discount_list.Count > 0)
+                                {
+                                    //cập nhật ngày chứng từ
+                                    discount_list.ForEach(x => {
+                                        x.ngay_ct = vc_item.ngay_ct;
+                                        x.stt_rec = APIService.DecryptForWebApp(x.stt_rec, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                                    });
+
+                                    foreach(var discount in discount_list)
+                                    {
+                                        // diễn giải ko được để trống
+                                        if(string.IsNullOrEmpty(discount.dien_giai))
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "invalid_diengiai_discount_ncc";
+                                            return result_model;
+                                        }
+                                        // tien ko được = 0
+                                        if (discount.tien == 0)
+                                        {
+                                            result_model.success = false;
+                                            result_model.message = "invalid_tien_discount_ncc";
+                                            return result_model;
+                                        }
+                                    }
+                                    item_detail.Data = new List<DetailEntity>();
+                                    item_detail.Data.AddRange(discount_list);
+                                }
+                                item_detail.Detail_Type = typeof(SVDiscountModel).Name;
+                                break;
                             default:
                                 break;
                         }
@@ -428,6 +464,12 @@ END
 
 IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_status) BEGIN
     UPDATE @check SET is_success = 0, message = 'status_change_not_exists'
+	SELECT * FROM @check
+	RETURN
+END
+
+IF @status_older <> '0' BEGIN
+    UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
 END
@@ -512,14 +554,17 @@ SELECT is_success, message FROM @check";
 
                 foreach (VoucherDetail item in vc_item.details)
                 {
-                    item.Data.ForEach(x =>
+                    if(item.Data != null)
                     {
-                        x.stt_rec = vc_item.stt_rec;
-                        x.ma_ct = old_voucher.ma_ct;
-                        x.ma_cuahang = old_voucher.ma_cuahang;
-                        x.ngay_ct = old_voucher.ngay_ct;
-                        x.ma_ca = Startup.Shift;
-                    });
+                        item.Data.ForEach(x =>
+                        {
+                            x.stt_rec = vc_item.stt_rec;
+                            x.ma_ct = old_voucher.ma_ct;
+                            x.ma_cuahang = old_voucher.ma_cuahang;
+                            x.ngay_ct = old_voucher.ngay_ct;
+                            x.ma_ca = Startup.Shift;
+                        });
+                    }
                 }
             }
             result_model = checkImeiUpdate(vc_item, res);
@@ -534,7 +579,7 @@ SELECT is_success, message FROM @check";
 
         #endregion
 
-        #region Updated
+            #region Updated
 
         public CommonObjectModel Updated(object voucherItem, Query voucherQuery, int user_id)
         {
@@ -567,13 +612,14 @@ SELECT is_success, message FROM @check";
             string expression = vc_item.ngay_ct?.ToString("yyyyMM");
             string prime_table = this.PrimeTable.Trim() + expression;
             query += "\n\n";
-            query += $"update {prime_table} set ma_ca = @ma_ca, ma_tt = @ma_tt, ma_gd = @ma_gd, ma_kh = @ma_kh, dien_giai = @dien_giai, status = @status, user_id2 = {user_id}, datetime2 = getdate(), t_ck = @t_ck_nt, t_ck_nt = @t_ck_nt, t_tt = @t_tt_nt, t_tt_nt = @t_tt_nt, s4 = @s4";
+            query += $"update {prime_table} set ma_ca = @ma_ca, ma_tt = @ma_tt, ma_gd = @ma_gd, ma_kh = @ma_kh, dien_giai = @dien_giai, status = @status, user_id2 = {user_id}, datetime2 = getdate(), t_ck = @t_ck_nt, t_ck_nt = @t_ck_nt, t_tt = @t_tt_nt, t_tt_nt = @t_tt_nt, s4 = @s4, t_tien_nt = @t_tien_nt, t_tien = @t_tien_nt, t_thue_nt = @t_thue_nt, t_thue = @t_thue_nt";
             query += $" where stt_rec = @stt_rec";
 
             //xóa và insert lại các bảng chi tiết
             DetailQuery? detail_query = null;
             string detail_table = "";
             string tax_table = "";
+            string discount_table = "";
             if (voucherQuery.Details.Any(x => x.ParaName == _DETAIL_PARA))
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_PARA);
@@ -587,7 +633,7 @@ SELECT is_success, message FROM @check";
 
                 query += $"\ndelete from {detail_table} where stt_rec = @stt_rec \n";
                 // sửa lại dữ liệu imei và một số các dữ liệu khác
-                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1 from @{_DETAIL_PARA} \r\n";
+                query += $"insert into {detail_table} (stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1, ck, ck_nt, thue_ck, thue_ck_nt, s4, gc_td1) select stt_rec, stt_rec0, ma_ct, ngay_ct, so_ct, ma_vt, dvt, he_so, ma_kho, so_luong, gia_nt, gia, gia_nt0, gia0, tien_nt, tien, ma_thue, thue_suat, thue, thue_nt, tt, tt_nt, tien0, tien_nt0, line_nbr, so_dh_i, ma_ca, ma_cuahang, ma_imei, budslive, ma_td1, ck, ck_nt, thue_ck, thue_ck_nt, s4, gc_td1 from @{_DETAIL_PARA} \r\n";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 //query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
@@ -608,6 +654,21 @@ SELECT is_success, message FROM @check";
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {tax_table} where stt_rec = @stt_rec \n";
                 query += $"insert into {tax_table} (stt_rec, stt_rec0, ma_dvcs, loai_ct, ma_ct, ngay_lct, ngay_ct, so_ct, ngay_ct0, so_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, so_luong, ty_gia, ma_nt, gia_nt, gia, t_tien_nt, t_tien, ma_thue, thue_suat, t_thue_nt, t_thue, ma_tt, tk_thue_no, tk_du, ma_kho, ma_vv, ma_sp, ma_bp, so_lsx, ghi_chu, nam, ky, line_nbr, status, datetime0, datetime2, user_id0, user_id2, ma_hd, ma_ku, ma_phi, so_dh, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, ma_ca, ma_cuahang, s4, s5, s6, s7, s8, s9, ma_mau_ct) select stt_rec, stt_rec0, ma_dvcs, loai_ct, ma_ct, ngay_lct, ngay_ct, so_ct, ngay_ct0, so_ct0, so_seri0, mau_bc, ma_tc, ma_kh, ten_kh, dia_chi, ma_so_thue, ma_kh2, ten_vt, so_luong, ty_gia, ma_nt, gia_nt, gia, t_tien_nt, t_tien_nt, ma_thue, thue_suat, t_thue_nt, t_thue_nt, ma_tt, tk_thue_no, tk_du, ma_kho, ma_vv, ma_sp, ma_bp, so_lsx, ghi_chu, nam, ky, line_nbr, status, datetime0, datetime2, user_id0, user_id2, ma_hd, ma_ku, ma_phi, so_dh, ma_td1, ma_td2, ma_td3, sl_td1, sl_td2, sl_td3, ngay_td1, ngay_td2, ngay_td3, gc_td1, gc_td2, gc_td3, s1, ma_ca, ma_cuahang, s4, s5, s6, s7, s8, s9, ma_mau_ct from @{_TAX_PARA}";
+            }
+            if (voucherQuery.Details.Any(x => x.ParaName == _DISCOUNT_PARA))
+            {
+                detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DISCOUNT_PARA);
+                discount_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
+                string update_discount_query = VoucherUtils.getDiscountQuery(new SVDiscountModel(), discount_table, _DISCOUNT_PARA, 2);
+
+                query += "\n\n";
+                query += detail_query?.QueryString;
+                query += "\n";
+                query += $"{update_discount_query}";
+            }
+            else
+            {
+                query += VoucherUtils.getDeleteQuery(this.DiscountTable + expression);
             }
             query += "\n\n";
 
@@ -715,6 +776,11 @@ end";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
 
             service.ExecuteNonQuery(query);
+
+            // cập nhật lại phiếu DO bản QT nếu có sửa giá
+            string queryUpdateDO = "";
+            queryUpdateDO = $"exec rs_Update$Voucher$Data$DOTran '{stt_rec}', 'DO1' \n";
+            service.ExecuteNonQuery(queryUpdateDO, null, ConnectType.Accounting);
 
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
             string queryIMEI = "";
@@ -916,9 +982,10 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = 'select a.*, b.ten_kh, c.ten_tt, d.ten_gd, e.ten_cuahang from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join dmtt c on a.ma_tt = c.ma_tt left join dmmagd d on a.ma_gd = d.ma_gd left join dmcuahang e on a.ma_cuahang = e.ma_cuahang where stt_rec = @stt_rec '
 	SELECT @q = @q + CHAR(13) + 'select a.*, b.ten_vt from {2}' + @exp + ' a left join dmvt b on a.ma_vt = b.ma_vt where a.stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {3}' + @exp + ' where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select * from {4}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.TaxTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.TaxTable, this.DiscountTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -934,6 +1001,7 @@ END";
                 VoucherItemLoading vc_item = ds.Tables[0].ToList<VoucherItemLoading>().FirstOrDefault();
                 IList<PVDetail> pr_detail = ds.Tables[1].ToList<PVDetail>();
                 IList<TaxDetail> tax_detail = ds.Tables[2].ToList<TaxDetail>();
+                IList<SVDiscountModel> discount_detail = ds.Tables[3].ToList<SVDiscountModel>();
 
                 //ngày hệ thống = ngày hiện tại của server
                 vc_item.ngay_ht = DateTime.Today;
@@ -952,6 +1020,12 @@ END";
                     Id = 2,
                     Name = _TAX_PARA,
                     Data = tax_detail
+                });
+                invoice_model.details.Add(new DetailItemModel()
+                {
+                    Id = 2,
+                    Name = _DISCOUNT_PARA,
+                    Data = discount_detail
                 });
 
                 model.result = invoice_model;

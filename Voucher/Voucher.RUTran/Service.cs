@@ -322,6 +322,12 @@ namespace Voucher.RUTran
                     }
                 }
             }
+            // post lsgd imei
+            if(vc_item.status == "0" || vc_item.status == "1")
+            {
+                query = $"exec fs_Voucher$PostTran$ImeiOrder '{vc_item.stt_rec}', '{vc_item.ma_ct}'";
+                service.ExecuteNonQuery(query);
+            }
             if (vc_item.status != "2")
             {
                 string json = JsonSerializer.Serialize(list_imei);
@@ -421,6 +427,12 @@ namespace Voucher.RUTran
 	             UPDATE @check SET is_success = 0, message = 'status_cannot_update'
 	             SELECT * FROM @check
 	             RETURN
+            END
+
+            IF @status_older <> '0' BEGIN
+                UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
+	            SELECT * FROM @check
+	            RETURN
             END
 
             IF NOT EXISTS(SELECT 1 FROM dmttct WHERE (xdefault = 1 OR xedit = 1) AND ma_ct = @vc_code AND status = @status_older) BEGIN
@@ -654,6 +666,12 @@ SELECT is_success, message FROM @check";
                         }
                     }
                 }
+            }
+            // post lsgd imei
+            if (vc_item.status == "0" || vc_item.status == "1")
+            {
+                query = $"exec fs_Voucher$PostTran$ImeiOrder '{vc_item.stt_rec}', '{vc_item.ma_ct}'";
+                service.ExecuteNonQuery(query);
             }
             if (vc_item.status != "2")
             {
