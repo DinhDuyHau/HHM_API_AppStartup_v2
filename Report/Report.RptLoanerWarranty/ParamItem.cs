@@ -13,7 +13,7 @@ namespace Report.RptLoanerWarranty
         public string ma_nv { get; set; } = "";
         public string ma_doi_tac { get; set; } = "";
         public string ma_vt { get; set; } = "";
-        public string mau_bc { get; set; } = "";
+        public string mau_bc { get; set; } = "10";
         public string nh_vt1 { get; set; } = "";
 
         public string nh_vt2 { get; set; } = "";
