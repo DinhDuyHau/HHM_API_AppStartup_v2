@@ -69,7 +69,6 @@ namespace Report.RptAccountsPayableReport
         public List<SqlParameter> init(ParamItem obj_param, out string sql)
         {
             // lấy cửa hàng mặc định đăng nhập
-            string ma_cuahang = Startup.Shop;
             int user_id = Startup.UserId;
             int admin = Startup.Admin;
             //string ma_nvbh = "";
@@ -90,7 +89,7 @@ namespace Report.RptAccountsPayableReport
             }
             sql = @"select @tu_ngay as date_from, @den_ngay as date_to
                     exec rs_rptAccountsPayableReport @tu_ngay, @den_ngay, @tk, @ma_kh, @nh_kh1, @nh_kh2, @nh_kh3, '', 'ma_kh',
-                           @ma_dvcs, 'v', @user_id, @admin
+                           @ma_dvcs, 'v', @user_id, @admin, @ma_cuahang, @loginShop
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
             list_paras.Add(new SqlParameter
@@ -152,6 +151,18 @@ namespace Report.RptAccountsPayableReport
                 ParameterName = "@admin",
                 SqlDbType = SqlDbType.Bit,
                 SqlValue = admin
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.VarChar,
+                SqlValue = obj_param.ma_cuahang
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
 
             return list_paras;

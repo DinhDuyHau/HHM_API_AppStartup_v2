@@ -88,7 +88,7 @@ namespace Report.RptAccountsReceivableReport
             }
             sql = @"select @tu_ngay as date_from, @den_ngay as date_to
                     exec rs_rptAccountsReceivableReport @tu_ngay, @den_ngay, @tk, @ma_kh, @nh_kh1, @nh_kh2, @nh_kh3,
-                            '', 'ma_kh', @ma_dvcs, @ma_cuahang, 'v', @user_id, @admin
+                            '', 'ma_kh', @ma_dvcs, @ma_cuahang, 'v', @user_id, @admin, @loginShop
 
             ";
             List<SqlParameter> list_paras = new List<SqlParameter>();
@@ -157,6 +157,12 @@ namespace Report.RptAccountsReceivableReport
                 ParameterName = "@ma_cuahang",
                 SqlDbType = SqlDbType.VarChar,
                 SqlValue = obj_param.ma_cuahang
+            });
+            list_paras.Add(new SqlParameter
+            {
+                ParameterName = "@loginShop",
+                SqlDbType = SqlDbType.Char,
+                SqlValue = Startup.Shop
             });
 
             return list_paras;

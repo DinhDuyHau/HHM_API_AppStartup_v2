@@ -10,5 +10,7 @@ namespace Report.RptAccountsPayableReport
 
         public string ma_kh { get; set; } = "";
 
+        public string ma_cuahang { get; set; } = "";
+
     }
 }
