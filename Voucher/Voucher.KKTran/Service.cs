@@ -62,6 +62,18 @@ namespace Voucher.KKTran
         // Lấy danh sách imei xóa khỏi grid
         List<ImeiItem> list_imei_delete = new List<ImeiItem>();
 
+        public Service(IConfiguration configuration)
+        {
+            Authoriztion authoriztion = CommonService.GetAuthoriztion("KKTran");
+            VoucherRight = new AccessRight();
+            VoucherRight.AllowReadAll = authoriztion.view_yn;
+            VoucherRight.AllowRead = authoriztion.access_yn;
+            VoucherRight.AllowCreate = authoriztion.add_yn;
+            VoucherRight.AllowUpdate = authoriztion.edit_yn;
+            VoucherRight.AllowDelete = authoriztion.del_yn;
+            this._configuration = configuration;
+        }
+
         public Service(IConfiguration configuration, string sysid)
         {
             Authoriztion authoriztion = CommonService.GetAuthoriztion(sysid);
@@ -72,7 +84,6 @@ namespace Voucher.KKTran
             VoucherRight.AllowUpdate = authoriztion.edit_yn;
             VoucherRight.AllowDelete = authoriztion.del_yn;
             this._configuration = configuration;
-
         }
 
         #region Inserting

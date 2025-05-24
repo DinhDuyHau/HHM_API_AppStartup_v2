@@ -63,6 +63,21 @@ namespace Voucher.SVTran_HDR
         private readonly string aes_key = "";
         private readonly string aes_iv = "";
 
+        public Service(IConfiguration configuration)
+        {
+            Authoriztion authoriztion = CommonService.GetAuthoriztion("SVTran_HDR");
+            VoucherRight = new AccessRight();
+            VoucherRight.AllowReadAll = authoriztion.view_yn;
+            VoucherRight.AllowRead = authoriztion.access_yn;
+            VoucherRight.AllowCreate = authoriztion.add_yn;
+            VoucherRight.AllowUpdate = authoriztion.edit_yn;
+            VoucherRight.AllowDelete = authoriztion.del_yn;
+            _configuration = configuration;
+
+            this.aes_key = _configuration["Security:KeyAES"];
+            this.aes_iv = _configuration["Security:IVAES"];
+        }
+
         public Service(IConfiguration configuration, string sysid)
         {
             Authoriztion authoriztion = CommonService.GetAuthoriztion(sysid);
