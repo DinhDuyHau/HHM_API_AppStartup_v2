@@ -388,7 +388,7 @@ namespace Voucher.CDTran_PCL
 	               ROLLBACK
 	               DECLARE @ErrorMessage VARCHAR(2000)
 	               SELECT @ErrorMessage = ERROR_MESSAGE()
-	               INSERT INTO log_syncerror (name, cr_date, message) VALUES('OPTran', GETDATE(), @ErrorMessage)
+	               INSERT INTO log_syncerror (name, cr_date, message) VALUES('CDTran_PCL', GETDATE(), @ErrorMessage)
 	               RAISERROR(@ErrorMessage, 16, 1)
 	            END CATCH
 	            SET XACT_ABORT OFF
