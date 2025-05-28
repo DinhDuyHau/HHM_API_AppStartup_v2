@@ -16,6 +16,8 @@ namespace Report.RptSaleByImei
 
         public string ma_dv { get; set; } = "";
 
+        public string ma_imei { get; set; } = "";
+
         public string ma_cuahang { get; set; } = "";
 
         public string ma_ca { get; set; } = "";

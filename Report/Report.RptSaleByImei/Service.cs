@@ -71,7 +71,6 @@ namespace Report.RptSaleByImei
 
             string so_ct1 = "";
             string so_ct2 = "";
-            string ma_imei = "";
             string tk_dt = "";
             string tk_vt = "";
             string ma_nx = "";
@@ -151,7 +150,7 @@ namespace Report.RptSaleByImei
             {
                 ParameterName = "@ma_imei",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_imei
+                SqlValue = obj_param.ma_imei
             });
             list_paras.Add(new SqlParameter
             {
