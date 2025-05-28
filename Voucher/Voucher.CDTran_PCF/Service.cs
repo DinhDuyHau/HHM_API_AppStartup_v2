@@ -60,6 +60,18 @@ namespace Voucher.CDTran_PCF
 
         private readonly IConfiguration _configuration;
 
+        public Service(IConfiguration configuration)
+        {
+            Authoriztion authoriztion = CommonService.GetAuthoriztion("CDTran_PCF");
+            VoucherRight = new AccessRight();
+            VoucherRight.AllowReadAll = authoriztion.view_yn;
+            VoucherRight.AllowRead = authoriztion.access_yn;
+            VoucherRight.AllowCreate = authoriztion.add_yn;
+            VoucherRight.AllowUpdate = authoriztion.edit_yn;
+            VoucherRight.AllowDelete = authoriztion.del_yn;
+            this._configuration = configuration;
+        }
+
         public Service(IConfiguration configuration, string sysid)
         {
             Authoriztion authoriztion = CommonService.GetAuthoriztion(sysid);
