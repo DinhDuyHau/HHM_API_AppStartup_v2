@@ -30,5 +30,6 @@ namespace Voucher.SVTran
         public string ghi_chu_gh { get; set; }
         public string ma_hang { get; set; }
         public decimal tl_tich_diem { get; set; }
+        public string fnote3 { get; set; }
     }
 }

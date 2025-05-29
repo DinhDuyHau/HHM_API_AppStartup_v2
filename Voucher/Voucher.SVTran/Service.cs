@@ -605,6 +605,23 @@ namespace Voucher.SVTran
                 return result_model;
             }
 
+            // check nếu status = 2 && vc_item.lap_hd = true
+            // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
+            if(vc_item.status == "0" && vc_item.fnote3 == "1")
+            {
+                string hd_mst = vc_item.hd_mst;
+                string hd_email = vc_item.hd_email;
+                string hd_ten_kh = vc_item.hd_ten_kh;
+                string hd_dia_chi = vc_item.hd_dia_chi;
+
+                if (string.IsNullOrEmpty(hd_mst) || string.IsNullOrEmpty(hd_email) || string.IsNullOrEmpty(hd_ten_kh) || string.IsNullOrEmpty(hd_dia_chi))
+                {
+                    result_model.success = false;
+                    result_model.message = "invoice_info_not_enough";
+                    return result_model;
+                }
+            }
+
             //tạm cho phép cập nhật ngày quá khứ
             /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)

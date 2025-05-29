@@ -103,9 +103,13 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         return responseBody;
