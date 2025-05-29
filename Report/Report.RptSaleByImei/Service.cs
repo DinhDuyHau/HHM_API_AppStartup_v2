@@ -71,7 +71,6 @@ namespace Report.RptSaleByImei
 
             string so_ct1 = "";
             string so_ct2 = "";
-            string ma_imei = "";
             string tk_dt = "";
             string tk_vt = "";
             string ma_nx = "";
@@ -87,7 +86,7 @@ namespace Report.RptSaleByImei
             string ma_nh_kho = "";
 
             sql = @"declare @voucherList varchar(512)
-                    select @voucherList = 'HDA, E01, DX1, DXA'
+                    select @voucherList = 'HDA, E01, DX1, DXA, HD1'
                     select @ngay_ct1 as tu_ngay, @ngay_ct2 as den_ngay
                     exec rs_rptSaleByImei @ngay_ct1, @ngay_ct2, @so_ct1, @so_ct2, @ma_nvbh, @ma_kh, @ma_kho, @ma_vt, @ma_dv, @ma_imei, @tk_dt, @tk_vt,
                         @nh_vt1, @nh_vt2, @nh_vt3, @ma_nx, @ma_vv, @ma_hd, @ma_bp, @ma_dvcs, @ma_lo, @ma_td1, @ma_td2, @ma_td3, @ds_ma_gd, @voucherList, 
@@ -151,7 +150,7 @@ namespace Report.RptSaleByImei
             {
                 ParameterName = "@ma_imei",
                 SqlDbType = SqlDbType.VarChar,
-                SqlValue = ma_imei
+                SqlValue = obj_param.ma_imei
             });
             list_paras.Add(new SqlParameter
             {

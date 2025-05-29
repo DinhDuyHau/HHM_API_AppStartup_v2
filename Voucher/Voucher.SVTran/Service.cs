@@ -132,6 +132,11 @@ namespace Voucher.SVTran
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
 
+            //Cập nhật thông tin quyển chứng từ hóa đơn điện tử
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
+
             // cập nhật lại dvcs theo cửa hàng đăng nhập
             vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
