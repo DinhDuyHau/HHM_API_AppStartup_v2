@@ -402,6 +402,9 @@ namespace Voucher.IRTran_PNM
                             if (item.ma_imei != null && item.ma_imei != "")
                             {
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
+
+                                if (item.stt_rec_px.Trim().Substring(item.stt_rec_px.Length - 3, 3) != "PXM")
+                                    item.stt_rec_px = Genbyte.Base.Security.APIService.DecryptForWebApp(item.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                             }
                         });
                         item_detail.Data = new List<DetailEntity>();
