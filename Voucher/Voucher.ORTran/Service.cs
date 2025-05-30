@@ -180,6 +180,7 @@ namespace Voucher.ORTran
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: PRDetail
             int index_value = 1;
+            bool ma_phi_yn = false;
             if (data.details.Any(x => x.Id == index_value) && vc_item.details.Any(x => x.Id == index_value))
             {
                 DetailItemModel? item_model = data.details.FirstOrDefault(x => x.Id == index_value);
@@ -198,6 +199,11 @@ namespace Voucher.ORTran
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
+
+                        if (detail_list.Any(x => !string.IsNullOrWhiteSpace(x.ma_phi)))
+                        {
+                            ma_phi_yn = true;
+                        }
                     }
                     item_detail.Detail_Type = typeof(PRDetail).Name;
                 }
@@ -219,6 +225,14 @@ namespace Voucher.ORTran
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(paid_list);
+
+                        //nếu có mã phí thì hình thức thanh toán phải là Tiền mặt hoặc chuyển khoản
+                        if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN"))
+                        {
+                            result_model.success = false;
+                            result_model.message = "Hình thức thanh toán phải là Tiền mặt hoặc Chuyển khoản.";
+                            return result_model;
+                        }
                     }
                     item_detail.Detail_Type = typeof(ORPaidModel).Name;
                 }
@@ -380,6 +394,7 @@ END";
             /**
              * CONVERT DỮ LIỆU GỬI LÊN TỪ CLIENT SANG OBJECT
              */
+            bool ma_phi_yn = false;
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
             vc_item.ma_ct = this.VoucherCode;
@@ -405,6 +420,10 @@ END";
                     {
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
+                        if (detail_list.Any(x => !string.IsNullOrWhiteSpace(x.ma_phi)))
+                        {
+                            ma_phi_yn = true;
+                        }
                     }
                     item_detail.Detail_Type = typeof(PRDetail).Name;
                 }
@@ -426,6 +445,14 @@ END";
 
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(paid_list);
+
+                        //nếu có mã phí thì hình thức thanh toán phải là Tiền mặt hoặc chuyển khoản
+                        if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN"))
+                        {
+                            result_model.success = false;
+                            result_model.message = "Hình thức thanh toán phải là Tiền mặt hoặc Chuyển khoản.";
+                            return result_model;
+                        }
                     }
                     item_detail.Detail_Type = typeof(ORPaidModel).Name;
                 }
