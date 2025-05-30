@@ -15,7 +15,7 @@
 	<ItemGroup>
 		<Reference Include="EInvoice">
 		  <HintPath>..\..\..\RUN-API\Debug\net6.0\EInvoice.dll</HintPath>
-		  <Private>False</Private>
+		  <EmbedInteropTypes>False</EmbedInteropTypes>
 		</Reference>
 		<Reference Include="Employee">
 		  <HintPath>..\..\..\RUN-API\Debug\net6.0\Employee.dll</HintPath>

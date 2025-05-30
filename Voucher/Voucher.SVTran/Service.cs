@@ -20,6 +20,11 @@ using Genbyte.Base.Security;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using EInvoice;
+using Newtonsoft.Json;
+using VoucherDetail = Genbyte.Component.Voucher.VoucherDetail;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using static EInvoice.ResponseInfo;
 
 namespace Voucher.SVTran
 {
@@ -612,7 +617,7 @@ namespace Voucher.SVTran
 
             // check nếu status = 2 && vc_item.lap_hd = true
             // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
-            if(vc_item.status == "0" && vc_item.fnote3 == "1")
+            if(vc_item.status == "2" && vc_item.fnote3 == "1")
             {
                 string hd_mst = vc_item.hd_mst;
                 string hd_email = vc_item.hd_email;
@@ -1215,8 +1220,32 @@ SELECT is_success, message FROM @check";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
+            // xử lý tạo hđđt nháp
+            if(vc_item.status == "2" && vc_item.fnote3 == "1")
+            {
+                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
+                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
+                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
+                if (resultEInvoice.d.voucherId == stt_rec)
+                {
+                    model.success = true;
+                    model.message = "updated_and_create_draft_invoice_success";
+                }
+                else
+                {
+                    if (resultEInvoice.d.description != null)
+                    {
+                        model.message = resultEInvoice.d.description;
+                    }
+                    else
+                    {
+                        model.message = "updated_success_and_create_draft_invoice_fail";
+                    }
+                }
+            }
+
             model.success = true;
-            model.message = "";
+            //model.message = "";
             model.result = vc_item;
             return model;
         }
