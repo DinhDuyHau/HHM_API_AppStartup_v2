@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /Genbyte.AppStartup/appsettings.json
 /Genbyte.AppStartup/Genbyte.AppStartup.sln
+/Genbyte.AppStartup/appsettings.json
