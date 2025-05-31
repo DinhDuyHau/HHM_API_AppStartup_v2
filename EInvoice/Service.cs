@@ -114,10 +114,6 @@ namespace EInvoice
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         return responseBody;
                     }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
-                    }
                 }
             }
             catch (HttpRequestException e)
