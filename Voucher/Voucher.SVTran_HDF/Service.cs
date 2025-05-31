@@ -154,6 +154,13 @@ namespace Voucher.SVTran_HDF
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // Check tồn tại hàng khuyến mại mà không có hàng bán
+                                    if (detail_list.Any(x => x.km_yn == 1) && !detail_list.Any(x => x.km_yn == 0))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "Hàng khuyến mại chỉ được phép trả lại kèm với hàng bán!";
+                                        return result_model;
+                                    }
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
