@@ -170,14 +170,14 @@ namespace EInvoice
                 model.result = result.d;
                 if (model.result != null)
                 {
-                    if (result.d.voucherId == stt_rec)
+                    if (string.IsNullOrEmpty(result.d.description) && string.IsNullOrEmpty(result.d.errorCode))
                     {
                         model.success = true;
                         model.message = "create_draft_invoice_success";
                     }
                     else
                     {
-                        if (result.d.description != null)
+                        if (!string.IsNullOrEmpty(result.d.description))
                         {
                             model.message = result.d.description;
                         }

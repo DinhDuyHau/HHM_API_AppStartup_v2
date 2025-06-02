@@ -36,16 +36,16 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         return responseBody;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
@@ -140,16 +140,16 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         return responseBody;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
@@ -176,16 +176,16 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         return responseBody;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
@@ -237,16 +237,16 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         return responseBody;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
@@ -274,17 +274,17 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         SavePublishInv(responseBody, voucher.ma_ct, voucher.ngay_ct, voucher.ma_kh, voucher.dien_giai);
                         return responseBody;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
@@ -326,9 +326,13 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         var result = JsonConvert.DeserializeObject<Response>(responseBody);
@@ -343,10 +347,6 @@ namespace EInvoice
                         {
                             return false;
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
@@ -388,9 +388,13 @@ namespace EInvoice
                     var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
                     //request.Headers.Add("Token", "c00f695f54df5caebd7a19bb37c98ca3d9a732a0");
                     HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
                         // Chuyển đổi chuỗi JSON thành đối tượng
                         //Response result = JsonConvert.DeserializeObject<Response>(responseBody);
                         var flag = SavePublishInv(responseBody, voucher.ma_ct, voucher.ngay_ct, voucher.ma_kh, voucher.dien_giai);
@@ -403,10 +407,6 @@ namespace EInvoice
                             return JsonConvert.SerializeObject(rp);
                         }
                         return responseBody;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Yêu cầu POST không thành công. Mã lỗi: " + response.StatusCode);
                     }
                 }
             }
