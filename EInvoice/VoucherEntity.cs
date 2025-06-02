@@ -34,6 +34,16 @@ namespace EInvoice
         public decimal t_thue_nt { get; set; }
         public string ma_nt { get; set; }
 
+        public string hd_mst { get; set; }
+
+        public string hd_ten_kh { get; set; }
+
+        public string hd_dia_chi { get; set; }
+
+        public string hd_httt { get; set; }
+
+        public string hd_email { get; set; }
+
         public IList<VoucherDetail> details { get; set; }
     }
 }

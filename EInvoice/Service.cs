@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Genbyte.Sys.Common;
 using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
+using Genbyte.Sys.AppAuth;
 
 namespace EInvoice
 {
@@ -537,5 +539,41 @@ namespace EInvoice
                 return false;
             }
         }
+
+        public bool CheckValidVoucherStatus(string stt_rec, string ma_ct)
+        {
+            bool check = false;
+            string sql = "EXEC Genbyte$EInvoice$CheckValidVoucherStatus @stt_rec, @ma_ct";
+            List<SqlParameter> paras = new List<SqlParameter>();
+
+            #region add parameters
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@stt_rec",
+                SqlDbType = SqlDbType.Char,
+                Value = stt_rec
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ct",
+                SqlDbType = SqlDbType.Char,
+                Value = ma_ct
+            });
+            #endregion
+            try
+            {
+                DataSet ds = this.ExecSql2DataSet(sql, paras, ConnectType.App);
+                if(ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+                    check = Convert.ToBoolean(ds.Tables[0].Rows[0]["is_valid"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Shop, $"EInvoice.CheckValidVoucherStatus / {stt_rec}", ex);
+            }
+            return check;
+        }
+
     }
  }

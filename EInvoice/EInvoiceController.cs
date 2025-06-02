@@ -101,6 +101,7 @@ namespace EInvoice
             }
         }
         #endregion
+
         /// <summary>
         /// Lập nháp hóa đơn
         /// </summary>
@@ -164,6 +165,15 @@ namespace EInvoice
                 };
                 Service _service = new Service(this._configuration);
                 stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
+
+                //Kiểm tra trạng thái chứng từ "hoàn thành" trước khi lập hóa đơn
+                if(!_service.CheckValidVoucherStatus(stt_rec, ma_ct))
+                {
+                    model.success = false;
+                    model.message = "einvoice_status_invalid";
+                    return Ok(model);
+                }
+
                 string res = _service.CreateDraft(stt_rec, ma_ct).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
