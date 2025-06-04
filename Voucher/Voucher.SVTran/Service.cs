@@ -24,7 +24,6 @@ using EInvoice;
 using Newtonsoft.Json;
 using VoucherDetail = Genbyte.Component.Voucher.VoucherDetail;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using static EInvoice.ResponseInfo;
 
 namespace Voucher.SVTran
 {
@@ -618,9 +617,9 @@ namespace Voucher.SVTran
                 return result_model;
             }
 
-            // check nếu status = 2 && vc_item.lap_hd = true
+            // check nếu status = 2 && vc_item.fnote3 = 1
             // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
-            if(vc_item.status == "2" && vc_item.fnote3 == "1")
+            if (vc_item.status == "2" && vc_item.fnote3 == "1")
             {
                 string hd_mst = vc_item.hd_mst;
                 string hd_email = vc_item.hd_email;
