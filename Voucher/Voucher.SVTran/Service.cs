@@ -615,9 +615,14 @@ namespace Voucher.SVTran
                 return result_model;
             }
 
+            //Cập nhật thông tin quyển chứng từ hóa đơn điện tử
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
+
             // check nếu status = 2 && vc_item.lap_hd = true
             // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
-            if(vc_item.status == "2" && vc_item.fnote3 == "1")
+            if (vc_item.status == "2" && vc_item.fnote3 == "1")
             {
                 string hd_mst = vc_item.hd_mst;
                 string hd_email = vc_item.hd_email;

@@ -230,7 +230,7 @@ namespace Voucher.ORTran
                         if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN"))
                         {
                             result_model.success = false;
-                            result_model.message = "Hình thức thanh toán phải là Tiền mặt hoặc Chuyển khoản.";
+                            result_model.message = "Trong chi tiết phiếu có Mã chi phí, chỉ được chọn hình thức thanh toán Tiền mặt hoặc Chuyển khoản.";
                             return result_model;
                         }
                     }
@@ -450,7 +450,7 @@ END";
                         if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN"))
                         {
                             result_model.success = false;
-                            result_model.message = "Hình thức thanh toán phải là Tiền mặt hoặc Chuyển khoản.";
+                            result_model.message = "Trong chi tiết phiếu có Mã chi phí, chỉ được chọn hình thức thanh toán Tiền mặt hoặc Chuyển khoản.";
                             return result_model;
                         }
                     }
