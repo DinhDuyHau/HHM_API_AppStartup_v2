@@ -794,6 +794,11 @@ end";
             queryUpdateDO = $"exec rs_Update$Voucher$Data$DOTran '{stt_rec}', 'DO1' \n";
             service.ExecuteNonQuery(queryUpdateDO, null, ConnectType.Accounting);
 
+            // lưu log lại người sửa giá và giá sửa, nếu có 
+            string queryaddlog = "";
+            queryaddlog = $"exec Genbyte$Voucher$AddLogUpdatePrice '{stt_rec}' \n";
+            service.ExecuteNonQuery(queryaddlog);
+
             //Nếu trạng thái là hoàn thành thì đẩy vào imei vào hệ thống
             string queryIMEI = "";
             if (vc_item.status == "2")
