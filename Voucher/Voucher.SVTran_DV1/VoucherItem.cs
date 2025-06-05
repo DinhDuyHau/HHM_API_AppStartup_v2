@@ -16,5 +16,7 @@ namespace Voucher.SVTran_DV1
         public string ma_nk { get; set; }
         public string so_seri { get; set; }
         public string email_nhan_key { get; set; }
+        public string fnote3 { get; set; }
+        public string fnote2 { get; set; }
     }
 }

@@ -10,5 +10,7 @@ namespace Voucher.SVTran_HDF
         public string ma_asm_duyet { get; set; }
         public string ten_asm_duyet { get; set; }
         public decimal gia_tra_lai { get; set; }
+        public string stt_rec_px { get; set; }
+        public string stt_rec0px { get; set; }
     }
 }

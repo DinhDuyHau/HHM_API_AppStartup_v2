@@ -51,5 +51,7 @@ namespace Voucher.SVTran_BHB
         public decimal sl_in { get; set; }
         public string so_dh { get; set; }
         public bool nhieu_thue_suat { get; set; }
+        public string fnote3 { get; set; }
+        public string fnote2 { get; set; }
     }
 }

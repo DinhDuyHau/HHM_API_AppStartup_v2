@@ -6,11 +6,14 @@ using Genbyte.Sys.AppAuth;
 using Genbyte.Sys.Common;
 using Genbyte.Sys.Common.Models;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Voucher.SVTran_BHW.Models;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Voucher.SVTran_BHW
 {
@@ -564,6 +567,23 @@ namespace Voucher.SVTran_BHW
             }
             */
 
+            // check nếu status = 2 && vc_item.fnote3 = 1
+            // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
+            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            {
+                string hd_mst = vc_item.hd_mst;
+                string hd_email = vc_item.hd_email;
+                string hd_ten_kh = vc_item.hd_ten_kh;
+                string hd_dia_chi = vc_item.hd_dia_chi;
+
+                if (string.IsNullOrEmpty(hd_mst) || string.IsNullOrEmpty(hd_email) || string.IsNullOrEmpty(hd_ten_kh) || string.IsNullOrEmpty(hd_dia_chi))
+                {
+                    result_model.success = false;
+                    result_model.message = "invoice_info_not_enough";
+                    return result_model;
+                }
+            }
+
             vc_item.ma_ct = this.VoucherCode;
 
             if (vc_item.ma_nt == "" || vc_item.ma_nt == null)
@@ -1109,12 +1129,13 @@ SELECT is_success, message FROM @check";
             query += $"{update_promotion_query}";
 
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện
             vc_item.stt_rec = stt_rec;
@@ -1180,8 +1201,32 @@ SELECT is_success, message FROM @check";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
+            // xử lý tạo hđđt nháp
+            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            {
+                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
+                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
+                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
+                if (resultEInvoice.d.voucherId == stt_rec)
+                {
+                    model.success = true;
+                    model.message = "updated_and_create_draft_invoice_success";
+                }
+                else
+                {
+                    if (resultEInvoice.d.description != null)
+                    {
+                        model.message = resultEInvoice.d.description;
+                    }
+                    else
+                    {
+                        model.message = "updated_success_and_create_draft_invoice_fail";
+                    }
+                }
+            }
+
             model.success = true;
-            model.message = "";
+            //model.message = "";
             model.result = vc_item;
             return model;
         }
@@ -1328,7 +1373,7 @@ END";
                     SET @stt_rec = @vc_id
 	                SELECT @exp = CONVERT(CHAR(6), @ngay_ct, 112)
                     SELECT @q = 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
-                                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {0}' + @exp + ' where ref_stt_rec = @stt_rec'
+                                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {0}' + @exp + ' where stt_rec = @stt_rec'
 	                EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec";
                 sql = string.Format(sql, this.EInvoiceTable);
                 List<SqlParameter> paras1 = new List<SqlParameter>();
@@ -1344,7 +1389,7 @@ END";
                     SqlDbType = SqlDbType.DateTime,
                     Value = vc_item.ngay_ct
                 });
-                DataSet ds1 = core_service.ExecSql2DataSet(sql, paras1, ConnectType.Report);
+                DataSet ds1 = core_service.ExecSql2DataSet(sql, paras1);
 
                 IList<EInvoiceInfo> einvoice = ds1.Tables[0].ToList<EInvoiceInfo>();
 

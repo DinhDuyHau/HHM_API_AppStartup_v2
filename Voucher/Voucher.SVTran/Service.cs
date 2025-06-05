@@ -24,7 +24,6 @@ using EInvoice;
 using Newtonsoft.Json;
 using VoucherDetail = Genbyte.Component.Voucher.VoucherDetail;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using static EInvoice.ResponseInfo;
 
 namespace Voucher.SVTran
 {
@@ -63,6 +62,9 @@ namespace Voucher.SVTran
         // bảng lưu dữ liệu chi tiết của chiết khấu
         public string VoucherCodeTable { get; } = "d581ctck$";
         private const string _VOUCHER_CODE_PARA = "d581ctck";
+        //Bảng lưu dữ liệu hóa đơn điện tử
+        public string EInvoiceTable { get; } = "hddt$";
+        private const string _EInvoiceTable_PARA = "hddt";
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d581,d581,d581";
@@ -1361,9 +1363,10 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt, p.ten_pos as ten_may_pos from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt left join dmmaypos p on t1.ma_may_pos = p.ma_pos where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi, b2.ten_dv from {6}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh left join dmdichvu b2 on b1.ma_dv = b2.ma_dv where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {7}' + @exp + ' where stt_rec = @stt_rec'
+    SELECT @q = @q + CHAR(13) + 'select *, ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd, ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {8}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.VoucherCodeTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.VoucherCodeTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1383,6 +1386,7 @@ END";
                 IList<PaidDetailResponse> pr_paid = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
                 IList<SVVoucherCodeModel> pr_vouchercode = ds.Tables[6].ToList<SVVoucherCodeModel>();
+                IList<EInvoiceModel> pr_einvoice = ds.Tables[7].ToList<EInvoiceModel>();
 
                 pr_paid.ToList().ForEach(x => {
                     x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
@@ -1419,6 +1423,11 @@ END";
                     Id = 7,
                     Name = _VOUCHER_CODE_PARA,
                     Data = pr_vouchercode
+                }, new DetailItemModel()
+                {
+                    Id = 10,
+                    Name = _EInvoiceTable_PARA,
+                    Data = pr_einvoice
                 }
                 });
 

@@ -18,6 +18,9 @@ using Genbyte.Component.Voucher.Model;
 using Microsoft.Extensions.Configuration;
 using Genbyte.Base.Security;
 using Imei.Models;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Voucher.SVTran_BHB
 {
@@ -47,6 +50,9 @@ namespace Voucher.SVTran_BHB
         //Bảng lưu dữ liệu chi tiết Vận chuyển của chứng từ
         public string TransTable { get; } = "m592ext$";
         private const string _TRANS_PARA = "m592ext";
+        //Bảng lưu dữ liệu hóa đơn điện tử
+        public string EInvoiceTable { get; } = "hddt$";
+        private const string _EInvoiceTable_PARA = "hddt";
 
         //Bảng lưu dữ liệu ảnh
         public string ImageTable { get; } = "m592img$";
@@ -136,6 +142,9 @@ namespace Voucher.SVTran_BHB
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -410,7 +419,7 @@ namespace Voucher.SVTran_BHB
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
-            
+
             //tạm bỏ qua check ngày chứng từ là ngày hiện tại (cho phép lập phiếu ở ngày quá khứ trong giai đoạn chạy PILOT)
             /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
@@ -420,6 +429,24 @@ namespace Voucher.SVTran_BHB
                 return result_model;
             }
             */
+
+            // check nếu status = 2 && vc_item.fnote3 = 1
+            // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
+            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            {
+                string hd_mst = vc_item.hd_mst;
+                string hd_email = vc_item.hd_email;
+                string hd_ten_kh = vc_item.hd_ten_kh;
+                string hd_dia_chi = vc_item.hd_dia_chi;
+
+                if (string.IsNullOrEmpty(hd_mst) || string.IsNullOrEmpty(hd_email) || string.IsNullOrEmpty(hd_ten_kh) || string.IsNullOrEmpty(hd_dia_chi))
+                {
+                    result_model.success = false;
+                    result_model.message = "invoice_info_not_enough";
+                    return result_model;
+                }
+            }
+
             vc_item.ma_ct = this.VoucherCode;
 
             // cập nhật ma_gd = 2
@@ -787,12 +814,13 @@ SELECT is_success, message FROM @check";
                 query += VoucherUtils.getDeleteQuery(this.TransTable + expression);
             }
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện
             vc_item.stt_rec = stt_rec;
@@ -839,8 +867,32 @@ SELECT is_success, message FROM @check";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
+            // xử lý tạo hđđt nháp
+            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            {
+                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
+                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
+                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
+                if (resultEInvoice.d.voucherId == stt_rec)
+                {
+                    model.success = true;
+                    model.message = "updated_and_create_draft_invoice_success";
+                }
+                else
+                {
+                    if (resultEInvoice.d.description != null)
+                    {
+                        model.message = resultEInvoice.d.description;
+                    }
+                    else
+                    {
+                        model.message = "updated_success_and_create_draft_invoice_fail";
+                    }
+                }
+            }
+
             model.success = true;
-            model.message = "";
+            //model.message = "";
             model.result = vc_item;
             return model;
         }
@@ -946,9 +998,10 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
     SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt from {3}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi, b2.ten_dv from {4}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh left join dmdichvu b2 on b1.ma_dv = b2.ma_dv where stt_rec = @stt_rec '
     SELECT @q = @q + CHAR(13) + 'select b.cq_file as file_cq, b.co_file as file_co, a.* from {5}' + @exp + ' a left join {6}' + @exp + ' b on a.so_ct = b.so_ct where a.stt_rec = @stt_rec '
+    SELECT @q = @q + CHAR(13) + 'select *, ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd, ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {7}' + @exp + ' where stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13), @so_ct CHAR(12)', @stt_rec = @stt_rec, @so_ct = @so_ct
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable, this.WarrantyTable, this.TransTable, this.ImageTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.PaidTable, this.WarrantyTable, this.TransTable, this.ImageTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -966,6 +1019,7 @@ END";
                 IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[3].ToList<SVWarrantyModel>();
                 IList<SVTransModel> pr_trans = ds.Tables[4].ToList<SVTransModel>();
+                IList<EInvoiceModel> pr_einvoice = ds.Tables[5].ToList<EInvoiceModel>();
 
                 foreach (SVTransModel item in pr_trans)
                 {
@@ -1005,6 +1059,11 @@ END";
                     Id = 4,
                     Name = _TRANS_PARA,
                     Data = pr_trans
+                }, new DetailItemModel()
+                {
+                    Id = 10,
+                    Name = _EInvoiceTable_PARA,
+                    Data = pr_einvoice
                 }
                 });
 

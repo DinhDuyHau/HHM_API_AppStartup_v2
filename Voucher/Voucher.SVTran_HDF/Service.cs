@@ -200,6 +200,12 @@ namespace Voucher.SVTran_HDF
                                     //cập nhật ngày chứng từ
                                     service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
+                                    // cập nhật lại stt_rec_px
+                                    service_list.ForEach(x =>
+                                    {
+                                        x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, this.aes_key, this.aes_iv);
+                                    });
+
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(service_list);
                                 }
@@ -479,6 +485,12 @@ namespace Voucher.SVTran_HDF
                                 {
                                     //cập nhật ngày chứng từ
                                     service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+
+                                    // cập nhật lại stt_rec_px
+                                    service_list.ForEach(x =>
+                                    {
+                                        x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, this.aes_key, this.aes_iv);
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(service_list);
@@ -942,6 +954,18 @@ END";
                 IList<SVBillModel> pr_bill = ds.Tables[2].ToList<SVBillModel>();
                 IList<SVPaidModel> pr_paid = ds.Tables[3].ToList<SVPaidModel>();
                 IList<SVServiceModel> pr_service = ds.Tables[4].ToList<SVServiceModel>();
+
+                // mã hóa lại stt_rec_px
+                if(pr_service.Count > 0)
+                {
+                    foreach (var item in pr_service)
+                    {
+                        if(!string.IsNullOrEmpty(item.stt_rec_px))
+                        {
+                            item.stt_rec_px = APIService.EncryptForWebApp(item.stt_rec_px, this.aes_key, this.aes_iv);
+                        }
+                    }
+                }
 
                 //xử lý mã hóa stt_rec_hd trước khi response
                 vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
