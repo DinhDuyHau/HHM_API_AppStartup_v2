@@ -468,7 +468,7 @@ namespace Voucher.SVTran_BHD
              */
             VoucherItem vc_item = Converter.BaseModelToEntity<VoucherItem>(data, this.Action);
             if (vc_item == null) return null;
-            
+
             //2024-06-17: tạm bỏ qua check ngày chứng từ trong giai đoạn triển khai
             /*
             if (vc_item.ngay_ct.Value.Date != DateTime.Today)
