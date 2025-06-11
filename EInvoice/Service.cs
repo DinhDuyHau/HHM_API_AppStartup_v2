@@ -509,7 +509,7 @@ namespace EInvoice
                 paras.Add(new SqlParameter()
                 {
                     ParameterName = "@signedDate",
-                    SqlDbType = SqlDbType.NVarChar,
+                    SqlDbType = SqlDbType.DateTime,
                     Value = item.result.signedDate ?? null
                 });
                 paras.Add(new SqlParameter()
