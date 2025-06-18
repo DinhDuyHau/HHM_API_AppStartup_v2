@@ -23,5 +23,8 @@ namespace Voucher.SVTran_BHW
         public decimal tl_tich_diem { get; set; }
         public string fnote3 { get; set; }
         public string fnote2 { get; set; }
+        public string hd_nguoi_mua { get; set; }
+        public string hd_loai_giay_to { get; set; }
+        public string hd_so_giay_to { get; set; }
     }
 }

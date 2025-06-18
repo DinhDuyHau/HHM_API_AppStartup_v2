@@ -209,8 +209,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Category"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Report", "..\..\Component\Genbyte.Component.Report\Genbyte.Component.Report.csproj", "{A7512488-E1E6-448A-8316-C4895AD8DB60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Component.Voucher", "..\..\Component\Genbyte.Component.Voucher\Genbyte.Component.Voucher.csproj", "{A13DDDA4-2225-47B0-B239-E938D36D7BD1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Sys.Common", "..\..\System\Genbyte.Sys.Common\Genbyte.Sys.Common.csproj", "{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genbyte.Base.CoreLib", "..\..\System\Genbyte.Base.CoreLib\Genbyte.Base.CoreLib.csproj", "{B00F8336-B00C-4C7B-B9FA-E35613BD05B7}"
@@ -310,6 +308,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification", "..\Category\Notification\Notification.csproj", "{2B77B70F-12FF-4C46-9FE6-F4961C1630A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voucher.CRTran_PCG", "..\Voucher\Voucher.CRTran_PCG\Voucher.CRTran_PCG.csproj", "{C49E33C2-7B7E-771B-BD7D-D4EBAC8F7E4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genbyte.Component.Voucher", "..\..\HHM_API_Component_v2\Genbyte.Component.Voucher\Genbyte.Component.Voucher.csproj", "{63B69BB3-97D9-4B9F-B5ED-31A57590DDEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -717,10 +717,6 @@ Global
 		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7512488-E1E6-448A-8316-C4895AD8DB60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A13DDDA4-2225-47B0-B239-E938D36D7BD1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAE2FBC7-E40E-40F1-8851-4B281F5DF762}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -921,6 +917,10 @@ Global
 		{C49E33C2-7B7E-771B-BD7D-D4EBAC8F7E4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C49E33C2-7B7E-771B-BD7D-D4EBAC8F7E4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C49E33C2-7B7E-771B-BD7D-D4EBAC8F7E4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63B69BB3-97D9-4B9F-B5ED-31A57590DDEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63B69BB3-97D9-4B9F-B5ED-31A57590DDEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63B69BB3-97D9-4B9F-B5ED-31A57590DDEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63B69BB3-97D9-4B9F-B5ED-31A57590DDEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -622,19 +622,14 @@ namespace Voucher.SVTran
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
-            // check nếu status = 2 && vc_item.lap_hd = true
-            // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
-            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            // nếu status = 2, valid hddt
+            if (vc_item.status == "2")
             {
-                string hd_mst = vc_item.hd_mst;
-                string hd_email = vc_item.hd_email;
-                string hd_ten_kh = vc_item.hd_ten_kh;
-                string hd_dia_chi = vc_item.hd_dia_chi;
-
-                if (string.IsNullOrEmpty(hd_mst) || string.IsNullOrEmpty(hd_email) || string.IsNullOrEmpty(hd_ten_kh) || string.IsNullOrEmpty(hd_dia_chi))
+                string validMsg = validEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
                 {
                     result_model.success = false;
-                    result_model.message = "invoice_info_not_enough";
+                    result_model.message = validMsg;
                     return result_model;
                 }
             }
@@ -1987,5 +1982,56 @@ END";
             return "";
         }
 
+        private string validEInvoice(VoucherItem vc_item)
+        {
+            string hd_mst = vc_item.hd_mst;
+            string hd_email = vc_item.hd_email;
+            string hd_ten_kh = vc_item.hd_ten_kh;
+            string hd_dia_chi = vc_item.hd_dia_chi;
+            string hd_loai_giay_to = vc_item.hd_loai_giay_to;
+            string hd_so_giay_to = vc_item.hd_so_giay_to;
+            string hd_nguoi_mua = vc_item.hd_nguoi_mua;
+            string objEinvoice = vc_item.fnote2;
+
+            // valid tên người mua
+            if (hd_nguoi_mua.Length > 200)
+            {
+                return "invoice_buyerName_info";
+            }
+            // valid loại giấy tờ chỉ cho phép "", "1", "3"
+            if (!string.IsNullOrEmpty(hd_loai_giay_to) &&
+                hd_loai_giay_to != "1" &&
+                hd_loai_giay_to != "3")
+            {
+                return "invoice_buyerIdType_info";
+            }
+            // valid số giấy tờ
+            if (hd_so_giay_to.Length > 100)
+            {
+                return "invoice_buyerIdNo_info";
+            }
+            // valid cá nhân
+            if (objEinvoice == "0" && string.IsNullOrEmpty(hd_nguoi_mua))
+            {
+                return "invoice_individuals_info";
+            }
+            // valid doanh nghiệp
+            if (objEinvoice == "1" &&
+                (
+                    string.IsNullOrEmpty(hd_mst) ||
+                    string.IsNullOrEmpty(hd_ten_kh) ||
+                    string.IsNullOrEmpty(hd_dia_chi))
+                )
+            {
+                return "invoice_bussiness_info";
+            }
+            // valid giấy tờ
+            if ((hd_loai_giay_to == "1" || hd_loai_giay_to == "2") && string.IsNullOrEmpty(hd_so_giay_to))
+            {
+                return "invoice_papersType_info";
+            }
+
+            return "";
+        }
     }
 }
