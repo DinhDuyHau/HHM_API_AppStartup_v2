@@ -2089,14 +2089,14 @@ END";
 
         private string validEInvoice(VoucherItem vc_item)
         {
-            string hd_mst = vc_item.hd_mst;
-            string hd_email = vc_item.hd_email;
-            string hd_ten_kh = vc_item.hd_ten_kh;
-            string hd_dia_chi = vc_item.hd_dia_chi;
-            string hd_loai_giay_to = vc_item.hd_loai_giay_to;
-            string hd_so_giay_to = vc_item.hd_so_giay_to;
-            string hd_nguoi_mua = vc_item.hd_nguoi_mua;
-            string objEinvoice = vc_item.fnote2;
+            string hd_mst = vc_item.hd_mst ?? "";
+            string hd_email = vc_item.hd_email ?? "";
+            string hd_ten_kh = vc_item.hd_ten_kh ?? "";
+            string hd_dia_chi = vc_item.hd_dia_chi ?? "";
+            string hd_loai_giay_to = vc_item.hd_loai_giay_to ?? "";
+            string hd_so_giay_to = vc_item.hd_so_giay_to ?? "";
+            string hd_nguoi_mua = vc_item.hd_nguoi_mua ?? "";
+            string objEinvoice = vc_item.fnote2 ?? "";
 
             // valid tên người mua
             if (hd_nguoi_mua.Length > 200)
