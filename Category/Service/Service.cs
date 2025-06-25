@@ -10,6 +10,7 @@ using Genbyte.Sys.AppAuth;
 using Service.Model;
 using Service.ModelDV1;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace Servive
 {
@@ -369,5 +370,31 @@ namespace Servive
             return result;
         }
 
+        public string GetServiceReturnOrBuyBack(string stt_rec_px, string stt_rec0px)
+        {
+            string sql = @"select * from ct80_tralai where stt_rec_px = @stt_rec_px and stt_rec0px = @stt_rec0px";
+
+            // params
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@stt_rec_px",
+                SqlDbType = SqlDbType.VarChar,
+                Value = stt_rec_px ?? ""
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@stt_rec0px",
+                SqlDbType = SqlDbType.Char,
+                Value = stt_rec0px ?? ""
+            });
+
+            // thực thi sql
+            DataSet ds = this.ExecSql2DataSet(sql, paras);
+            if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                return ds.Tables[0].Rows[0]["so_ct"].ToString().Trim();  // có tồn tại
+            else
+                return ""; // không tồn tại
+        }
     }
 }

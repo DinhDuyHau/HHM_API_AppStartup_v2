@@ -17,6 +17,7 @@ using Mail;
 using Microsoft.Extensions.Options;
 using Genbyte.Base.Security;
 using System.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 namespace Servive
 {
@@ -27,10 +28,12 @@ namespace Servive
     {
         private readonly SmtpConfig _smtpConfig;
         private readonly Security _security;
-        public ServiceController(IOptions<SmtpConfig> smtpConfig, IOptions<Security> security)
+        private readonly IConfiguration _configuration;
+        public ServiceController(IOptions<SmtpConfig> smtpConfig, IOptions<Security> security, IConfiguration configuration)
         {
             _smtpConfig = smtpConfig.Value;
             _security = security.Value;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -411,6 +414,60 @@ namespace Servive
             catch (Exception ex)
             {
                 Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetColorRank", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy dịch vụ ở bảng ct80_tralai
+        /// </summary>
+        /// <param name="stt_rec_px"></param>
+        /// <param name="stt_rec0px"></param>
+        /// <returns></returns>
+        [HttpGet("get_service_return_buyback")]
+        #region GetServiceReturnOrBuyBack
+        public IActionResult GetServiceReturnOrBuyBack(string stt_rec_px, string stt_rec0px)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                // giải mã stt_rec_px
+                if(!string.IsNullOrEmpty(stt_rec_px))
+                {
+                    try
+                    {
+                        stt_rec_px = APIService.DecryptForWebApp(stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                    }
+                    catch
+                    {
+                        stt_rec_px = stt_rec_px;
+                    }
+                }
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(stt_rec_px) || !_service.IsSQLInjectionValid(stt_rec0px))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                var result = _service.GetServiceReturnOrBuyBack(stt_rec_px, stt_rec0px);
+                if (result != null)
+                {
+                    model.success = true;
+                    model.result = result;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- ServiceController/GetServiceReturnOrBuyBack", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
         }

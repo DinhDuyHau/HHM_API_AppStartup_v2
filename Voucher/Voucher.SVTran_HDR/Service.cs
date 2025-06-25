@@ -9,6 +9,7 @@ using Genbyte.Sys.AppAuth;
 using System.Text.Json;
 using Genbyte.Base.Security;
 using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
 
 namespace Voucher.SVTran_HDR
 {
@@ -188,6 +189,12 @@ namespace Voucher.SVTran_HDR
                                 {
                                     //cập nhật ngày chứng từ
                                     service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
+
+                                    // cập nhật lại stt_rec_px
+                                    service_list.ForEach(x =>
+                                    {
+                                        x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, this.aes_key, this.aes_iv);
+                                    });
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(service_list);
@@ -445,6 +452,16 @@ namespace Voucher.SVTran_HDR
                                 List<SVServiceModel>? service_list = JsonSerializer.Deserialize<List<SVServiceModel>>((JsonElement)item_model.Data);
                                 if (service_list != null && service_list.Count > 0)
                                 {
+                                    // cập nhật lại stt_rec_px
+                                    service_list.ForEach(x =>
+                                    {
+                                        x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, this.aes_key, this.aes_iv);
+                                    });
+
+                                    // CheckTraLaiDv
+                                    CommonObjectModel resultCheck = CheckTraLaiDv(vc_item.status, service_list);
+                                    if (!resultCheck.success) return resultCheck;
+
                                     //cập nhật ngày chứng từ
                                     service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -764,6 +781,28 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
 
+            // insert vào bảng ct80_tralai, nếu trạng thái là HT = 2
+            if (vc_item.status == "2")
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 4);
+                if (item_detail != null && item_detail.Data != null)
+                {
+                    foreach (var detail in item_detail.Data)
+                    {
+                        // Dùng reflection để lấy giá trị
+                        var type = detail?.GetType();
+
+                        string stt_rec_bh = type?.GetProperty("stt_rec_px")?.GetValue(detail)?.ToString() ?? "";
+                        string stt_rec0_bh = type?.GetProperty("stt_rec0px")?.GetValue(detail)?.ToString() ?? "";
+                        string stt_rec0 = type?.GetProperty("stt_rec0")?.GetValue(detail)?.ToString() ?? "";
+                        string ma_ct = type?.GetProperty("ma_ct")?.GetValue(detail)?.ToString() ?? "";
+
+                        query = $"exec Genbyte$Voucher$Service$Insert_ct80_tralai '{ma_ct}', '{stt_rec}', '{stt_rec0}', '{stt_rec_bh}', '{stt_rec0_bh}'";
+                        service.ExecuteNonQuery(query);
+                    }
+                }
+            }
+
             model.success = true;
             model.message = "";
             model.result = vc_item;
@@ -892,6 +931,18 @@ END";
                 IList<SVPaidModel> pr_paid = ds.Tables[3].ToList<SVPaidModel>();
                 IList<SVServiceModel> pr_service = ds.Tables[4].ToList<SVServiceModel>();
 
+                // mã hóa lại stt_rec_px
+                if (pr_service.Count > 0)
+                {
+                    foreach (var item in pr_service)
+                    {
+                        if (!string.IsNullOrEmpty(item.stt_rec_px))
+                        {
+                            item.stt_rec_px = APIService.EncryptForWebApp(item.stt_rec_px, this.aes_key, this.aes_iv);
+                        }
+                    }
+                }
+
                 //xử lý mã hóa stt_rec_hd trước khi response
                 vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
 
@@ -1016,6 +1067,32 @@ END";
             string sql = $"insert into psdiem (stt_rec ,ma_kh ,ma_dvcs ,ma_cuahang ,ma_ct ,ma_gd ,ngay_ct ,so_ct ,ps_tang ,ps_giam ,tien_qd_giam ,status ,datetime0 ,datetime2 ,user_id0 ,user_id2) ";
             sql += $"values ('{master.stt_rec}', '{master.ma_kh}', '{master.ma_dvcs}', '{master.ma_cuahang}', '{master.ma_ct}', '{master.ma_gd}', '{master.ngay_ct?.ToString("yyyy-MM-dd")}', '{master.so_ct}', null, {master.diem_qd}, {master.t_tt_nt}, '{master.status}', GETDATE(), GETDATE(), {Startup.UserId}, {Startup.UserId}) \n";
             return sql;
+        }
+
+        private CommonObjectModel CheckTraLaiDv(string status, List<SVServiceModel> serviceList)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+
+            if (status == "2" && serviceList.Count > 0)
+            {
+                foreach (var x in serviceList)
+                {
+                    string so_ct = CommonService.isCt80ReturnOrBuyBack(x.stt_rec_px, x.stt_rec0px);
+                    if (!string.IsNullOrEmpty(so_ct))
+                    {
+                        result_model.success = false;
+                        result_model.message = $"Dịch vụ đã được nhập / mua lại ở phiếu: {so_ct}";
+                        return result_model;
+                    }
+                }
+            }
+
+            return result_model;
         }
     }
 }

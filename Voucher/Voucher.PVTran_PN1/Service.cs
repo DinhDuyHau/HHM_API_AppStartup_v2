@@ -357,6 +357,10 @@ namespace Voucher.PVTran_PN1
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // CheckTraLaiDv
+                        CommonObjectModel resultCheck = CheckTraLaiDv(vc_item.status, detail_list);
+                        if (!resultCheck.success) return resultCheck;
+
                         detail_list.ForEach((item) =>
                         {
                             if (item.ma_imei != null && item.ma_imei != "")
@@ -617,6 +621,7 @@ SELECT is_success, message FROM @check";
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện
             vc_item.stt_rec = stt_rec;
@@ -648,6 +653,27 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
+
+            // insert vào bảng ct80_tralai, nếu trạng thái là HT = 2
+            if (vc_item.status == "2")
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
+                if (item_detail != null && item_detail.Data != null)
+                {
+                    foreach (var detail in item_detail.Data)
+                    {
+                        // Dùng reflection để lấy giá trị
+                        var type = detail?.GetType();
+
+                        string stt_rec_bh = type?.GetProperty("stt_rec_hd")?.GetValue(detail)?.ToString() ?? "";
+                        string stt_rec0_bh = type?.GetProperty("stt_rec0hd")?.GetValue(detail)?.ToString() ?? "";
+                        string stt_rec0 = type?.GetProperty("stt_rec0")?.GetValue(detail)?.ToString() ?? "";
+
+                        query = $"exec Genbyte$Voucher$Service$Insert_ct80_tralai '{ma_ct}', '{stt_rec}', '{stt_rec0}', '{stt_rec_bh}', '{stt_rec0_bh}'";
+                        service.ExecuteNonQuery(query);
+                    }
+                }
+            }
 
             model.success = true;
             model.message = "";
@@ -968,5 +994,30 @@ END";
 
         #endregion
 
+        private CommonObjectModel CheckTraLaiDv(string status, List<SVDetail> serviceList)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+
+            if (status == "2" && serviceList.Count > 0)
+            {
+                foreach (var x in serviceList)
+                {
+                    string so_ct = CommonService.isCt80ReturnOrBuyBack(x.stt_rec_hd, x.stt_rec0hd);
+                    if (!string.IsNullOrEmpty(so_ct))
+                    {
+                        result_model.success = false;
+                        result_model.message = $"Dịch vụ đã được nhập / mua lại ở phiếu: {so_ct}";
+                        return result_model;
+                    }
+                }
+            }
+
+            return result_model;
+        }
     }
 }

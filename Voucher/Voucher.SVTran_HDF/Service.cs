@@ -517,14 +517,18 @@ namespace Voucher.SVTran_HDF
                                 List<SVServiceModel>? service_list = JsonSerializer.Deserialize<List<SVServiceModel>>((JsonElement)item_model.Data);
                                 if (service_list != null && service_list.Count > 0)
                                 {
-                                    //cập nhật ngày chứng từ
-                                    service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
-
                                     // cập nhật lại stt_rec_px
                                     service_list.ForEach(x =>
                                     {
                                         x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, this.aes_key, this.aes_iv);
                                     });
+
+                                    // CheckTraLaiDv
+                                    CommonObjectModel resultCheck = CheckTraLaiDv(vc_item.status, service_list);
+                                    if (!resultCheck.success) return resultCheck;
+
+                                    //cập nhật ngày chứng từ
+                                    service_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
                                     item_detail.Data = new List<DetailEntity>();
                                     item_detail.Data.AddRange(service_list);
@@ -853,6 +857,27 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateInquiryTable '{this.VoucherCode}', '{inquiry_table}', '{prime_table}', '{detail_table}', 'stt_rec', '{stt_rec}', '{this.Operation}' \n";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
+
+            // insert vào bảng ct80_tralai, nếu trạng thái là HT = 2
+            if (vc_item.status == "2")
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 4);
+                if (item_detail != null && item_detail.Data != null)
+                {
+                    foreach (var detail in item_detail.Data)
+                    {
+                        // Dùng reflection để lấy giá trị
+                        var type = detail?.GetType();
+
+                        string stt_rec_bh = type?.GetProperty("stt_rec_px")?.GetValue(detail)?.ToString() ?? "";
+                        string stt_rec0_bh = type?.GetProperty("stt_rec0px")?.GetValue(detail)?.ToString() ?? "";
+                        string stt_rec0 = type?.GetProperty("stt_rec0")?.GetValue(detail)?.ToString() ?? "";
+
+                        query = $"exec Genbyte$Voucher$Service$Insert_ct80_tralai '{ma_ct}', '{stt_rec}', '{stt_rec0}', '{stt_rec_bh}', '{stt_rec0_bh}'";
+                        service.ExecuteNonQuery(query);
+                    }
+                }
+            }
 
             //cập nhật lại các imei đã đặt hàng trước đó nhưng lại dùng imei khác
             string queryIMEI = "";
@@ -1386,6 +1411,32 @@ END";
                     CommonService.updateDiscountCode(vc_item.stt_rec, vc_item.so_ct, vc_item.ngay_ct, vc_item.ma_kh, detail_list.FirstOrDefault(x => x.ma_thanhtoan == "MAGG"));
                 }
             }
+        }
+
+        private CommonObjectModel CheckTraLaiDv(string status, List<SVServiceModel> serviceList)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+
+            if (status == "2" && serviceList.Count > 0)
+            {
+                foreach (var x in serviceList)
+                {
+                    string so_ct = CommonService.isCt80ReturnOrBuyBack(x.stt_rec_px, x.stt_rec0px);
+                    if (!string.IsNullOrEmpty(so_ct))
+                    {
+                        result_model.success = false;
+                        result_model.message = $"Dịch vụ đã được nhập / mua lại ở phiếu: {so_ct}";
+                        return result_model;
+                    }
+                }
+            }
+
+            return result_model;
         }
     }
 }
