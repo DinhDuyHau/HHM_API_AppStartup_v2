@@ -56,7 +56,8 @@ namespace Report.RptSuggestedQuotation
             {
                 SqlString = sql,
                 Parameters = list_paras,
-                RptTableIndex = 1
+                RptTableIndex = 0,
+                PivotReportConfig = pivotReportConfig
             };
         }
 
