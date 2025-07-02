@@ -21,7 +21,7 @@ namespace Report.RptSuggestedQuotation
         {
             PivotDataField = "name",
             PivotHeaderField = "header",
-            GroupByFields = new List<string> { "ma_vt" },
+            GroupByFields = new List<string> { "ma_vt", "ten_vt" },
             SumFields = new List<string> { "so_luong" },
             ExtraTableIndex = 1,
             KeyField = "sysColumn"
@@ -56,7 +56,8 @@ namespace Report.RptSuggestedQuotation
             {
                 SqlString = sql,
                 Parameters = list_paras,
-                RptTableIndex = 1
+                RptTableIndex = 0,
+                PivotReportConfig = pivotReportConfig
             };
         }
 
