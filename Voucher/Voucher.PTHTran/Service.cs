@@ -198,7 +198,7 @@ namespace Voucher.PTHTran
             CheckResult result = service.ExecSql2List<CheckResult>(sql, paras).FirstOrDefault()!;
 
             // Nếu t_con_no khác 0 và không phải cửa hàng => không cho lưu
-            if (vc_item.t_con_no != 0 && result.is_success == false)
+            if (vc_item.t_con_no != 0 && result.is_success == false && vc_item.status == "2")
             {
                 result_model.success = false;
                 result_model.message = "Tiền nợ phải bằng 0";
@@ -506,7 +506,7 @@ end
 	             RETURN
             END
 
-            IF @status_older <> '0' BEGIN
+            IF @status_older <> '0' AND @status_older <> '1' BEGIN
                 UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	            SELECT * FROM @check
 	            RETURN
