@@ -18,5 +18,9 @@ namespace Voucher.SVTran_DV1
         public string email_nhan_key { get; set; }
         public string fnote3 { get; set; }
         public string fnote2 { get; set; }
+        public string hd_nguoi_mua { get; set; }
+        public string hd_loai_giay_to { get; set; }
+        public string hd_so_giay_to { get; set; }
+        public string xtag { get; set; }
     }
 }

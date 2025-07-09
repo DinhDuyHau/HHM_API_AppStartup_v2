@@ -200,9 +200,17 @@ namespace EInvoice
             return responseInfo;
         }
 
-
-        public async Task<object> GetInvoicePDF(string voucherId,  string ma_ct)
+        /// <summary>
+        /// Lấy einvoice pdf
+        /// </summary>
+        /// <param name="voucherId"></param>
+        /// <param name="ma_ct"></param>
+        /// <param name="type">official|draft</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<object> GetInvoicePDF(string voucherId,  string ma_ct, string type = "official")
         {
+            string methodRequest = type == "official" ? "GetInvoicePDF" : "GetInvoiceDraftPDF";
             CoreService core_service = new CoreService();
 
             //check sql injection
@@ -231,7 +239,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "/" + "GetInvoicePDF";
+                    string url = baseUrl + "/" + methodRequest;
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
