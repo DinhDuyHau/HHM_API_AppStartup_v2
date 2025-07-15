@@ -736,9 +736,9 @@ SELECT is_success, message FROM @check";
 
             // xử lý tạo hđđt nháp
             string einvoiceMessage = "";
-            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            if (vc_item.status == "2")
             {
-                CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
+                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
                 einvoiceMessage = resultEinvoice.message ?? "";
             }
 

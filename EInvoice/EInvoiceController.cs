@@ -208,6 +208,67 @@ namespace EInvoice
         #endregion
 
         /// <summary>
+        /// Phát hành hóa đơn
+        /// </summary>
+        /// <param name="stt_rec"></param>
+        /// <param name="ma_ct"></param>
+        /// <returns></returns>
+        [HttpPost("IssueInvoice")]
+        #region IssueInvoice
+        public IActionResult IssueInvoice(string stt_rec, string ma_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service(this._configuration);
+                stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
+
+                //Kiểm tra trạng thái chứng từ "hoàn thành" trước khi lập hóa đơn
+                //if(!_service.CheckValidVoucherStatus(stt_rec, ma_ct))
+                //{
+                //    model.success = false;
+                //    model.message = "einvoice_status_invalid";
+                //    return Ok(model);
+                //}
+
+                string res = _service.IssueInvoice(stt_rec, ma_ct).Result.ToString();
+                var result = JsonConvert.DeserializeObject<Response>(res);
+                model.result = result.d;
+                if (model.result != null)
+                {
+                    if (string.IsNullOrEmpty(result.d.description) && string.IsNullOrEmpty(result.d.errorCode))
+                    {
+                        model.success = true;
+                        model.message = "issue_invoice_success";
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(result.d.description))
+                        {
+                            model.message = result.d.description;
+                        }
+                        else
+                        {
+                            model.message = "issue_invoice_fail";
+                        }
+                    }
+                }
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- EInvoiceController/IssueInvoice", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
         /// Lấy thông tin phát hành
         /// </summary>
         /// <param name="voucherInfo">Thông tin chứng từ</param>
