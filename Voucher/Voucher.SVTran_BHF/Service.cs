@@ -170,6 +170,21 @@ namespace Voucher.SVTran_BHF
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // check imei khai báo bảo hành
+                        foreach (var x in detail_list)
+                        {
+                            if (!string.IsNullOrEmpty(x.ma_kho) && !string.IsNullOrEmpty(x.ma_imei))
+                            {
+                                string resCheckimei = CommonService.CheckImeiGuarantee(x.ma_kho, x.ma_imei, (DateTime)vc_item.ngay_ct);
+                                if (!string.IsNullOrEmpty(resCheckimei))
+                                {
+                                    result_model.message = resCheckimei ?? $"Imei {x.ma_imei} chưa khai báo bảo hành";
+                                    result_model.success = false;
+                                    return result_model;
+                                }
+                            }
+                        }
+
                         // check hàng khuyến mại
                         CheckKhuyenMai(detail_list);
 
@@ -600,6 +615,21 @@ namespace Voucher.SVTran_BHF
                     List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
+                        // check imei khai báo bảo hành
+                        foreach (var x in detail_list)
+                        {
+                            if (!string.IsNullOrEmpty(x.ma_kho) && !string.IsNullOrEmpty(x.ma_imei))
+                            {
+                                string resCheckimei = CommonService.CheckImeiGuarantee(x.ma_kho, x.ma_imei, (DateTime)vc_item.ngay_ct);
+                                if (!string.IsNullOrEmpty(resCheckimei))
+                                {
+                                    result_model.message = resCheckimei ?? $"Imei {x.ma_imei} chưa khai báo bảo hành";
+                                    result_model.success = false;
+                                    return result_model;
+                                }
+                            }
+                        }
+
                         // check hàng khuyến mại
                         CheckKhuyenMai(detail_list);
 
