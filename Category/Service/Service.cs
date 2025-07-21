@@ -111,7 +111,7 @@ namespace Servive
             htmlBuilder.Append("<tr>");
             htmlBuilder.Append("<th style=\"text-align: center\">Tên dịch vụ</th>");
             htmlBuilder.Append("<th style=\"text-align: center\">Mã key</th>");
-            htmlBuilder.Append("<th style=\"text-align: center\">Ngày hết hạn</th>");
+            //htmlBuilder.Append("<th style=\"text-align: center\">Ngày hết hạn</th>");
             htmlBuilder.Append("</tr>");
             htmlBuilder.Append("</thead>");
             htmlBuilder.Append("<tbody>");
@@ -121,7 +121,7 @@ namespace Servive
                 htmlBuilder.Append("<tr>");
                 htmlBuilder.Append("<td>" + service.ten_dv + "</td>");
                 htmlBuilder.Append("<td>" + service.ma_key + "</td>");
-                htmlBuilder.Append("<td>" + service.ngay_het_han.ToString("dd/MM/yyyy") + "</td>");
+                //htmlBuilder.Append("<td>" + service.ngay_het_han.ToString("dd/MM/yyyy") + "</td>");
                 htmlBuilder.Append("</tr>");
             }
 
