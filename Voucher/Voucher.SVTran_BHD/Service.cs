@@ -474,10 +474,10 @@ namespace Voucher.SVTran_BHD
             service.ExecuteNonQuery(query);
 
             // xử lý tạo hđđt nháp
-            CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
 
             model.success = true;
-            model.message = resultEinvoice.message ?? "";
+            model.message = "";
             model.result = vc_item;
             return model;
         }
@@ -1090,15 +1090,15 @@ SELECT is_success, message FROM @check";
             }
 
             // xử lý tạo hđđt nháp
-            string einvoiceMessage = "";
-            if (vc_item.status == "2" && vc_item.fnote3 == "1")
-            {
-                CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
-                einvoiceMessage = resultEinvoice.message ?? "";
-            }
+            //string einvoiceMessage = "";
+            //if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            //{
+            //    CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
+            //    einvoiceMessage = resultEinvoice.message ?? "";
+            //}
 
             model.success = true;
-            model.message = einvoiceMessage;
+            model.message = "";
             model.result = vc_item;
             return model;
         }

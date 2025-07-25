@@ -237,7 +237,7 @@ namespace Customer
                     WHERE ma_cuahang = @shop
 
                 SELECT ten_kh, dia_chi, ma_so_thue FROM dmkh 
-                    WHERE ma_so_thue = @ma_kh_mobifone
+                    WHERE ma_kh = @ma_kh_mobifone
             ";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
