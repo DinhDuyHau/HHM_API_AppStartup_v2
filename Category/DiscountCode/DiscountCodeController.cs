@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -113,5 +115,110 @@ namespace DiscountCode
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy danh sách chương trình CRM theo ma_vt và ngay_ct
+        /// </summary>
+        /// <param name="ma_vt"></param>
+        /// <param name="ngay_ct"></param>
+        /// <returns></returns>
+        [HttpGet("get_discount_crm")]
+        #region get_discount_crm
+        public IActionResult GetDiscountCRM(string ma_vt, DateTime? ngay_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_vt))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                List<DiscountCRMModel> result = _service.GetDiscountCRM(ma_vt, ngay_ct);
+                if (result != null)
+                {
+                    model.success = true;
+                    model.result = result;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- DiscountCodeController/GetDiscountCRM?ma_vt={ma_vt}&ngay_ct={ngay_ct}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Lấy ra chương trình CRM theo ma_ctr
+        /// </summary>
+        /// <param name="ma_ctr"></param>
+        /// <param name="ma_vt"></param>
+        /// <param name="ngay_ct"></param>
+        /// <returns></returns>
+        [HttpGet("get_program_crm")]
+        #region get_program_crm
+        public IActionResult GetProgramCRM(string ma_ctr, string ma_vt, DateTime? ngay_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(ma_ctr))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                string sql = "exec Genbyte$Discount$GetCRMByMaCtr @ma_ctr, @ma_vt, @ngay_ct";
+                List<SqlParameter> paras = new List<SqlParameter>();
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = $"@ma_ctr",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_ctr.Trim()
+                });
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = $"@ma_vt",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = ma_vt
+                });
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = $"@ngay_ct",
+                    SqlDbType = SqlDbType.DateTime,
+                    Value = ngay_ct == null ? DBNull.Value : ngay_ct.Value
+                });
+                List<DiscountCRMModel> result = _service.ExecSql2List<DiscountCRMModel>(sql, paras).ToList();
+
+                if (result != null)
+                {
+                    model.success = true;
+                    model.result = result;
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- DiscountCodeController/GetProgramCRM?ma_ctr={ma_ctr}&ma_vt={ma_vt}&ngay_ct={ngay_ct}", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
     }
 }

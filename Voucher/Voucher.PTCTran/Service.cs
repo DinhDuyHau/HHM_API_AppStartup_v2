@@ -466,7 +466,7 @@ namespace Voucher.PTCTran
 	             RETURN
             END
 
-            IF @status_older <> '0' BEGIN
+            IF @status_older <> '0' AND @status_older <> '1' BEGIN
                 UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	            SELECT * FROM @check
 	            RETURN

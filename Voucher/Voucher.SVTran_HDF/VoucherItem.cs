@@ -20,5 +20,9 @@ namespace Voucher.SVTran_HDF
         public string ma_van_don { get; set; }
 
         public bool tra_lai_freedelivery { get; set; }
+        public string ma_nk { get; set; }
+        public string so_seri { get; set; }
+        public string fnote3 { get; set; }
+        public string fnote2 { get; set; }
     }
 }

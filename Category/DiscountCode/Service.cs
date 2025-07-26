@@ -46,5 +46,25 @@ namespace DiscountCode
             List<DiscountProgramModel> entities = base.ExecSql2List<DiscountProgramModel>(sql, paras, ConnectType.Accounting).ToList();
             return entities;
         }
+
+        public List<DiscountCRMModel> GetDiscountCRM(string ma_vt, DateTime? ngay_ct)
+        {
+            string sql = "exec Genbyte$Discount$GetCRM @ma_vt, @ngay_ct";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ma_vt",
+                SqlDbType = SqlDbType.VarChar,
+                Value = ma_vt
+            });
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@ngay_ct",
+                SqlDbType = SqlDbType.DateTime,
+                Value = ngay_ct == null ? DBNull.Value : ngay_ct.Value
+            });
+            List<DiscountCRMModel> entities = base.ExecSql2List<DiscountCRMModel>(sql, paras).ToList();
+            return entities;
+        }
     }
 }

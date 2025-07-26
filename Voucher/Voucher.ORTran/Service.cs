@@ -227,7 +227,7 @@ namespace Voucher.ORTran
                         item_detail.Data.AddRange(paid_list);
 
                         //nếu có mã phí thì hình thức thanh toán phải là Tiền mặt hoặc chuyển khoản
-                        if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN"))
+                        if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN" && x.ma_thanhtoan != "MBQR"))
                         {
                             result_model.success = false;
                             result_model.message = "Trong chi tiết phiếu có Mã chi phí, chỉ được chọn hình thức thanh toán Tiền mặt hoặc Chuyển khoản.";
@@ -447,7 +447,7 @@ END";
                         item_detail.Data.AddRange(paid_list);
 
                         //nếu có mã phí thì hình thức thanh toán phải là Tiền mặt hoặc chuyển khoản
-                        if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN"))
+                        if (ma_phi_yn && paid_list.Any(x => x.ma_thanhtoan != "TM" && x.ma_thanhtoan != "CHUYENKHOAN" && x.ma_thanhtoan != "MBQR"))
                         {
                             result_model.success = false;
                             result_model.message = "Trong chi tiết phiếu có Mã chi phí, chỉ được chọn hình thức thanh toán Tiền mặt hoặc Chuyển khoản.";
@@ -484,7 +484,7 @@ END";
 	             RETURN
             END
 
-            IF @status_older <> '0' BEGIN
+            IF @status_older <> '0' AND @status_older <> '1' BEGIN
                 UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	            SELECT * FROM @check
 	            RETURN
