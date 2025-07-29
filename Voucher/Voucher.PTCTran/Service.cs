@@ -1,4 +1,11 @@
-﻿using System;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher.Model;
+using Genbyte.Sys.AppAuth;
+using Genbyte.Sys.Common;
+using Genbyte.Sys.Common.Models;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,15 +15,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Genbyte.Sys.Common;
-using Genbyte.Sys.Common.Models;
-using Genbyte.Component.Voucher;
-using Genbyte.Base.CoreLib;
-using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Voucher.PTCTran.Models;
-using Microsoft.Extensions.Configuration;
 
 namespace Voucher.PTCTran
 {
@@ -388,6 +389,20 @@ namespace Voucher.PTCTran
             {
                 vc_item.ma_nt = "VND";
                 vc_item.ty_gia = 1;
+            }
+
+            // lấy trạng thái hiện tại và trạng thái update để check xem có được pass qua hay ko
+            VoucherMasterModel voucherMasterModel = CommonService.GetVoucherStatus(vc_item.stt_rec);
+            if (voucherMasterModel.status == "1" && vc_item.status == "0")
+            {
+                // Kiểm tra thanh toán & MBQR từ FE và DB
+                bool canChange = CommonService.CheckPaymentBeforeChangeStatus<VoucherItem>(vc_item, _PAID_PARA);
+                if (!canChange)
+                {
+                    result_model.success = false;
+                    result_model.message = "status_changed_cannot_edit";
+                    return result_model;
+                }
             }
 
             //convert dữ liệu chi tiết chứng từ
