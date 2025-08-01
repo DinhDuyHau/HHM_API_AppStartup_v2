@@ -1,4 +1,12 @@
-﻿using System;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
+using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher.Model;
+using Genbyte.Sys.AppAuth;
+using Genbyte.Sys.Common;
+using Genbyte.Sys.Common.Models;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,15 +16,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Genbyte.Sys.Common;
-using Genbyte.Sys.Common.Models;
-using Genbyte.Component.Voucher;
-using Genbyte.Base.CoreLib;
-using Genbyte.Sys.AppAuth;
-using Genbyte.Component.Voucher.Model;
-using Genbyte.Base.Security;
-using Microsoft.Extensions.Configuration;
 
 namespace Voucher.SVTran_BHD
 {
@@ -139,6 +140,17 @@ namespace Voucher.SVTran_BHD
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
+            // nếu status = 0, valid hddt
+            if (vc_item.status == "0")
+            {
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
+                {
+                    result_model.success = false;
+                    result_model.message = validMsg;
+                    return result_model;
+                }
+            }
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -162,6 +174,21 @@ namespace Voucher.SVTran_BHD
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check imei khai báo bảo hành
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (!string.IsNullOrEmpty(x.ma_kho) && !string.IsNullOrEmpty(x.ma_imei))
+                                        {
+                                            string resCheckimei = CommonService.CheckImeiGuarantee(x.ma_kho, x.ma_imei, (DateTime)vc_item.ngay_ct);
+                                            if (!string.IsNullOrEmpty(resCheckimei))
+                                            {
+                                                result_model.message = resCheckimei ?? $"Imei {x.ma_imei} chưa khai báo bảo hành";
+                                                result_model.success = false;
+                                                return result_model;
+                                            }
+                                        }
+                                    }
+
                                     // check hàng khuyến mại
                                     CheckKhuyenMai(detail_list);
 
@@ -401,12 +428,13 @@ namespace Voucher.SVTran_BHD
             query += $"{insert_promotion_query}";
 
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query insert vào bảng prime và detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện thêm mới
             vc_item.stt_rec = stt_rec;
@@ -445,6 +473,9 @@ namespace Voucher.SVTran_BHD
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
+            // xử lý tạo hđđt nháp
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+
             model.success = true;
             model.message = "";
             model.result = vc_item;
@@ -478,6 +509,23 @@ namespace Voucher.SVTran_BHD
                 return result_model;
             }
             */
+
+            //Cập nhật thông tin quyển chứng từ hóa đơn điện tử
+            var e_invoice_info = VoucherUtils.getEInvoiceField();
+            vc_item.so_seri = e_invoice_info["so_seri"].ToString();
+            vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
+
+            // nếu status = 2, valid hddt
+            if (vc_item.status == "2")
+            {
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
+                {
+                    result_model.success = false;
+                    result_model.message = validMsg;
+                    return result_model;
+                }
+            }
 
             vc_item.ma_ct = this.VoucherCode;
             vc_item.ma_gd = "2";
@@ -521,6 +569,21 @@ namespace Voucher.SVTran_BHD
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check imei khai báo bảo hành
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (!string.IsNullOrEmpty(x.ma_kho) && !string.IsNullOrEmpty(x.ma_imei))
+                                        {
+                                            string resCheckimei = CommonService.CheckImeiGuarantee(x.ma_kho, x.ma_imei, (DateTime)vc_item.ngay_ct);
+                                            if (!string.IsNullOrEmpty(resCheckimei))
+                                            {
+                                                result_model.message = resCheckimei ?? $"Imei {x.ma_imei} chưa khai báo bảo hành";
+                                                result_model.success = false;
+                                                return result_model;
+                                            }
+                                        }
+                                    }
+
                                     // check hàng khuyến mại
                                     CheckKhuyenMai(detail_list);
 
@@ -956,12 +1019,13 @@ SELECT is_success, message FROM @check";
             query += $"{update_promotion_query}";
 
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query update bảng prime và insert lại bảng detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện
             vc_item.stt_rec = stt_rec;
@@ -1024,6 +1088,14 @@ SELECT is_success, message FROM @check";
                     return model;
                 }
             }
+
+            // xử lý tạo hđđt nháp
+            //string einvoiceMessage = "";
+            //if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            //{
+            //    CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
+            //    einvoiceMessage = resultEinvoice.message ?? "";
+            //}
 
             model.success = true;
             model.message = "";
@@ -1136,9 +1208,10 @@ IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
 	SELECT @q = @q + CHAR(13) + 'select t1.*,t0.ten_thanhtoan, c.ten_ctr, d.ten_vt from {5}' + @exp + ' t1 inner join dmthanhtoan t0 on t1.ma_thanhtoan = t0.ma_thanhtoan left join phctrgiamgia c on t1.ma_ctr = c.ma_ctr left join dmvt d on t1.ma_sp = d.ma_vt where stt_rec = @stt_rec'
 	SELECT @q = @q + CHAR(13) + 'select b1.*, b0.ten_ttbh, b0.dia_chi, b2.ten_dv from {6}' + @exp + ' b1 left join dmtrungtambh b0 on b1.ma_ttbh = b0.ma_ttbh left join dmdichvu b2 on b1.ma_dv = b2.ma_dv where stt_rec = @stt_rec'
     SELECT @q = @q + CHAR(13) + 'select * from {7}' + @exp + ' where stt_rec = @stt_rec '
+    SELECT @q = @q + CHAR(13) + 'select *, ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd, ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {8}' + @exp + ' where stt_rec = @stt_rec'
     EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
-            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.DebtTable);
+            sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable, this.ServicesTable, this.DiscountTable, this.PaidTable, this.WarrantyTable, this.DebtTable, this.EInvoiceTable);
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.Add(new SqlParameter()
             {
@@ -1158,29 +1231,7 @@ END";
                 IList<PaidDetailBaseResponse> pr_paid = ds.Tables[4].ToList<PaidDetailBaseResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
                 IList<SVDebtModel> pr_debt = ds.Tables[6].ToList<SVDebtModel>();
-                sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6)
-                    SET @stt_rec = @vc_id
-	                SELECT @exp = CONVERT(CHAR(6), @ngay_ct, 112)
-                    SELECT @q = 'select  ma_ncc as hddt_ma_ncc, mau_hoa_don as hddt_mau_hd, so_seri as hddt_so_seri, ngay_ct as hddt_ngay_hd,
-                                                ngay_ky as hddt_ngay_ky, so_hoa_don as hddt_so_hd, ma_so_thue as hddt_ma_so_thue, ma_bi_mat as hddt_ma_tra_cuu, status as hddt_status from {0}' + @exp + ' where ref_stt_rec = @stt_rec'
-	                EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec";
-                sql = string.Format(sql, this.EInvoiceTable);
-                List<SqlParameter> paras1 = new List<SqlParameter>();
-                paras1.Add(new SqlParameter()
-                {
-                    ParameterName = "@vc_id",
-                    SqlDbType = SqlDbType.Char,
-                    Value = voucherId.Replace("'", "''")
-                });
-                paras1.Add(new SqlParameter()
-                {
-                    ParameterName = "@ngay_ct",
-                    SqlDbType = SqlDbType.DateTime,
-                    Value = vc_item.ngay_ct
-                });
-                DataSet ds1 = core_service.ExecSql2DataSet(sql, paras1, ConnectType.Report);
-
-                IList<EInvoiceInfo> einvoice = ds1.Tables[0].ToList<EInvoiceInfo>();
+                IList<EInvoiceInfo> einvoice = ds.Tables[7].ToList<EInvoiceInfo>();
 
                 pr_paid.ToList().ForEach(x => {
                     x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);

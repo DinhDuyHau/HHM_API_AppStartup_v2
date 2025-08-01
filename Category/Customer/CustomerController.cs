@@ -309,5 +309,47 @@ namespace Customer
             }
         }
         #endregion
+
+        [HttpGet("get_info_mobiphone_by_shop/{shop}")]
+        #region GetInfoMobiphoneByShop
+        public IActionResult GetInfoMobiphoneByShop(string shop)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(shop))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+
+                dynamic result = _service.GetInfoMobiphoneByShop(shop);
+
+                if (result != null)
+                {
+                    model.success = true;
+                    model.result = result;
+                } 
+                else
+                {
+                    model.success = true;
+                    model.message = "Unknown_err";
+                    model.result = null;
+                }
+
+                    return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"GET -- CustomerController/GetInfoMobiphoneByShop", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
     }
 }

@@ -127,6 +127,72 @@ namespace EInvoice
             return responseInfo;
         }
 
+        public async Task<object> IssueInvoice(string voucherId, string ma_ct)
+        {
+            ResponseInfo responseInfo = new ResponseInfo();
+            CoreService core_service = new CoreService();
+
+            //check sql injection
+            if (!core_service.IsSQLInjectionValid(voucherId) || !core_service.IsSQLInjectionValid(ma_ct))
+                throw new Exception(ApiReponseMessage.Error_InputData);
+            string sql = $"EXEC Genbyte$Voucher$GetById '{voucherId}', '{ma_ct}'";
+            DataSet ds = core_service.ExecSql2DataSet(sql);
+            VoucherEntity voucher = new VoucherEntity();
+            if (ds != null && ds.Tables.Count >= 2)
+            {
+                voucher = ds.Tables[0].ToList<VoucherEntity>().FirstOrDefault();
+                voucher.details = ds.Tables[1].ToList<VoucherDetail>();
+                // Kiểm tra xem voucher đã có imei chưa
+                var flag = true;
+                voucher.details.ToList().ForEach(item =>
+                {
+                    if (item.ma_imei == null || item.so_luong != item.ma_imei.Split(",").Length)
+                    {
+                        flag = false;
+                    }
+                });
+                if (flag == false)
+                {
+                    responseInfo.description = "lbl_voucher_not_save";
+                    return responseInfo;
+
+                }
+                if (voucher.ma_thue == null)
+                    voucher.ma_thue = "0";
+            }
+
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    string url = baseUrl + "/" + "IssueInvoice";
+                    Request request = new Request();
+                    request.voucherInfo = voucher;
+                    string jsonData = JsonConvert.SerializeObject(request);
+                    // Tạo nội dung HTTP
+                    var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // ghi log
+                    await LogRequest.Log(url, null, JsonConvert.SerializeObject(request, Formatting.None), "log_rq_hddt", responseBody, httpClient.DefaultRequestHeaders);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Chuyển đổi chuỗi JSON thành đối tượng
+                        return responseBody;
+                    }
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                responseInfo.description = e.Message;
+                return responseInfo;
+            }
+
+            return responseInfo;
+        }
+
         public async Task<object> UpdateDraft(VoucherEntity voucher)
         {
             ResponseInfo responseInfo = new ResponseInfo();
@@ -200,9 +266,17 @@ namespace EInvoice
             return responseInfo;
         }
 
-
-        public async Task<object> GetInvoicePDF(string voucherId,  string ma_ct)
+        /// <summary>
+        /// Lấy einvoice pdf
+        /// </summary>
+        /// <param name="voucherId"></param>
+        /// <param name="ma_ct"></param>
+        /// <param name="type">official|draft</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<object> GetInvoicePDF(string voucherId,  string ma_ct, string type = "official")
         {
+            string methodRequest = type == "official" ? "GetInvoicePDF" : "GetInvoiceDraftPDF";
             CoreService core_service = new CoreService();
 
             //check sql injection
@@ -231,7 +305,7 @@ namespace EInvoice
             {
                 using (var httpClient = new HttpClient())
                 {
-                    string url = baseUrl + "/" + "GetInvoicePDF";
+                    string url = baseUrl + "/" + methodRequest;
                     Request request = new Request();
                     request.voucherInfo = voucher;
                     string jsonData = JsonConvert.SerializeObject(request);
