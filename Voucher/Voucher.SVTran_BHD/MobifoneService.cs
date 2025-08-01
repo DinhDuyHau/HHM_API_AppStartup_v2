@@ -18,7 +18,7 @@ namespace Voucher.SVTran_BHD
     {
         private MobiAccountInfo account = new MobiAccountInfo();
 
-        private const int M_THUE_SUAT = 10;
+        private const int M_THUE_SUAT = 8;
 
         public string ApiUrl { get; set; } = "";
 
@@ -122,6 +122,13 @@ namespace Voucher.SVTran_BHD
             mobi_invoice.telNumber = dien_thoai;
             mobi_invoice.tin = "";
             mobi_invoice.shopCode = shop_code;
+
+            //2025-06-30: bổ sung thêm trường theo Nghị định 70
+            mobi_invoice.accountNo = "";
+            mobi_invoice.bankName = "";
+            mobi_invoice.identityNo = "";
+            mobi_invoice.passportNo = "";
+            mobi_invoice.dvqhcsNo = "";
 
             if (inv_items != null && inv_items.Count > 0) foreach (InvItemBHD item in inv_items)
                 {
