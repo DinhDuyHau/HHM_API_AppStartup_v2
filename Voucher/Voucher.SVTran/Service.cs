@@ -612,9 +612,14 @@ namespace Voucher.SVTran
             VoucherMasterModel voucherMasterModel = CommonService.GetVoucherStatus(vc_item.stt_rec);
             if(voucherMasterModel.status == "1" && vc_item.status == "0")
             {
-                result_model.success = false;
-                result_model.message = "status_changed_cannot_edit";
-                return result_model;
+                // Kiểm tra thanh toán & MBQR từ FE và DB
+                bool canChange = CommonService.CheckPaymentBeforeChangeStatus<VoucherItem>(vc_item, _PAID_PARA);
+                if (!canChange)
+                {
+                    result_model.success = false;
+                    result_model.message = "status_changed_cannot_edit";
+                    return result_model;
+                }
             }
 
             //Cập nhật thông tin quyển chứng từ hóa đơn điện tử
