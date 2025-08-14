@@ -141,6 +141,8 @@ namespace Voucher.SVTran_BHD
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
             // nếu status = 0, valid hddt
+            // 2025-08-04: phiếu bán liên kết không trực tiếp xuất hddt => bỏ qua đoạn check valid thông tin hddt
+            /*
             if (vc_item.status == "0")
             {
                 string validMsg = CommonService.ValidateEInvoice(vc_item);
@@ -151,6 +153,8 @@ namespace Voucher.SVTran_BHD
                     return result_model;
                 }
             }
+            */
+            // 2025-08-04: end
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -516,6 +520,8 @@ namespace Voucher.SVTran_BHD
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
             // nếu status = 2, valid hddt
+            // 2025-08-04: phiếu bán liên kết không trực tiếp xuất hddt => bỏ qua đoạn check valid thông tin hddt
+            /*
             if (vc_item.status == "2")
             {
                 string validMsg = CommonService.ValidateEInvoice(vc_item);
@@ -526,6 +532,8 @@ namespace Voucher.SVTran_BHD
                     return result_model;
                 }
             }
+            */
+            // 2025-08-04: end
 
             vc_item.ma_ct = this.VoucherCode;
             vc_item.ma_gd = "2";

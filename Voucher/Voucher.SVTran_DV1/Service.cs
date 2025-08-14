@@ -492,7 +492,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN

@@ -740,7 +740,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' BEGIN
+IF @status_older <> '0' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
@@ -1135,7 +1135,10 @@ SELECT is_success, message FROM @check";
             string einvoiceMessage = "";
             if (vc_item.status == "2")
             {
-                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
+                //Phiếu bán TMĐT chỉ lập hddt nháp
+                //CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
+                CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+
                 einvoiceMessage = resultEinvoice.message ?? "";
             }
 

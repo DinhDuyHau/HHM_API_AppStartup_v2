@@ -100,7 +100,7 @@ namespace Servive
                     >
                       <img
                         width=""300px""
-                        src=""https://hhm-shop-inv.genbyte.net/assets/images/logo.png""
+                        src=""https://hoanghamobile.com/Content/web/img/logo.svg""
                         alt=""logo""
                       />
                     </div>");
@@ -122,7 +122,13 @@ namespace Servive
                 htmlBuilder.Append("<tr>");
                 htmlBuilder.Append("<td>" + service.ten_dv + "</td>");
                 htmlBuilder.Append("<td>" + service.ma_key + "</td>");
+                
+                //2025-08-13: bỏ không hiển thị ngày hết hạn trên email gửi khách
+                /*
                 htmlBuilder.Append("<td>" + service.ngay_het_han.ToString("dd/MM/yyyy") + "</td>");
+                */
+                htmlBuilder.Append("<td>&nbsp;</td>");
+
                 htmlBuilder.Append("</tr>");
             }
 

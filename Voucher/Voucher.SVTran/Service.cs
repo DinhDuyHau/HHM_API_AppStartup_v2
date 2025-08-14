@@ -65,6 +65,9 @@ namespace Voucher.SVTran
         public string EInvoiceTable { get; } = "hddt$";
         private const string _EInvoiceTable_PARA = "hddt";
 
+        //flag để đánh dấu hành động edit của sysadmin
+        private bool is_sysadmin_edit = false;
+
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d581,d581,d581";
 
@@ -651,6 +654,25 @@ namespace Voucher.SVTran
                 }
             }
 
+            // Nếu trạng thái hiện tại và trạng thái update là '3' => sửa phiếu ở trạng thái 'chờ phát hành' => kiểm tra quyền admin
+            if(voucherMasterModel.status == "3" && vc_item.status == "3")
+            {
+                if (CommonService.IsShopSysAdminForCurrentUser())
+                {
+                    this.is_sysadmin_edit = true;
+
+                    // gán lại mã ca theo phiên đăng nhập
+                    vc_item.ma_ca = Startup.Shift;
+                }
+                else
+                {
+                    this.is_sysadmin_edit = false;
+                    result_model.success = false;
+                    result_model.message = "cannot_edit_in_status_publish_pending";
+                    return result_model;
+                }
+            }
+
             //Cập nhật thông tin quyển chứng từ hóa đơn điện tử
             var e_invoice_info = VoucherUtils.getEInvoiceField();
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
@@ -885,7 +907,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' AND @status_older <> '1' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
@@ -1037,6 +1059,41 @@ SELECT is_success, message FROM @check";
                 return model;
             }
             VoucherItem vc_item = (VoucherItem)voucherItem;
+
+            /**
+             * LƯU LOG KHI SỬA VỚI QUYỀN sysadmin
+             * nếu thực hiện cập nhật chứng từ status = 3 (chờ phát hành) => lưu log dữ liệu trước và sau khi sửa
+             */
+            if (vc_item.status == "3" && this.is_sysadmin_edit)
+            {
+                // lấy thông tin chứng từ trước khi thực hiện sửa
+                LogEditVoucherMaster vc_before_edit = CommonService.GetVoucherLogBeforeEdit(vc_item.stt_rec, vc_item.ma_ct);
+
+                // convert dữ liệu từ client gửi lên để thực hiện sửa
+                LogEditVoucherMaster vc_after_edit = new LogEditVoucherMaster();
+                EntityUtils.CopyEntityProperties<SVTran.VoucherItem, LogEditVoucherMaster>(vc_item, vc_after_edit);
+
+                if(vc_item.details != null)
+                {
+                    //detail
+                    vc_after_edit.details.Add(new LogEditVoucherDetail()
+                    {
+                        name = "detail",
+                        data = CommonService.ConvertVoucherEntityDetail2Dictionary<SVDetail>(vc_item, _DETAIL_PARA)
+                    });
+
+                    //payment
+                    vc_after_edit.details.Add(new LogEditVoucherDetail()
+                    {
+                        name = "payment",
+                        data = CommonService.ConvertVoucherEntityDetail2Dictionary<SVPaidModel>(vc_item, _PAID_PARA)
+                    });
+                }
+                CommonService.SaveLogForEditVoucher(vc_before_edit, vc_after_edit);
+            }
+            /**
+             * END XỬ LÝ LƯU LOG CỦA TK sysadmin
+             */
 
             // gạch voucher đã sử dụng bằng api, trạng thái hoàn thành
             if (vc_item.status == "2" && !string.IsNullOrEmpty(vc_item.stt_rec) && !string.IsNullOrEmpty(vc_item.ma_ct))
@@ -1527,7 +1584,7 @@ END";
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
             string sql = @"declare @buy_item nvarchar(max) = @hang_mua
-        exec fs_Calc$Discount$BHA @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct, @stt_rec";
+        exec fs_Calc$Discount$BHA_200 @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct, @stt_rec";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
