@@ -451,6 +451,13 @@ namespace EInvoice
                 if (voucher.ma_thue == null)
                     voucher.ma_thue = "0";
             }
+
+            //đối với chứng từ BHC & BHB phát hành trên website viettel => nên cần thêm ký tự 0 vào cuối key để lấy thông tin đã phát hành
+            if(voucher.ma_ct == "BHB" || voucher.ma_ct == "BHC" || voucher.ma_ct == "BHW")
+            {
+                voucher.stt_rec += "0";
+            }
+
             ResponseInfo responseInfo = new ResponseInfo();
             try
             {
