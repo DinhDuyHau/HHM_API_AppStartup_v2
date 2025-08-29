@@ -477,9 +477,6 @@ namespace Voucher.SVTran_BHD
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
-            // xử lý tạo hđđt nháp
-            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
-
             model.success = true;
             model.message = "";
             model.result = vc_item;
@@ -1096,14 +1093,6 @@ SELECT is_success, message FROM @check";
                     return model;
                 }
             }
-
-            // xử lý tạo hđđt nháp
-            //string einvoiceMessage = "";
-            //if (vc_item.status == "2" && vc_item.fnote3 == "1")
-            //{
-            //    CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
-            //    einvoiceMessage = resultEinvoice.message ?? "";
-            //}
 
             model.success = true;
             model.message = "";

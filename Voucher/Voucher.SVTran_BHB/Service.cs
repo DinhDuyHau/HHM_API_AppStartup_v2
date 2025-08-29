@@ -409,10 +409,15 @@ namespace Voucher.SVTran_BHB
             service.ExecuteNonQuery(query);
 
             // xử lý tạo hđđt nháp
+            string einvoiceMessage = "";
+            // 2025-08-18: Tạm xử lý bỏ lập nháp hddt của phiếu bán buôn => chờ phân tích lại giải pháp
+            /*
             CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+            einvoiceMessage = resultEinvoice.message ?? "";
+            */
 
             model.success = true;
-            model.message = resultEinvoice.message ?? "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
@@ -732,11 +737,6 @@ SELECT is_success, message FROM @check";
             string prime_table = this.PrimeTable.Trim() + expression;
             string update_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 2);
             query += "\n\n";
-            //query += $"update {prime_table} set ma_ca = @ma_ca, status = @status, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_gd = @ma_gd, ma_nt = @ma_nt, ty_gia = @ty_gia, loai_ct = @loai_ct, ma_thue = @ma_thue, t_so_luong = @t_so_luong, t_tien_nt2 = @t_tien_nt2, t_thue_nt = @t_thue_nt, t_tt_nt = @t_tt_nt, " +
-            //    $"so_lo = @so_lo, ngay_lo = @ngay_lo, ma_nk = @ma_nk, ngay_lct = @ngay_lct, ong_ba = @ong_ba, ma_nx = @ma_nx, tk = @tk, t_tien_nt = @t_tien_nt, t_tien = @t_tien, t_thue = @t_thue, t_tt = @t_tt, ma_tt = @ma_tt, t_tien2 = @t_tien2, t_tien_km = @t_tien_km, t_tien_km_nt = @t_tien_km_nt, " +
-            //    $"t_thue_km = @t_thue_km, t_thue_km_nt = @t_thue_km_nt, t_km = @t_km, t_km_nt = @t_km_nt, t_tc_tien2 = @t_tc_tien2, t_tc_tien_nt2 = @t_tc_tien_nt2, t_tc_thue = @t_tc_thue, t_tc_thue_nt = @t_tc_thue_nt, t_tc_tt = @t_tc_tt, t_tc_tt_nt = @t_tc_tt_nt, t_ck = @t_ck, t_ck_nt = @t_ck_nt, " +
-            //    $"t_cp_bh = @t_cp_bh, t_cp_bh_nt = @t_cp_bh_nt, t_cp_vc = @t_cp_vc, t_cp_vc_nt = @t_cp_vc_nt, t_cp_khac = @t_cp_khac, t_cp_khac_nt = @t_cp_khac_nt, t_cp = @t_cp, t_cp_nt = @t_cp_nt, ma_nvbh = @ma_nvbh, ck_thue_yn = @ck_thue_yn, ma_gia = @ma_gia, ten_vtthue = @ten_vtthue, ghi_chuthue = @ghi_chuthue, " +
-            //    $"tk_ck = @tk_ck, so_seri = @so_seri, thue_suat = @thue_suat, tk_thue_no = @tk_thue_no, tk_thue_co = @tk_thue_co, ma_kh2 = @ma_kh2, nam = @nam, ky = @ky, xtag = @xtag, sl_in = @sl_in, so_dh = @so_dh, nhieu_thue_suat = @nhieu_thue_suat, user_id2 = {user_id}, datetime2 = getdate() ";
 
             //query += $" where stt_rec = @stt_rec";
             query += $"{update_prime_table_query}";
@@ -883,12 +883,15 @@ SELECT is_success, message FROM @check";
             }
 
             // xử lý tạo hđđt nháp
+            // 2025-08-18: Tạm xử lý bỏ lập nháp hddt của phiếu bán buôn => chờ phân tích lại giải pháp
             string einvoiceMessage = "";
+            /*
             if (vc_item.status == "2" && vc_item.fnote3 == "1")
             {
                 CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
                 einvoiceMessage = resultEinvoice.message ?? "";
             }
+            */
 
             model.success = true;
             model.message = einvoiceMessage;

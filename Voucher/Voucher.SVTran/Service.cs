@@ -615,10 +615,12 @@ namespace Voucher.SVTran
             service.ExecuteNonQuery(query);
 
             // xử lý tạo hđđt nháp
-            CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+            // 2025-08-21: bỏ tính năng lập hddt nháp
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
 
             model.success = true;
-            model.message = resultEinvoice.message ?? "";
+            //model.message = resultEinvoice.message ?? "";
+            model.message = "";
             model.result = vc_item;
             return model;
         }
@@ -664,13 +666,13 @@ namespace Voucher.SVTran
                     // gán lại mã ca theo phiên đăng nhập
                     vc_item.ma_ca = Startup.Shift;
                 }
-                else
-                {
-                    this.is_sysadmin_edit = false;
-                    result_model.success = false;
-                    result_model.message = "cannot_edit_in_status_publish_pending";
-                    return result_model;
-                }
+                //else
+                //{
+                //    this.is_sysadmin_edit = false;
+                //    result_model.success = false;
+                //    result_model.message = "cannot_edit_in_status_publish_pending";
+                //    return result_model;
+                //}
             }
 
             //Cập nhật thông tin quyển chứng từ hóa đơn điện tử

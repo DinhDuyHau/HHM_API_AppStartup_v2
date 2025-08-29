@@ -117,6 +117,27 @@ namespace Voucher.SVTran_MHA
             //Cập nhật ngày chứng từ là ngày hiện thời của Server
             vc_item.ngay_ct = DateTime.Today;
             vc_item.ngay_lct = DateTime.Today;
+            
+            //2025-08-27: Nếu giao dịch mua lại từ KH doanh nghiệp, check bắt buộc nhập các trường về thuế đầu vào
+            if (!string.IsNullOrEmpty(vc_item.fcode1) && vc_item.fcode1 == "2")
+            {
+                bool valid_inputtax_info = true;
+                if (!string.IsNullOrEmpty(vc_item.so_ct0)) valid_inputtax_info = false;
+                if (!string.IsNullOrEmpty(vc_item.so_seri0)) valid_inputtax_info = false;
+                if (vc_item.ngay_ct0 == null) valid_inputtax_info = false;
+                if (!string.IsNullOrEmpty(vc_item.hd_mst)) valid_inputtax_info = false;
+                if (!string.IsNullOrEmpty(vc_item.hd_ten_kh)) valid_inputtax_info = false;
+                if (!string.IsNullOrEmpty(vc_item.hd_dia_chi)) valid_inputtax_info = false;
+                if(!valid_inputtax_info)
+                {
+                    result_model.success = false;
+                    result_model.message = "inputtax_info_require";
+                    return result_model;
+                }
+            }
+            //2025-08-27: end
+
+
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
             int index_value = 1;

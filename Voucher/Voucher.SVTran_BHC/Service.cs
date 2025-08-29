@@ -529,10 +529,12 @@ namespace Voucher.SVTran_BHC
             service.ExecuteNonQuery(query);
 
             // xử lý tạo hđđt nháp
-            CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+            // 2025-08-21: bỏ tính năng lập hddt nháp
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
 
             model.success = true;
-            model.message = resultEinvoice.message ?? "";
+            //model.message = resultEinvoice.message ?? "";
+            model.message = "";
             model.result = vc_item;
             return model;
         }
@@ -1136,8 +1138,9 @@ SELECT is_success, message FROM @check";
             if (vc_item.status == "2")
             {
                 //Phiếu bán TMĐT chỉ lập hddt nháp
-                //CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
-                CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+                //2025-08-21: mở lại cho phép phát hành hđđt luôn ngay khi hoàn thành phiếu
+                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
+                //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
 
                 einvoiceMessage = resultEinvoice.message ?? "";
             }

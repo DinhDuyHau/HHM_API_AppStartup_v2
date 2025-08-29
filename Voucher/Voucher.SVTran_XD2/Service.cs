@@ -646,8 +646,16 @@ SELECT is_success, message FROM @check";
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}' \n";
             service.ExecuteNonQuery(query);
 
+            // xử lý tạo hđđt nháp
+            string einvoiceMessage = "";
+            if (vc_item.status == "2")
+            {
+                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, VoucherCode);
+                einvoiceMessage = resultEinvoice.message ?? "";
+            }
+
             model.success = true;
-            model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
