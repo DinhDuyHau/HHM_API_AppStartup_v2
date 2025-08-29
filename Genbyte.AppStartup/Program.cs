@@ -81,8 +81,9 @@ string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
     services.AddScoped<ITokenUtils, JwtUtils>();
     services.AddScoped<IUserService, UserService>();
 
+    // Đăng ký interface + implementation
     builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
+    builder.Services.AddSingleton<IHttpService, HttpService>();
 }
 
 var app = builder.Build();
