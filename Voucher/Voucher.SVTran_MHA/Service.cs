@@ -122,12 +122,12 @@ namespace Voucher.SVTran_MHA
             if (!string.IsNullOrEmpty(vc_item.fcode1) && vc_item.fcode1 == "2")
             {
                 bool valid_inputtax_info = true;
-                if (!string.IsNullOrEmpty(vc_item.so_ct0)) valid_inputtax_info = false;
-                if (!string.IsNullOrEmpty(vc_item.so_seri0)) valid_inputtax_info = false;
+                if (string.IsNullOrEmpty(vc_item.so_ct0)) valid_inputtax_info = false;
+                if (string.IsNullOrEmpty(vc_item.so_seri0)) valid_inputtax_info = false;
                 if (vc_item.ngay_ct0 == null) valid_inputtax_info = false;
-                if (!string.IsNullOrEmpty(vc_item.hd_mst)) valid_inputtax_info = false;
-                if (!string.IsNullOrEmpty(vc_item.hd_ten_kh)) valid_inputtax_info = false;
-                if (!string.IsNullOrEmpty(vc_item.hd_dia_chi)) valid_inputtax_info = false;
+                if (string.IsNullOrEmpty(vc_item.hd_mst)) valid_inputtax_info = false;
+                if (string.IsNullOrEmpty(vc_item.hd_ten_kh)) valid_inputtax_info = false;
+                if (string.IsNullOrEmpty(vc_item.hd_dia_chi)) valid_inputtax_info = false;
                 if(!valid_inputtax_info)
                 {
                     result_model.success = false;

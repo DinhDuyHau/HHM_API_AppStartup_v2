@@ -740,8 +740,11 @@ SELECT is_success, message FROM @check";
             string einvoiceMessage = "";
             if (vc_item.status == "2")
             {
+                //2025-08-29: tạm bỏ phát hành hóa đơn điện tử của phiếu bán dịch vụ
+                /*
                 CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
                 einvoiceMessage = resultEinvoice.message ?? "";
+                */
             }
 
             model.success = true;
