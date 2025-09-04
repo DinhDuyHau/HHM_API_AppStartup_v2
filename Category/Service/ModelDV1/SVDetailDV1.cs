@@ -10,6 +10,7 @@ namespace Service.ModelDV1
     public class SVDetailDV1 : DetailEntity
     {
         public string ma_vt { get; set; }
+        public string ten_vt { get; set; }
         public string ten_dv { get; set; }
         public string ma_imei { get; set; }
 
