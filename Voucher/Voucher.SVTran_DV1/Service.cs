@@ -868,7 +868,7 @@ END";
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
-                IList<PaidDetailBaseResponse> tt_detail = ds.Tables[2].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> tt_detail = ds.Tables[2].ToList<PaidDetailResponse>();
                 tt_detail.ToList().ForEach(x => {
                     x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                 });

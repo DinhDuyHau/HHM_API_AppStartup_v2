@@ -1253,6 +1253,16 @@ SELECT is_success, message FROM @check";
             {
                 CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
                 einvoiceMessage = resultEinvoice.message ?? "";
+
+                //Kiểm tra tình trạng phát hành VAT, nếu fail sẽ reset trạng thái phiếu về "chờ phát hành"
+                bool publish_fail = CommonService.CheckAndResetStatusWhenPublishVatFail(stt_rec, ma_ct, "3");
+                if (publish_fail)
+                {
+                    model.success = false;
+                    model.message = "publish_vat_fail";
+                    model.result = null;
+                    return model;
+                }
             }
 
             model.success = true;

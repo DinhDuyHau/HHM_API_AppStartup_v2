@@ -648,11 +648,14 @@ SELECT is_success, message FROM @check";
 
             // xử lý tạo hđđt nháp
             string einvoiceMessage = "";
+            //2025-08-29: tạm bỏ phát hành hóa đơn điện tử của phiếu đền bù dịch vụ
+            /*
             if (vc_item.status == "2")
             {
                 CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, VoucherCode);
                 einvoiceMessage = resultEinvoice.message ?? "";
             }
+            */
 
             model.success = true;
             model.message = einvoiceMessage;
