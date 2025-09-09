@@ -172,6 +172,15 @@ namespace Voucher.SVTran_HDF
                                         result_model.message = "Hàng khuyến mại chỉ được phép trả lại kèm với hàng bán!";
                                         return result_model;
                                     }
+
+                                    // Check trống mã kho trong chi tiết hàng hóa
+                                    if (detail_list.Any(x => string.IsNullOrWhiteSpace(x.ma_kho)))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "Không được để trống mã kho trong chi tiết hàng hóa";
+                                        return result_model;
+                                    }
+
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -485,6 +494,14 @@ namespace Voucher.SVTran_HDF
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // Check trống mã kho trong chi tiết hàng hóa
+                                    if (detail_list.Any(x => string.IsNullOrWhiteSpace(x.ma_kho)))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "Không được để trống mã kho trong chi tiết hàng hóa";
+                                        return result_model;
+                                    }
+
                                     detail_list.ForEach((item) =>
                                     {
                                         if (item.ma_imei != null && item.ma_imei != "")
