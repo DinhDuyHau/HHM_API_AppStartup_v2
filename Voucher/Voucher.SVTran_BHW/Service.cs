@@ -1260,7 +1260,7 @@ SELECT is_success, message FROM @check";
                 {
                     model.success = false;
                     model.message = "publish_vat_fail";
-                    model.result = null;
+                    model.result = einvoiceMessage;
                     return model;
                 }
             }
