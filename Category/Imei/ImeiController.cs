@@ -78,7 +78,7 @@ namespace Imei
 
                         //check vật tư được đánh dấu cho phép xuất bán liên kết
                         if (ma_ct == "BHD")
-                            model.success = imei_state.ban_lk_yn;
+                            model.success = model.success && imei_state.ban_lk_yn;
 
                         if (!imei_state.exists_yn)
                             model.message = "exists_yn_no";

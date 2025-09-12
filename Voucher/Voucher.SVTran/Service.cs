@@ -21,7 +21,6 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using EInvoice;
-using Newtonsoft.Json;
 using VoucherDetail = Genbyte.Component.Voucher.VoucherDetail;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -65,6 +64,9 @@ namespace Voucher.SVTran
         //Bảng lưu dữ liệu hóa đơn điện tử
         public string EInvoiceTable { get; } = "hddt$";
         private const string _EInvoiceTable_PARA = "hddt";
+
+        //flag để đánh dấu hành động edit của sysadmin
+        private bool is_sysadmin_edit = false;
 
         //Chuỗi format phục vụ tạo dữ liệu tại bảng inquiry
         public string Operation { get; } = "ma_kh,ma_dvcs,ma_cuahang,ma_ca;#10$,#20$,#30$, #40$; , , , :ma_kho,ma_vt,ma_imei;#10$,#20$,#30$;d581,d581,d581";
@@ -147,6 +149,18 @@ namespace Voucher.SVTran
             // cập nhật lại dvcs theo cửa hàng đăng nhập
             vc_item.ma_dvcs = CommonService.GetUnitByShop(vc_item.ma_cuahang);
 
+            // nếu status = 0, valid hddt
+            if (vc_item.status == "0")
+            {
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
+                {
+                    result_model.success = false;
+                    result_model.message = validMsg;
+                    return result_model;
+                }
+            }
+
             //khai báo list chi tiết hàng hóa và list chi tiết dịch vụ (for check)
             List<SVDetail>? list_hang_hoa = null;
             List<SVServiceModel>? list_dich_vu = null;
@@ -183,6 +197,21 @@ namespace Voucher.SVTran
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check imei khai báo bảo hành
+                                    foreach(var x in detail_list)
+                                    {
+                                        if(!string.IsNullOrEmpty(x.ma_kho) && !string.IsNullOrEmpty(x.ma_imei))
+                                        {
+                                            string resCheckimei = CommonService.CheckImeiGuarantee(x.ma_kho, x.ma_imei, (DateTime)vc_item.ngay_ct);
+                                            if (!string.IsNullOrEmpty(resCheckimei))
+                                            {
+                                                result_model.message = resCheckimei ?? $"Imei {x.ma_imei} chưa khai báo bảo hành";
+                                                result_model.success = false;
+                                                return result_model;
+                                            }
+                                        }
+                                    }
+
                                     // check hàng khuyến mại
                                     CheckKhuyenMai(detail_list);
 
@@ -585,7 +614,12 @@ namespace Voucher.SVTran
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
+            // xử lý tạo hđđt nháp
+            // 2025-08-21: bỏ tính năng lập hddt nháp
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+
             model.success = true;
+            //model.message = resultEinvoice.message ?? "";
             model.message = "";
             model.result = vc_item;
             return model;
@@ -622,6 +656,25 @@ namespace Voucher.SVTran
                 }
             }
 
+            // Nếu trạng thái hiện tại và trạng thái update là '3' => sửa phiếu ở trạng thái 'chờ phát hành' => kiểm tra quyền admin
+            if(voucherMasterModel.status == "3" && vc_item.status == "3")
+            {
+                if (CommonService.IsShopSysAdminForCurrentUser())
+                {
+                    this.is_sysadmin_edit = true;
+
+                    // gán lại mã ca theo phiên đăng nhập
+                    vc_item.ma_ca = Startup.Shift;
+                }
+                //else
+                //{
+                //    this.is_sysadmin_edit = false;
+                //    result_model.success = false;
+                //    result_model.message = "cannot_edit_in_status_publish_pending";
+                //    return result_model;
+                //}
+            }
+
             //Cập nhật thông tin quyển chứng từ hóa đơn điện tử
             var e_invoice_info = VoucherUtils.getEInvoiceField();
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
@@ -630,7 +683,7 @@ namespace Voucher.SVTran
             // nếu status = 2, valid hddt
             if (vc_item.status == "2")
             {
-                string validMsg = validEInvoice(vc_item);
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
                 if (!string.IsNullOrEmpty(validMsg))
                 {
                     result_model.success = false;
@@ -693,6 +746,21 @@ namespace Voucher.SVTran
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // check imei khai báo bảo hành
+                                    foreach (var x in detail_list)
+                                    {
+                                        if (!string.IsNullOrEmpty(x.ma_kho) && !string.IsNullOrEmpty(x.ma_imei))
+                                        {
+                                            string resCheckimei = CommonService.CheckImeiGuarantee(x.ma_kho, x.ma_imei, (DateTime)vc_item.ngay_ct);
+                                            if (!string.IsNullOrEmpty(resCheckimei))
+                                            {
+                                                result_model.message = resCheckimei ?? $"Imei {x.ma_imei} chưa khai báo bảo hành";
+                                                result_model.success = false;
+                                                return result_model;
+                                            }
+                                        }
+                                    }
+
                                     // check hàng khuyến mại
                                     CheckKhuyenMai(detail_list);
 
@@ -841,7 +909,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' AND @status_older <> '1' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
@@ -993,6 +1061,41 @@ SELECT is_success, message FROM @check";
                 return model;
             }
             VoucherItem vc_item = (VoucherItem)voucherItem;
+
+            /**
+             * LƯU LOG KHI SỬA VỚI QUYỀN sysadmin
+             * nếu thực hiện cập nhật chứng từ status = 3 (chờ phát hành) => lưu log dữ liệu trước và sau khi sửa
+             */
+            if (vc_item.status == "3" && this.is_sysadmin_edit)
+            {
+                // lấy thông tin chứng từ trước khi thực hiện sửa
+                LogEditVoucherMaster vc_before_edit = CommonService.GetVoucherLogBeforeEdit(vc_item.stt_rec, vc_item.ma_ct);
+
+                // convert dữ liệu từ client gửi lên để thực hiện sửa
+                LogEditVoucherMaster vc_after_edit = new LogEditVoucherMaster();
+                EntityUtils.CopyEntityProperties<SVTran.VoucherItem, LogEditVoucherMaster>(vc_item, vc_after_edit);
+
+                if(vc_item.details != null)
+                {
+                    //detail
+                    vc_after_edit.details.Add(new LogEditVoucherDetail()
+                    {
+                        name = "detail",
+                        data = CommonService.ConvertVoucherEntityDetail2Dictionary<SVDetail>(vc_item, _DETAIL_PARA)
+                    });
+
+                    //payment
+                    vc_after_edit.details.Add(new LogEditVoucherDetail()
+                    {
+                        name = "payment",
+                        data = CommonService.ConvertVoucherEntityDetail2Dictionary<SVPaidModel>(vc_item, _PAID_PARA)
+                    });
+                }
+                CommonService.SaveLogForEditVoucher(vc_before_edit, vc_after_edit);
+            }
+            /**
+             * END XỬ LÝ LƯU LOG CỦA TK sysadmin
+             */
 
             // gạch voucher đã sử dụng bằng api, trạng thái hoàn thành
             if (vc_item.status == "2" && !string.IsNullOrEmpty(vc_item.stt_rec) && !string.IsNullOrEmpty(vc_item.ma_ct))
@@ -1228,31 +1331,25 @@ SELECT is_success, message FROM @check";
             }
 
             // xử lý tạo hđđt nháp
-            if(vc_item.status == "2" && vc_item.fnote3 == "1")
+            string einvoiceMessage = "";
+            if (vc_item.status == "2")
             {
-                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
-                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
-                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
-                if (resultEInvoice.d.voucherId == stt_rec)
+                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
+                einvoiceMessage = resultEinvoice.message ?? "";
+
+                //Kiểm tra tình trạng phát hành VAT, nếu fail sẽ reset trạng thái phiếu về "chờ phát hành"
+                bool publish_fail = CommonService.CheckAndResetStatusWhenPublishVatFail(stt_rec, ma_ct, "3");
+                if (publish_fail)
                 {
-                    model.success = true;
-                    model.message = "updated_and_create_draft_invoice_success";
-                }
-                else
-                {
-                    if (resultEInvoice.d.description != null)
-                    {
-                        model.message = resultEInvoice.d.description;
-                    }
-                    else
-                    {
-                        model.message = "updated_success_and_create_draft_invoice_fail";
-                    }
+                    model.success = false;
+                    model.message = "publish_vat_fail";
+                    model.result = einvoiceMessage;
+                    return model;
                 }
             }
 
             model.success = true;
-            //model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
@@ -1499,7 +1596,7 @@ END";
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
             string sql = @"declare @buy_item nvarchar(max) = @hang_mua
-        exec fs_Calc$Discount$BHA @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct, @stt_rec";
+        exec fs_Calc$Discount$BHA_200 @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct, @stt_rec";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
@@ -1993,56 +2090,5 @@ END";
             return "";
         }
 
-        private string validEInvoice(VoucherItem vc_item)
-        {
-            string hd_mst = vc_item.hd_mst ?? "";
-            string hd_email = vc_item.hd_email ?? "";
-            string hd_ten_kh = vc_item.hd_ten_kh ?? "";
-            string hd_dia_chi = vc_item.hd_dia_chi ?? "";
-            string hd_loai_giay_to = vc_item.hd_loai_giay_to ?? "";
-            string hd_so_giay_to = vc_item.hd_so_giay_to ?? "";
-            string hd_nguoi_mua = vc_item.hd_nguoi_mua ?? "";
-            string objEinvoice = vc_item.fnote2 ?? "";
-
-            // valid tên người mua
-            if (hd_nguoi_mua.Length > 200)
-            {
-                return "invoice_buyerName_info";
-            }
-            // valid loại giấy tờ chỉ cho phép "", "1", "3"
-            if (!string.IsNullOrEmpty(hd_loai_giay_to) &&
-                hd_loai_giay_to != "1" &&
-                hd_loai_giay_to != "3")
-            {
-                return "invoice_buyerIdType_info";
-            }
-            // valid số giấy tờ
-            if (hd_so_giay_to.Length > 100)
-            {
-                return "invoice_buyerIdNo_info";
-            }
-            // valid cá nhân
-            if (objEinvoice == "0" && string.IsNullOrEmpty(hd_nguoi_mua))
-            {
-                return "invoice_individuals_info";
-            }
-            // valid doanh nghiệp
-            if (objEinvoice == "1" &&
-                (
-                    string.IsNullOrEmpty(hd_mst) ||
-                    string.IsNullOrEmpty(hd_ten_kh) ||
-                    string.IsNullOrEmpty(hd_dia_chi))
-                )
-            {
-                return "invoice_bussiness_info";
-            }
-            // valid giấy tờ
-            if ((hd_loai_giay_to == "1" || hd_loai_giay_to == "2") && string.IsNullOrEmpty(hd_so_giay_to))
-            {
-                return "invoice_papersType_info";
-            }
-
-            return "";
-        }
     }
 }

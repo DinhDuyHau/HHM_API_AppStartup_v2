@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Genbyte.Base.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
+using Genbyte.Sys.AppAuth.Services;
 
 namespace EInvoice
 {
@@ -69,7 +70,7 @@ namespace EInvoice
 
         [HttpPost("invoicePDFV2")]
         #region GetPDFInvoiceV2
-        public IActionResult GetInvoicePDFV2(string stt_rec, string ma_ct)
+        public IActionResult GetInvoicePDFV2(string stt_rec, string ma_ct, string type = "official")
         {
             try
             {
@@ -81,7 +82,7 @@ namespace EInvoice
                 };
                 Service _service = new Service(this._configuration);
                 stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
-                string res = _service.GetInvoicePDF(stt_rec, ma_ct).Result.ToString();
+                string res = _service.GetInvoicePDF(stt_rec, ma_ct, type).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
                 var result = JsonConvert.DeserializeObject<Response>(res);
                 model.result = result.d;
@@ -167,12 +168,12 @@ namespace EInvoice
                 stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
 
                 //Kiểm tra trạng thái chứng từ "hoàn thành" trước khi lập hóa đơn
-                if(!_service.CheckValidVoucherStatus(stt_rec, ma_ct))
-                {
-                    model.success = false;
-                    model.message = "einvoice_status_invalid";
-                    return Ok(model);
-                }
+                //if(!_service.CheckValidVoucherStatus(stt_rec, ma_ct))
+                //{
+                //    model.success = false;
+                //    model.message = "einvoice_status_invalid";
+                //    return Ok(model);
+                //}
 
                 string res = _service.CreateDraft(stt_rec, ma_ct).Result.ToString();
                 //Response response = JsonConvert.DeserializeObject<Response>(res);
@@ -204,6 +205,123 @@ namespace EInvoice
                 Logger.Insert(Startup.Unit, $"POST -- EInvoiceController/CreateDraft", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
+        }
+        #endregion
+
+        /// <summary>
+        /// Phát hành hóa đơn
+        /// </summary>
+        /// <param name="stt_rec"></param>
+        /// <param name="ma_ct"></param>
+        /// <returns></returns>
+        [HttpPost("IssueInvoice")]
+        #region IssueInvoice
+        public IActionResult IssueInvoice(string stt_rec, string ma_ct)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service(this._configuration);
+                stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
+
+                //Kiểm tra trạng thái chứng từ "hoàn thành" trước khi lập hóa đơn
+                //if(!_service.CheckValidVoucherStatus(stt_rec, ma_ct))
+                //{
+                //    model.success = false;
+                //    model.message = "einvoice_status_invalid";
+                //    return Ok(model);
+                //}
+
+                string res = _service.IssueInvoice(stt_rec, ma_ct).Result.ToString();
+                var result = JsonConvert.DeserializeObject<Response>(res);
+                model.result = result.d;
+                if (model.result != null)
+                {
+                    if (string.IsNullOrEmpty(result.d.description) && string.IsNullOrEmpty(result.d.errorCode))
+                    {
+                        model.success = true;
+                        model.message = "issue_invoice_success";
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(result.d.description))
+                        {
+                            model.message = result.d.description;
+                        }
+                        else
+                        {
+                            model.message = "issue_invoice_fail";
+                        }
+                    }
+                }
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- EInvoiceController/IssueInvoice", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Phát hành hóa đơn bằng quyền của sysadmin
+        /// </summary>
+        /// <param name="stt_rec"></param>
+        /// <param name="ma_ct"></param>
+        /// <returns></returns>
+        [HttpPost("syspublish")]
+        #region PublishInvoiceBySysAdmin
+        public IActionResult PublishInvoiceBySysAdmin(string stt_rec, string ma_ct)
+        {
+            CommonObjectModel model = new CommonObjectModel()
+            {
+                success = false,
+                message = "",
+                result = null
+            };
+
+            bool check_right = UserUtils.IsShopSysAdminForCurrentUser();
+            if (check_right)
+            {
+                Service _service = new Service(this._configuration);
+                stt_rec = APIService.DecryptForWebApp(stt_rec, _security.KeyAES, _security.IVAES);
+
+                string res = _service.IssueInvoice(stt_rec, ma_ct).Result.ToString();
+                var result = JsonConvert.DeserializeObject<Response>(res);
+                model.result = result.d;
+                if (model.result != null)
+                {
+                    if (string.IsNullOrEmpty(result.d.description) && string.IsNullOrEmpty(result.d.errorCode))
+                    {
+                        model.success = true;
+                        model.message = "issue_invoice_success";
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(result.d.description))
+                        {
+                            model.message = result.d.description;
+                        }
+                        else
+                        {
+                            model.message = "issue_invoice_fail";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                model.success = false;
+                model.message = "account_not_sysadmin";
+            }
+
+            return Ok(model);
         }
         #endregion
 

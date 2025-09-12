@@ -10,7 +10,6 @@ using Genbyte.Sys.AppAuth;
 using System.Text.Json;
 using Genbyte.Base.Security;
 using Genbyte.Component.Voucher.Model;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -173,6 +172,15 @@ namespace Voucher.SVTran_HDF
                                         result_model.message = "Hàng khuyến mại chỉ được phép trả lại kèm với hàng bán!";
                                         return result_model;
                                     }
+
+                                    // Check trống mã kho trong chi tiết hàng hóa
+                                    if (detail_list.Any(x => string.IsNullOrWhiteSpace(x.ma_kho)))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "Không được để trống mã kho trong chi tiết hàng hóa";
+                                        return result_model;
+                                    }
+
                                     //cập nhật ngày chứng từ
                                     detail_list.ForEach(x => x.ngay_ct = vc_item.ngay_ct);
 
@@ -350,12 +358,13 @@ namespace Voucher.SVTran_HDF
                 query += $"{insert_service_query}";
             }
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query insert vào bảng prime và detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện thêm mới
             vc_item.stt_rec = stt_rec;
@@ -390,7 +399,12 @@ namespace Voucher.SVTran_HDF
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
+            // xử lý tạo hđđt nháp
+            // 2025-08-21: bỏ tính năng lập hddt nháp
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+
             model.success = true;
+            //model.message = resultEinvoice.message ?? "";
             model.message = "";
             model.result = vc_item;
             return model;
@@ -480,6 +494,14 @@ namespace Voucher.SVTran_HDF
                                 List<SVDetail>? detail_list = JsonSerializer.Deserialize<List<SVDetail>>((JsonElement)item_model.Data);
                                 if (detail_list != null && detail_list.Count > 0)
                                 {
+                                    // Check trống mã kho trong chi tiết hàng hóa
+                                    if (detail_list.Any(x => string.IsNullOrWhiteSpace(x.ma_kho)))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = "Không được để trống mã kho trong chi tiết hàng hóa";
+                                        return result_model;
+                                    }
+
                                     detail_list.ForEach((item) =>
                                     {
                                         if (item.ma_imei != null && item.ma_imei != "")
@@ -889,31 +911,15 @@ SELECT is_success, message FROM @check";
             }
 
             // xử lý tạo hđđt nháp
+            string einvoiceMessage = "";
             if (vc_item.status == "2" && vc_item.fnote3 == "1")
             {
-                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
-                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
-                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
-                if (resultEInvoice.d.voucherId == stt_rec)
-                {
-                    model.success = true;
-                    model.message = "updated_and_create_draft_invoice_success";
-                }
-                else
-                {
-                    if (resultEInvoice.d.description != null)
-                    {
-                        model.message = resultEInvoice.d.description;
-                    }
-                    else
-                    {
-                        model.message = "updated_success_and_create_draft_invoice_fail";
-                    }
-                }
+                CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
+                einvoiceMessage = resultEinvoice.message ?? "";
             }
 
             model.success = true;
-            //model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }

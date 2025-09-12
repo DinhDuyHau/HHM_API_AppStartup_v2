@@ -226,5 +226,41 @@ namespace Customer
             return response;
         }
         #endregion
+
+        #region GetInfoMobiphoneByShop
+        public dynamic GetInfoMobiphoneByShop(string shop)
+        {
+            string sql = @"
+                DECLARE @ma_kh_mobifone VARCHAR(50)
+
+                SELECT TOP 1 @ma_kh_mobifone = ma_kh_mobifone FROM dmcuahang 
+                    WHERE ma_cuahang = @shop
+
+                SELECT ten_kh, dia_chi, ma_so_thue FROM dmkh 
+                    WHERE ma_kh = @ma_kh_mobifone
+            ";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = $"@shop",
+                SqlDbType = SqlDbType.VarChar,
+                Value = shop
+            });
+            DataSet dataSet = base.ExecSql2DataSet(sql, paras, ConnectType.Accounting);
+
+            if (dataSet != null && dataSet.Tables.Count > 0 && dataSet.Tables[0].Rows.Count > 0)
+            {
+                DataRow row = dataSet.Tables[0].Rows[0];
+                return new
+                {
+                    ten_kh = row["ten_kh"]?.ToString(),
+                    dia_chi = row["dia_chi"]?.ToString(),
+                    ma_so_thue = row["ma_so_thue"]?.ToString()
+                };
+            }
+
+            return null;
+        }
+        #endregion
     }
 }

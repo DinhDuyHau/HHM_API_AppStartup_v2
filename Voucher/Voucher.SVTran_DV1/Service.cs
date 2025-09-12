@@ -10,7 +10,6 @@ using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
 using Genbyte.Base.Security;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Voucher.SVTran_DV1
@@ -120,6 +119,17 @@ namespace Voucher.SVTran_DV1
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
+            // nếu status = 0, valid hddt
+            if (vc_item.status == "0")
+            {
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
+                {
+                    result_model.success = false;
+                    result_model.message = validMsg;
+                    return result_model;
+                }
+            }
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -292,12 +302,13 @@ namespace Voucher.SVTran_DV1
             }
 
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query insert vào bảng prime và detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện thêm mới
             vc_item.stt_rec = stt_rec;
@@ -328,7 +339,12 @@ namespace Voucher.SVTran_DV1
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
+            // xử lý tạo hđđt nháp
+            // 2025-08-21: bỏ tính năng lập hddt nháp
+            //CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+
             model.success = true;
+            //model.message = resultEinvoice.message ?? "";
             model.message = "";
             model.result = vc_item;
             return model;
@@ -367,19 +383,14 @@ namespace Voucher.SVTran_DV1
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
 
-            // check nếu status = 2 && vc_item.fnote3 = 1
-            // thực hiện ktra xem đã có đủ các trường để tạo hóa đơn hay chưa
-            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            // nếu status = 2, valid hddt
+            if (vc_item.status == "2")
             {
-                string hd_mst = vc_item.hd_mst;
-                string hd_email = vc_item.hd_email;
-                string hd_ten_kh = vc_item.hd_ten_kh;
-                string hd_dia_chi = vc_item.hd_dia_chi;
-
-                if (string.IsNullOrEmpty(hd_mst) || string.IsNullOrEmpty(hd_email) || string.IsNullOrEmpty(hd_ten_kh) || string.IsNullOrEmpty(hd_dia_chi))
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
                 {
                     result_model.success = false;
-                    result_model.message = "invoice_info_not_enough";
+                    result_model.message = validMsg;
                     return result_model;
                 }
             }
@@ -483,7 +494,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
@@ -726,31 +737,18 @@ SELECT is_success, message FROM @check";
             service.ExecuteNonQuery(query);
 
             // xử lý tạo hđđt nháp
-            if (vc_item.status == "2" && vc_item.fnote3 == "1")
+            string einvoiceMessage = "";
+            if (vc_item.status == "2")
             {
-                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
-                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
-                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
-                if (resultEInvoice.d.voucherId == stt_rec)
-                {
-                    model.success = true;
-                    model.message = "updated_and_create_draft_invoice_success";
-                }
-                else
-                {
-                    if (resultEInvoice.d.description != null)
-                    {
-                        model.message = resultEInvoice.d.description;
-                    }
-                    else
-                    {
-                        model.message = "updated_success_and_create_draft_invoice_fail";
-                    }
-                }
+                //2025-08-29: tạm bỏ phát hành hóa đơn điện tử của phiếu bán dịch vụ
+                /*
+                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
+                einvoiceMessage = resultEinvoice.message ?? "";
+                */
             }
 
             model.success = true;
-            //model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
@@ -870,7 +868,7 @@ END";
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
-                IList<PaidDetailBaseResponse> tt_detail = ds.Tables[2].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> tt_detail = ds.Tables[2].ToList<PaidDetailResponse>();
                 tt_detail.ToList().ForEach(x => {
                     x.stt_rec_pt = APIService.EncryptForWebApp(x.stt_rec_pt, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                 });

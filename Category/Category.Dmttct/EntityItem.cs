@@ -19,5 +19,7 @@ namespace Category.Dmttct
         public bool right_yn { get; set; }
         public bool xdel { get; set; }
         public bool xedit { get; set; }
+
+        public int xorder { get; set; }
     }
 }

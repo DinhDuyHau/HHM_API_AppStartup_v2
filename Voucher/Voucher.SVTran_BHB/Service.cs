@@ -18,7 +18,6 @@ using Genbyte.Component.Voucher.Model;
 using Microsoft.Extensions.Configuration;
 using Genbyte.Base.Security;
 using Imei.Models;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -145,6 +144,18 @@ namespace Voucher.SVTran_BHB
             var e_invoice_info = VoucherUtils.getEInvoiceField();
             vc_item.so_seri = e_invoice_info["so_seri"].ToString();
             vc_item.ma_nk = e_invoice_info["ma_nk"].ToString();
+
+            // nếu status = 0, valid hddt
+            if (vc_item.status == "0")
+            {
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
+                if (!string.IsNullOrEmpty(validMsg))
+                {
+                    result_model.success = false;
+                    result_model.message = validMsg;
+                    return result_model;
+                }
+            }
 
             //convert dữ liệu chi tiết chứng từ
             // id = 1 ==> type: SVDetail
@@ -356,12 +367,13 @@ namespace Voucher.SVTran_BHB
                 query += $"insert into {trans_table} (stt_rec, ma_ct, so_ct, ngay_ct, stt_rec_hd, so_ct_hd, ngay_ct_hd, ten_kh, dia_chi, ma_loaivc, so_dh_vc, ma_van_don, tien_phi_cod, ma_nv_giao, ghi_chu_gh, ma_co, file_co, ma_cq, file_cq) select stt_rec, ma_ct, so_ct, ngay_ct, stt_rec_hd, so_ct_hd, ngay_ct_hd, ten_kh, dia_chi, ma_loaivc, so_dh_vc, ma_van_don, tien_phi_cod, ma_nv_giao, ghi_chu_gh, ma_co, file_co, ma_cq, file_cq from @{_TRANS_PARA}";
             }
             query += "\n\n";
-            query += "select @stt_rec as stt_rec";
+            query += "select @stt_rec as stt_rec, @ma_ct as ma_ct";
 
             //thực thi query insert vào bảng prime và detail có sử dụng transaction
             CoreService service = new CoreService();
             DataSet ds = service.ExecTransactionSql2DataSet(query);
             string stt_rec = ds.Tables[0].Rows[0]["stt_rec"].ToString();
+            string ma_ct = ds.Tables[0].Rows[0]["ma_ct"].ToString();
 
             //update stt_rec cho đối tượng đang thực hiện thêm mới
             vc_item.stt_rec = stt_rec;
@@ -396,8 +408,16 @@ namespace Voucher.SVTran_BHB
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
+            // xử lý tạo hđđt nháp
+            string einvoiceMessage = "";
+            // 2025-08-18: Tạm xử lý bỏ lập nháp hddt của phiếu bán buôn => chờ phân tích lại giải pháp
+            /*
+            CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct);
+            einvoiceMessage = resultEinvoice.message ?? "";
+            */
+
             model.success = true;
-            model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
@@ -438,7 +458,7 @@ namespace Voucher.SVTran_BHB
             // nếu status = 2, valid hddt
             if (vc_item.status == "2")
             {
-                string validMsg = validEInvoice(vc_item);
+                string validMsg = CommonService.ValidateEInvoice(vc_item);
                 if (!string.IsNullOrEmpty(validMsg))
                 {
                     result_model.success = false;
@@ -557,7 +577,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
@@ -717,11 +737,6 @@ SELECT is_success, message FROM @check";
             string prime_table = this.PrimeTable.Trim() + expression;
             string update_prime_table_query = VoucherUtils.getMaterQuery(new VoucherItem(), prime_table, user_id, 2);
             query += "\n\n";
-            //query += $"update {prime_table} set ma_ca = @ma_ca, status = @status, dien_giai = @dien_giai, ma_kh = @ma_kh, ma_gd = @ma_gd, ma_nt = @ma_nt, ty_gia = @ty_gia, loai_ct = @loai_ct, ma_thue = @ma_thue, t_so_luong = @t_so_luong, t_tien_nt2 = @t_tien_nt2, t_thue_nt = @t_thue_nt, t_tt_nt = @t_tt_nt, " +
-            //    $"so_lo = @so_lo, ngay_lo = @ngay_lo, ma_nk = @ma_nk, ngay_lct = @ngay_lct, ong_ba = @ong_ba, ma_nx = @ma_nx, tk = @tk, t_tien_nt = @t_tien_nt, t_tien = @t_tien, t_thue = @t_thue, t_tt = @t_tt, ma_tt = @ma_tt, t_tien2 = @t_tien2, t_tien_km = @t_tien_km, t_tien_km_nt = @t_tien_km_nt, " +
-            //    $"t_thue_km = @t_thue_km, t_thue_km_nt = @t_thue_km_nt, t_km = @t_km, t_km_nt = @t_km_nt, t_tc_tien2 = @t_tc_tien2, t_tc_tien_nt2 = @t_tc_tien_nt2, t_tc_thue = @t_tc_thue, t_tc_thue_nt = @t_tc_thue_nt, t_tc_tt = @t_tc_tt, t_tc_tt_nt = @t_tc_tt_nt, t_ck = @t_ck, t_ck_nt = @t_ck_nt, " +
-            //    $"t_cp_bh = @t_cp_bh, t_cp_bh_nt = @t_cp_bh_nt, t_cp_vc = @t_cp_vc, t_cp_vc_nt = @t_cp_vc_nt, t_cp_khac = @t_cp_khac, t_cp_khac_nt = @t_cp_khac_nt, t_cp = @t_cp, t_cp_nt = @t_cp_nt, ma_nvbh = @ma_nvbh, ck_thue_yn = @ck_thue_yn, ma_gia = @ma_gia, ten_vtthue = @ten_vtthue, ghi_chuthue = @ghi_chuthue, " +
-            //    $"tk_ck = @tk_ck, so_seri = @so_seri, thue_suat = @thue_suat, tk_thue_no = @tk_thue_no, tk_thue_co = @tk_thue_co, ma_kh2 = @ma_kh2, nam = @nam, ky = @ky, xtag = @xtag, sl_in = @sl_in, so_dh = @so_dh, nhieu_thue_suat = @nhieu_thue_suat, user_id2 = {user_id}, datetime2 = getdate() ";
 
             //query += $" where stt_rec = @stt_rec";
             query += $"{update_prime_table_query}";
@@ -868,31 +883,18 @@ SELECT is_success, message FROM @check";
             }
 
             // xử lý tạo hđđt nháp
+            // 2025-08-18: Tạm xử lý bỏ lập nháp hddt của phiếu bán buôn => chờ phân tích lại giải pháp
+            string einvoiceMessage = "";
+            /*
             if (vc_item.status == "2" && vc_item.fnote3 == "1")
             {
-                EInvoice.Service serviceEinvoice = new EInvoice.Service(this._configuration);
-                string res = serviceEinvoice.CreateDraft(stt_rec, ma_ct).Result.ToString();
-                var resultEInvoice = JsonConvert.DeserializeObject<EInvoice.Response>(res);
-                if (resultEInvoice.d.voucherId == stt_rec)
-                {
-                    model.success = true;
-                    model.message = "updated_and_create_draft_invoice_success";
-                }
-                else
-                {
-                    if (resultEInvoice.d.description != null)
-                    {
-                        model.message = resultEInvoice.d.description;
-                    }
-                    else
-                    {
-                        model.message = "updated_success_and_create_draft_invoice_fail";
-                    }
-                }
+                CommonObjectModel resultEinvoice = CommonService.CreateEinvoiceDraft(this._configuration, stt_rec, ma_ct, "update");
+                einvoiceMessage = resultEinvoice.message ?? "";
             }
+            */
 
             model.success = true;
-            //model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
@@ -1478,55 +1480,5 @@ END";
             return result_model;
         }
 
-        private string validEInvoice(VoucherItem vc_item)
-        {
-            string hd_mst = vc_item.hd_mst ?? "";
-            string hd_email = vc_item.hd_email ?? "";
-            string hd_ten_kh = vc_item.hd_ten_kh ?? "";
-            string hd_dia_chi = vc_item.hd_dia_chi ?? "";
-            string hd_loai_giay_to = vc_item.hd_loai_giay_to ?? "";
-            string hd_so_giay_to = vc_item.hd_so_giay_to ?? "";
-            string hd_nguoi_mua = vc_item.hd_nguoi_mua ?? "";
-            string objEinvoice = vc_item.fnote2 ?? "";
-
-            // valid tên người mua
-            if (hd_nguoi_mua.Length > 200) {
-                return "invoice_buyerName_info";
-            }
-            // valid loại giấy tờ chỉ cho phép "", "1", "3"
-            if (!string.IsNullOrEmpty(hd_loai_giay_to) &&
-                hd_loai_giay_to != "1" &&
-                hd_loai_giay_to != "3")
-            {
-                return "invoice_buyerIdType_info";
-            }
-            // valid số giấy tờ
-            if (hd_so_giay_to.Length > 100)
-            {
-                return "invoice_buyerIdNo_info";
-            }
-            // valid cá nhân
-            if (objEinvoice == "0" && string.IsNullOrEmpty(hd_nguoi_mua))
-            {
-                return "invoice_individuals_info";
-            }
-            // valid doanh nghiệp
-            if (objEinvoice == "1" &&
-                (
-                    string.IsNullOrEmpty(hd_mst) ||
-                    string.IsNullOrEmpty(hd_ten_kh) ||
-                    string.IsNullOrEmpty(hd_dia_chi))
-                )
-            {
-                return "invoice_bussiness_info";
-            }
-            // valid giấy tờ
-            if ((hd_loai_giay_to == "1" || hd_loai_giay_to == "2") && string.IsNullOrEmpty(hd_so_giay_to))
-            {
-                return "invoice_papersType_info";
-            }
-
-            return "";
-        }
     }
 }

@@ -35,6 +35,21 @@ namespace Voucher.SVTran_BHD.Models
         //Mã đơn vị bán
         public string shopCode { get; set; }
 
+        //Tài khoản ngân hàng
+        public string accountNo { get; set; } = "";
+
+        //Tên ngân hàng
+        public string bankName { get; set; } = "";
+
+        //Số định danh cá  nhân
+        public string identityNo { get; set; } = "";
+
+        //Số hộ chiếu
+        public string passportNo { get; set; } = "";
+
+        //Mã đơn vị quan hệ ngân sách
+        public string dvqhcsNo { get; set; } = "";
+
         //Danh sách hàng hóa
         public List<MobiInvDetail> lstItem { get; set; }
 

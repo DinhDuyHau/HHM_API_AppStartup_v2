@@ -513,7 +513,7 @@ IF NOT EXISTS(SELECT 1 FROM dmttct WHERE ma_ct = @vc_code AND status = @vc_statu
 	RETURN
 END
 
-IF @status_older <> '0' BEGIN
+IF @status_older <> '0' AND @status_older <> '1' AND @status_older <> '3' BEGIN
     UPDATE @check SET is_success = 0, message = 'status_changed_cannot_update'
 	SELECT * FROM @check
 	RETURN
@@ -726,8 +726,26 @@ SELECT is_success, message FROM @check";
                 service.ExecuteNonQuery(queryIMEI);
             }
 
+            // xử lý tạo hđđt nháp
+            string einvoiceMessage = "";
+            if (vc_item.status == "2")
+            {
+                CommonObjectModel resultEinvoice = CommonService.IssueInvoice(this._configuration, stt_rec, ma_ct);
+                einvoiceMessage = resultEinvoice.message ?? "";
+
+                //Kiểm tra tình trạng phát hành VAT, nếu fail sẽ reset trạng thái phiếu về "chờ phát hành"
+                bool publish_fail = CommonService.CheckAndResetStatusWhenPublishVatFail(stt_rec, ma_ct, "3");
+                if (publish_fail)
+                {
+                    model.success = false;
+                    model.message = "publish_vat_fail";
+                    model.result = einvoiceMessage;
+                    return model;
+                }
+            }
+
             model.success = true;
-            model.message = "";
+            model.message = einvoiceMessage;
             model.result = vc_item;
             return model;
         }
