@@ -13,5 +13,7 @@ namespace Voucher.CDTran_HT1.Models
         public decimal tien_da_hoan { get; set; }
 
         public decimal tien_con_lai { get; set; }
+
+        public string ten_ct_tt { get; set; }
     }
 }

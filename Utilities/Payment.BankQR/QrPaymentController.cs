@@ -253,6 +253,7 @@ namespace Payment.BankQR
                     entities.PageIndex = page_index;
                     entities.PageCount = totalPage;
                     entities.RecordCount = row_count;
+                    entities.Items = new List<FTCodeResponse>();
 
                     if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                     {
