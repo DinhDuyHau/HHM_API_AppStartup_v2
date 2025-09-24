@@ -1596,7 +1596,7 @@ END";
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
             string sql = @"declare @buy_item nvarchar(max) = @hang_mua
-        exec fs_Calc$Discount$BHA_200 @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct, @stt_rec";
+        exec fs_Calc$Discount$BHA @ma_cuahang, @ma_kh, @ngay_lap, @buy_item, @ma_ct, @stt_rec";
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
             new SqlParameter()
