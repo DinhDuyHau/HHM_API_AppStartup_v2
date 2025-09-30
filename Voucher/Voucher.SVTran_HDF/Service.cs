@@ -12,6 +12,7 @@ using Genbyte.Base.Security;
 using Genbyte.Component.Voucher.Model;
 using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using System;
 
 namespace Voucher.SVTran_HDF
 {
@@ -1101,35 +1102,63 @@ END";
 
         public CommonObjectModel Finding(List<Dictionary<string, object>> data)
         {
-            EntityCollection<VoucherFindingModel> entities = new EntityCollection<VoucherFindingModel>()
+            //convert
+            FindExtParam param = Converter.DictionaryToFindExtParam(data);
+
+            EntityCollection<Dictionary<string, object>> entities = new EntityCollection<Dictionary<string, object>>()
             {
-                PageCount = 1,
-                PageIndex = 1,
-                PageSize = 50,
-                RecordCount = 1,
-                Items = new List<VoucherFindingModel>()
+                PageCount = 0,
+                PageIndex = param.page_index,
+                PageSize = param.page_size,
+                RecordCount = 0,
+                Items = new List<Dictionary<string, object>>()
             };
 
-            PropertyInfo[] props = typeof(VoucherFindingModel).GetProperties();
-            foreach (Dictionary<string, object> record in data)
+            string filter_shopid = string.IsNullOrEmpty(param.ma_cuahang) ? "" : param.ma_cuahang;
+
+            CoreService core_service = new CoreService();
+            string sql = "EXEC Genbyte$SalesVoucher$Finding_HDF @ngay_bd, @ngay_kt, @ma_cuahang, @ma_ct, @so_ct_bd, @so_ct_kt, @ma_kh, @ma_kho, @ma_vt, @ma_imei, @status, @whereClause, @page_index, @page_size, @admin, @user_id, @filter_shopid";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.AddRange(new List<SqlParameter>() {
+                new SqlParameter(){ ParameterName = "@ngay_bd", SqlDbType = SqlDbType.DateTime, Value = param.ngay_bd },
+                new SqlParameter(){ ParameterName = "@ngay_kt", SqlDbType = SqlDbType.DateTime, Value = param.ngay_kt },
+                new SqlParameter(){ ParameterName = "@ma_cuahang", SqlDbType = SqlDbType.VarChar, Value = Startup.Shop },
+                new SqlParameter(){ ParameterName = "@ma_ct", SqlDbType = SqlDbType.VarChar, Value = param.ma_ct?.Trim() },
+                new SqlParameter(){ ParameterName = "@so_ct_bd", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_bd },
+                new SqlParameter(){ ParameterName = "@so_ct_kt", SqlDbType = SqlDbType.VarChar, Value = param.so_ct_kt },
+                new SqlParameter(){ ParameterName = "@ma_kh", SqlDbType = SqlDbType.VarChar, Value = param.ma_kh?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_kho", SqlDbType = SqlDbType.VarChar, Value = param.ma_kho?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_vt", SqlDbType = SqlDbType.VarChar, Value = param.ma_vt?.Trim() },
+                new SqlParameter(){ ParameterName = "@ma_imei", SqlDbType = SqlDbType.VarChar, Value = param.ma_imei?.Trim() },
+                new SqlParameter(){ ParameterName = "@status", SqlDbType = SqlDbType.VarChar, Value = param.status },
+                new SqlParameter(){ ParameterName = "@whereClause", SqlDbType = SqlDbType.NVarChar, Value = param.where_clause },
+                new SqlParameter(){ ParameterName = "@page_index", SqlDbType = SqlDbType.Int, Value = param.page_index },
+                new SqlParameter(){ ParameterName = "@page_size", SqlDbType = SqlDbType.Int, Value = param.page_size },
+                new SqlParameter(){ ParameterName = "@admin", SqlDbType = SqlDbType.Bit, Value = Startup.Admin == 0 ? false : true },
+                new SqlParameter(){ ParameterName = "@user_id", SqlDbType = SqlDbType.Int, Value = Startup.UserId },
+                new SqlParameter(){ ParameterName = "@filter_shopid", SqlDbType = SqlDbType.VarChar, Value = filter_shopid },
+            });
+
+            // chỉ định phiếu phân quyền
+            if (data.Any(x => x.ContainsKey("sysid")))
             {
-                VoucherFindingModel item = new VoucherFindingModel();
-                foreach (PropertyInfo property in props)
+                paras.Add(new SqlParameter()
                 {
-                    if (record.ContainsKey(property.Name))
-                    {
-                        Type type = property.PropertyType;
-                        if (type == typeof(int) || type == typeof(int?))
-                            property.SetValue(item, Convert.ToInt32(record[property.Name]));
-                        else if (type == typeof(decimal) || type == typeof(decimal?))
-                            property.SetValue(item, Convert.ToDecimal(record[property.Name]));
-                        else if (type == typeof(DateTime) || type == typeof(DateTime?))
-                            property.SetValue(item, Convert.ToDateTime(record[property.Name]));
-                        else
-                            property.SetValue(item, record[property.Name]);
-                    }
-                }
-                entities.Items.Add(item);
+                    ParameterName = "@sysid",
+                    SqlDbType = SqlDbType.VarChar,
+                    Value = param.sysid
+                });
+
+                sql += ", @sysid";
+            }
+
+            var dataSet = core_service.ExecSql2DataSet(sql, paras);
+            if (dataSet != null && dataSet.Tables.Count > 2)
+            {
+                entities.PageCount = (int)dataSet.Tables[0].Rows[0]["TotalPage"];
+                entities.RecordCount = (int)dataSet.Tables[0].Rows[0]["TotalRecordCount"];
+                entities.PageSize = (int)dataSet.Tables[0].Rows[0]["PageSize"];
+                entities.Items = Converter.TableToListDictionary(dataSet.Tables[2]);
             }
 
             CommonObjectModel model = new CommonObjectModel()

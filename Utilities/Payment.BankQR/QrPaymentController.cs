@@ -16,6 +16,9 @@ using Genbyte.Base.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Memory;
+using System.Data.SqlClient;
+using Payment.BankQR.Models;
+using System.Text.Json;
 
 namespace Payment.BankQR
 {
@@ -76,7 +79,7 @@ namespace Payment.BankQR
             }
             catch (Exception ex)
             {
-                Logger.Insert(Startup.Unit, $"HttpGet -- InvPaymentController/GetRefCode", ex);
+                Logger.Insert(Startup.Unit, $"HttpGet -- QrPaymentController/GetRefCode", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
             return Ok(model);
@@ -116,7 +119,7 @@ namespace Payment.BankQR
             }
             catch (Exception ex)
             {
-                Logger.Insert(Startup.Unit, $"HttpGet -- InvPaymentController/GetRefCode", ex);
+                Logger.Insert(Startup.Unit, $"HttpPost -- QrPaymentController/CreateQR", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
             return Ok(model);
@@ -156,11 +159,117 @@ namespace Payment.BankQR
             }
             catch (Exception ex)
             {
-                Logger.Insert(Startup.Unit, $"HttpGet -- InvPaymentController/GetRefCode", ex);
+                Logger.Insert(Startup.Unit, $"HttpDelete -- QrPaymentController/DeleteQR", ex);
                 return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
             }
             return Ok(model);
         }
 
+
+        [HttpPost("getftcodebycustomer")]
+        public async Task<IActionResult> GetFTCodeByCustomer([FromBody] FTCodeReqModel body, [FromQuery] int page_index = 1, [FromQuery] int page_size = 0)
+        {
+            CommonObjectModel model = new CommonObjectModel()
+            {
+                success = false,
+                message = "",
+                result = null
+            };
+
+            string ma_kh = body.ma_kh;
+            CoreService service = new CoreService();
+
+            //Lấy dữ liệu theo shop đăng nhập hiện tại
+            string ma_cuahang = Startup.Shop;
+
+            //check sql injection
+            if(!service.IsSQLInjectionValid(ma_kh))
+            {
+                return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+            }
+            if(body.filter != null && body.filter.Count > 0) foreach (Dictionary<string, string> dic in body.filter)
+                {
+                    string item_value = dic.Values.Last();
+                    if (!service.IsSQLInjectionValid(item_value))
+                        return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                }
+
+            try
+            {
+                //convert filter to json
+                string filter_json = "";
+                if(body.filter != null && body.filter.Count > 0)
+                    filter_json = JsonSerializer.Serialize(body.filter, new JsonSerializerOptions { WriteIndented = false });
+
+                string sql = "exec Genbyte$Payment$GetFTCodeForRefund @ma_kh, @ma_cuahang, @page_index, @page_size, @extFilter";
+                List<SqlParameter> paras = new List<SqlParameter>();
+                #region add parameters
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@ma_kh",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_kh.Replace("'", "''")
+                });
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@ma_cuahang",
+                    SqlDbType = SqlDbType.Char,
+                    Value = ma_cuahang
+                });
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@page_index",
+                    SqlDbType = SqlDbType.Int,
+                    Value = page_index
+                });
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@page_size",
+                    SqlDbType = SqlDbType.Int,
+                    Value = page_size
+                });
+                paras.Add(new SqlParameter()
+                {
+                    ParameterName = "@extFilter",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Value = filter_json
+                });
+                #endregion
+                DataSet ds = service.ExecSql2DataSet(sql, paras);
+                if(ds != null && ds.Tables.Count >= 2)
+                {
+                    int record_per_page = page_size;
+                    int totalPage = 0;
+                    int row_count = 0;
+                    if (ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+                        totalPage = Convert.ToInt32(ds.Tables[0].Rows[0]["TotalPage"]);
+                        record_per_page = Convert.ToInt32(ds.Tables[0].Rows[0]["PageSize"]);
+                        row_count = Convert.ToInt32(ds.Tables[0].Rows[0]["TotalRecordCount"]);
+                    }
+
+                    EntityCollection<FTCodeResponse> entities = new EntityCollection<FTCodeResponse>();
+                    entities.PageSize = record_per_page;
+                    entities.PageIndex = page_index;
+                    entities.PageCount = totalPage;
+                    entities.RecordCount = row_count;
+                    entities.Items = new List<FTCodeResponse>();
+
+                    if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                    {
+                        entities.Items = ds.Tables[1].ToList<FTCodeResponse>().ToList();
+                    }
+
+                    model.success = true;
+                    model.result = entities;
+                }
+            }
+            catch(Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"HttpPost -- QrPaymentController/GetFTCodeByCustomer", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+            return Ok(model);
+        }
     }
 }
