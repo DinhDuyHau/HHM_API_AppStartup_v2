@@ -257,7 +257,7 @@ namespace Voucher.CDTran_HT1
             query += "\n\n";
             query += $@"if @status <> '0' begin
     update {prime_table} set dien_giai = dbo.MokaOnline$Function$Message$ConvertToUnsign(dien_giai) where stt_rec = @stt_rec
-    update {prime_table} set dien_giai = rtrim(@ma_cuahang) + '_' + rtrim(@ma_kh) + N' hoan tien ' + dien_giai 
+    update {prime_table} set dien_giai = rtrim(@ma_cuahang) + '_' + rtrim(@ma_kh) + left(dien_giai, 26)
         where stt_rec = @stt_rec
 end";
             // Cập nhật các thông tin từ bảng thanh toán QR
@@ -510,7 +510,7 @@ SELECT is_success, message FROM @check";
             query += "\n\n";
             query += $@"if @status <> '0' begin
     update {prime_table} set dien_giai = dbo.MokaOnline$Function$Message$ConvertToUnsign(dien_giai) where stt_rec = @stt_rec
-    update {prime_table} set dien_giai = rtrim(@ma_cuahang) + '_' + rtrim(@ma_kh) + N' hoan tien ' + dien_giai 
+    update {prime_table} set dien_giai = rtrim(@ma_cuahang) + '_' + rtrim(@ma_kh) + left(dien_giai, 26) 
         where stt_rec = @stt_rec
 end";
             // Cập nhật các thông tin từ bảng thanh toán QR
