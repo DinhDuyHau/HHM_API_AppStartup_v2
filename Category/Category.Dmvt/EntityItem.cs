@@ -38,6 +38,7 @@ namespace Category.Dmvt
         public string nh_vt3 { get; set; }
 
         public string status { get; set; }
+        public string ma_thue { get; set; }
 
     }
 }
