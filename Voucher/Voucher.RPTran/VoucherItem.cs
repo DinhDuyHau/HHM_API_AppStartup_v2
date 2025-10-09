@@ -18,5 +18,6 @@ namespace Voucher.RPTran
         public decimal t_tt { get; set; }
         public decimal t_tt_nt { get; set; }
         public DateTime? ngay_lct { get; set; }
+        public string ong_ba { get; set; }
     }
 }
