@@ -117,5 +117,8 @@ namespace Voucher.SVTran_BHK
         public decimal tien_kb09 { get; set; }
         public decimal tien_max09 { get; set; }
         public decimal tien_ck09 { get; set; }
+
+        public string ma_vt_kmtt { get; set; }
+        public decimal tien_kmqd { get; set; }
     }
 }
