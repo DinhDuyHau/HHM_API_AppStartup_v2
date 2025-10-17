@@ -34,5 +34,13 @@ namespace Voucher.SVTran_DXA
 
         public decimal gia_full_vat_nt { get; set; }
 
+        public string ma_td1 { get; set; }
+        public string ma_td2 { get; set; }
+        public string ma_td3 { get; set; }
+
+        public decimal sl_td1 { get; set; }
+        public decimal sl_td2 { get; set; }
+
+        public string s1 { get; set; }
     }
 }

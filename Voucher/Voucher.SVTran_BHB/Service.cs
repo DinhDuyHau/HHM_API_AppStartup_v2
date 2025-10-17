@@ -408,6 +408,10 @@ namespace Voucher.SVTran_BHB
             query += $"exec MokaOnline$App$Voucher$UpdateGrandTable '{this.VoucherCode}', '{this.MasterTable}', '{prime_table}', 'stt_rec', '{stt_rec}'";
             service.ExecuteNonQuery(query);
 
+            // cập nhật hoa hồng bán buôn
+            query = $"EXEC Genbyte$Commission$BHB$Update '{stt_rec}'";
+            service.ExecuteNonQuery(query);
+
             // xử lý tạo hđđt nháp
             string einvoiceMessage = "";
             // 2025-08-18: Tạm xử lý bỏ lập nháp hddt của phiếu bán buôn => chờ phân tích lại giải pháp
@@ -881,6 +885,10 @@ SELECT is_success, message FROM @check";
                 queryIMEI = $"exec Genbyte$IMEI$UpdateState '{vc_item.ma_cuahang}', '{imei}', '0', 0";
                 service.ExecuteNonQuery(queryIMEI);
             }
+
+            // cập nhật hoa hồng bán buôn
+            query = $"EXEC Genbyte$Commission$BHB$Update '{stt_rec}'";
+            service.ExecuteNonQuery(query);
 
             // xử lý tạo hđđt nháp
             // 2025-08-18: Tạm xử lý bỏ lập nháp hddt của phiếu bán buôn => chờ phân tích lại giải pháp
