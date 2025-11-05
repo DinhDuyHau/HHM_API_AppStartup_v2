@@ -876,7 +876,7 @@ namespace Imei
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         #region GetImeiSoldInfoReturn
-        public CommonObjectModel GetImeiSoldInfoReturn(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "", bool tra_lai_cod = false, bool tra_lai_freedelivery = false)
+        public CommonObjectModel GetImeiSoldInfoReturn(string imeiId, string ma_cuahang, string ma_ct, decimal rate, decimal tien_giam, string loai_tra_lai = "", bool tra_lai_cod = false, bool tra_lai_freedelivery = false, bool dieu_chinh_gia = false)
         {
             CommonObjectModel model = new CommonObjectModel()
             {
@@ -887,7 +887,7 @@ namespace Imei
             CoreService core_service = new CoreService();
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"exec Genbyte$IMEI$GetSoldInfoReturn @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod, @tra_lai_freedelivery";
+            string sql = @"exec Genbyte$IMEI$GetSoldInfoReturn @ma_imei, @ma_cuahang, @ma_ct, @rate, @tien_giam, @loai_tra_lai, @tra_lai_cod, @tra_lai_freedelivery, @dieu_chinh_gia";
 
             List<SqlParameter> paras = new List<SqlParameter>();
             paras.AddRange(new List<SqlParameter>() {
@@ -936,6 +936,12 @@ namespace Imei
                 ParameterName = "@tra_lai_freedelivery",
                 SqlDbType = SqlDbType.Bit,
                 Value = tra_lai_freedelivery
+            },
+            new SqlParameter()
+            {
+                ParameterName = "@dieu_chinh_gia",
+                SqlDbType = SqlDbType.Bit,
+                Value = dieu_chinh_gia
             }
             });
             DataSet ds = core_service.ExecSql2DataSet(sql, paras);
