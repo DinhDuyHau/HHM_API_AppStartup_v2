@@ -1191,7 +1191,10 @@ SELECT is_success, message FROM @check";
             {
                 detail_query = voucherQuery.Details.FirstOrDefault(x => x.ParaName == _DETAIL_TT_PARA);
                 detail_tt_table = detail_query?.TableName + (detail_query.Partition_yn ? expression : "");
-                string update_paid_query = VoucherUtils.getPaidQuery(new TTDetail(), detail_tt_table, _DETAIL_TT_PARA, 2);
+
+                // 2025-11-14: bổ sung mã thanh toán không cần cập nhật lại (các mã thanh toán liên kết trực tiếp với bank)
+                string paid_code_not_update = "MBQR";
+                string update_paid_query = VoucherUtils.getPaidQuery(new TTDetail(), detail_tt_table, _DETAIL_TT_PARA, 2, paid_code_not_update);
 
                 query += "\n\n";
                 query += detail_query?.QueryString;
