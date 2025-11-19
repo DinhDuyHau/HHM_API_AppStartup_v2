@@ -494,6 +494,13 @@ end
                 }
             }
 
+            // 2025-11-19: check thanh toán QR
+            result_model = CommonService.checkPaidQR(vc_item, _PAID_PARA, index_value);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
+
             //Check tồn tại chứng từ & trạng thái chứng từ thuộc danh sách trạng thái được phép sửa
             string sql = @"DECLARE @check TABLE (
 	            is_success BIT,
