@@ -21,5 +21,7 @@ namespace Customer.Model
         public string ten_vt { get; set; }
         public string ten_ctr { get; set; }
         public string ma_ctr { get; set; }
+
+        public string ma_cuahang { get; set; }
     }
 }
