@@ -1401,7 +1401,7 @@ END";
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<SVServiceModel> pr_services = ds.Tables[2].ToList<SVServiceModel>();
                 IList<SVDiscountModel> pr_discount = ds.Tables[3].ToList<SVDiscountModel>();
-                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[4].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> pr_paid = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[5].ToList<SVWarrantyModel>();
                 IList<SVTransportModel> pr_transport = ds.Tables[6].ToList<SVTransportModel>();
                 IList<SVPromotionModel> km_detail = ds.Tables[7].ToList<SVPromotionModel>();
