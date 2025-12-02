@@ -1,17 +1,18 @@
 ﻿
+using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
+using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher.Model;
+using Genbyte.Sys.AppAuth;
+using Genbyte.Sys.Common;
+using Genbyte.Sys.Common.Models;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Text.Json;
-using Genbyte.Sys.Common;
-using Genbyte.Sys.Common.Models;
-using Genbyte.Component.Voucher;
-using Genbyte.Base.CoreLib;
-using Genbyte.Sys.AppAuth;
 using System.Text.RegularExpressions;
-using Genbyte.Component.Voucher.Model;
-using Genbyte.Base.Security;
-using Microsoft.Extensions.Configuration;
+using Voucher.SVTran_BHF.Models;
 
 namespace Voucher.SVTran_BHF
 {
@@ -1314,7 +1315,7 @@ END";
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<DVDetail> dv_detail = ds.Tables[2].ToList<DVDetail>();
                 IList<CKDetail> ck_detail = ds.Tables[3].ToList<CKDetail>();
-                IList<PaidDetailBaseResponse> tt_detail = ds.Tables[4].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> tt_detail = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<KMDetail> km_detail = ds.Tables[6].ToList<KMDetail>();
                 IList<EInvoiceModel> pr_einvoice = ds.Tables[7].ToList<EInvoiceModel>();

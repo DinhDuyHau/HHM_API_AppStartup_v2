@@ -1,4 +1,12 @@
-﻿using System;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
+using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher.Model;
+using Genbyte.Sys.AppAuth;
+using Genbyte.Sys.Common;
+using Genbyte.Sys.Common.Models;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,14 +17,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Genbyte.Sys.Common;
-using Genbyte.Sys.Common.Models;
-using Genbyte.Component.Voucher;
-using Genbyte.Base.CoreLib;
-using Genbyte.Sys.AppAuth;
-using Genbyte.Component.Voucher.Model;
-using Genbyte.Base.Security;
-using Microsoft.Extensions.Configuration;
+using Voucher.SVTran_BHE.Models;
 
 namespace Voucher.SVTran_BHE
 {
@@ -1306,7 +1307,7 @@ END";
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
                 IList<DVDetail> dv_detail = ds.Tables[2].ToList<DVDetail>();
                 IList<CKDetail> ck_detail = ds.Tables[3].ToList<CKDetail>();
-                IList<PaidDetailBaseResponse> tt_detail = ds.Tables[4].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> tt_detail = ds.Tables[4].ToList<PaidDetailResponse>();
                 IList<BHDetail> bh_detail = ds.Tables[5].ToList<BHDetail>();
                 IList<KMDetail> km_detail = ds.Tables[6].ToList<KMDetail>();
                 tt_detail.ToList().ForEach(x => {

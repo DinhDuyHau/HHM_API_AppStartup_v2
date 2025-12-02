@@ -1,4 +1,13 @@
-﻿using System;
+﻿using Genbyte.Base.CoreLib;
+using Genbyte.Base.Security;
+using Genbyte.Component.Voucher;
+using Genbyte.Component.Voucher.Model;
+using Genbyte.Sys.AppAuth;
+using Genbyte.Sys.Common;
+using Genbyte.Sys.Common.Models;
+using Imei.Models;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,17 +17,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Genbyte.Sys.Common;
-using Genbyte.Sys.Common.Models;
-using Genbyte.Component.Voucher;
-using Genbyte.Base.CoreLib;
-using Genbyte.Sys.AppAuth;
-using Genbyte.Component.Voucher.Model;
-using Microsoft.Extensions.Configuration;
-using Genbyte.Base.Security;
-using Imei.Models;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Voucher.SVTran_BHB.Models;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Voucher.SVTran_BHB
@@ -1026,7 +1027,7 @@ END";
             {
                 VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault(new VoucherItem());
                 IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
-                IList<PaidDetailBaseResponse> pr_paid = ds.Tables[2].ToList<PaidDetailBaseResponse>();
+                IList<PaidDetailResponse> pr_paid = ds.Tables[2].ToList<PaidDetailResponse>();
                 IList<SVWarrantyModel> pr_warranty = ds.Tables[3].ToList<SVWarrantyModel>();
                 IList<SVTransModel> pr_trans = ds.Tables[4].ToList<SVTransModel>();
                 IList<EInvoiceModel> pr_einvoice = ds.Tables[5].ToList<EInvoiceModel>();
