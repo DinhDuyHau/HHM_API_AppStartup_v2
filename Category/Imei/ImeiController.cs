@@ -833,11 +833,17 @@ namespace Imei
                 {
                     entities.ForEach(x =>
                     {
-                        x.stt_rec_px = APIService.EncryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                        x.stt_rec_px = string.IsNullOrEmpty(x.stt_rec_px) ? "" :
+                            APIService.EncryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
                     });
 
-                    model.success = true;
                     model.result = entities;
+                    model.success = true;
+                }
+                else
+                {
+                    model.success = false;
+                    model.message = $"Không tìm thấy phiếu xuất bảo hành của imei: {ma_imei.Trim()}, hoặc imei đã được nhập bảo hành";
                 }
                 return Ok(model);
             }
