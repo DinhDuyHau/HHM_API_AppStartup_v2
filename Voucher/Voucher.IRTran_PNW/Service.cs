@@ -206,6 +206,14 @@ namespace Voucher.IRTran_PNW
             {
                 return result_model;
             }
+
+            // check mapping xuất bảo hành
+            result_model = checkMappingPXW(vc_item);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
+
             result_model.result = vc_item;
             return result_model;
         }
@@ -555,6 +563,14 @@ SELECT is_success, message FROM @check";
             {
                 return result_model;
             }
+
+            // check mapping xuất bảo hành
+            result_model = checkMappingPXW(vc_item);
+            if (!result_model.success)
+            {
+                return result_model;
+            }
+
             //return voucher object
             result_model.result = vc_item;
             return result_model;
@@ -1027,6 +1043,8 @@ END";
             }
             return result_model;
         }
+
+        #region checkImeiUpdate
         CommonObjectModel checkImeiUpdate(VoucherItem vc_item, BaseModel vc_item_old)
         {
             var listImei = new List<string>();
@@ -1130,5 +1148,39 @@ END";
             }
             return result_model;
         }
+        #endregion
+
+        // Kiểm tra mapping với phiếu xuất bảo hành của dữ liệu chi tiết phiếu nhập bảo hành
+        #region checkMappingPXW
+        CommonObjectModel checkMappingPXW(VoucherItem vc_item)
+        {
+            CommonObjectModel result_model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            if (vc_item.details.Any(x => x.Id == 1))
+            {
+                VoucherDetail? item_detail = vc_item.details.FirstOrDefault(x => x.Id == 1);
+
+                if (item_detail != null)
+                {
+                    foreach (var item in item_detail.Data)
+                    {
+                        var svDetail = item as PNWDetail;
+                        if (string.IsNullOrEmpty(svDetail!.stt_rec_px) && string.IsNullOrEmpty(svDetail!.so_ct_px))
+                        {
+                            result_model.success = false;
+                            result_model.message = $"Không tồn tại thông tin xuất bảo hành của imei '{svDetail.ma_imei.Trim()}', hãy thực hiện nhập bảo hành lại cho imei này.";
+                            return result_model;
+                        }
+                    }
+                }
+            }
+            return result_model;
+        }
+        #endregion
+
     }
 }
