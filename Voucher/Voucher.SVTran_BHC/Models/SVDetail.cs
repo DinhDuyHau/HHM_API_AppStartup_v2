@@ -133,5 +133,6 @@ namespace Voucher.SVTran_BHC
         public decimal gia_tmdt_vat { get; set; }
 
         public decimal phi_dc_khac { get; set; }
+        public string imei_mua { get; set; }
     }
 }
