@@ -56,7 +56,7 @@ namespace Imei
                 if(!_service.IsSQLInjectionValid(ma_imei) || !_service.IsSQLInjectionValid(ma_cuahang)
                     || !_service.IsSQLInjectionValid(ma_ct))
                     return BadRequest(new { message = ApiReponseMessage.Error_InputData });
-                ma_imei = HttpUtility.UrlDecode(ma_imei);
+                    ma_imei = HttpUtility.UrlDecode(ma_imei);
                 //lấy trạng thái & thông tin imei
                 DataSet ds = _service.GetImeiInStore(ma_imei, ma_cuahang, ma_ct, ma_kh, ngay_ct);
                 if(ds != null && ds.Tables.Count >= 2)
@@ -129,6 +129,103 @@ namespace Imei
             }
         }
         #endregion
+
+        /// <summary>
+        /// Lấy thông tin imei theo cửa hàng (POST)
+        /// </summary>
+        /// <param name="request">Thông tin imei, cửa hàng, chứng từ</param>
+        /// <returns></returns>
+        [HttpPost("getinstore2")]
+        #region GetImeiInStore2
+        public IActionResult GetImeiInStore2([FromBody] ImeiRequest request)
+        {
+            try
+            {
+                CommonObjectModel model = new CommonObjectModel()
+                {
+                    success = false,
+                    message = "",
+                    result = null
+                };
+                Service _service = new Service();
+
+                //check injection
+                if (!_service.IsSQLInjectionValid(request.ma_imei) || !_service.IsSQLInjectionValid(request.ma_cuahang)
+                    || !_service.IsSQLInjectionValid(request.ma_ct))
+                    return BadRequest(new { message = ApiReponseMessage.Error_InputData });
+                //lấy trạng thái & thông tin imei
+                DataSet ds = _service.GetImeiInStore(request.ma_imei, request.ma_cuahang, request.ma_ct, request.ma_kh, request.ngay_ct);
+                if (ds != null && ds.Tables.Count >= 2)
+                {
+                    ImeiState imei_state = null;
+                    if (ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+                        imei_state = ds.Tables[0].ToList<ImeiState>().FirstOrDefault()!;
+                    }
+                    if (imei_state != null)
+                    {
+                        model.success = imei_state.exists_yn && imei_state.in_store_yn
+                                        && !imei_state.bao_hanh_yn
+                                        && !imei_state.dieu_chuyen_yn
+                                        && !imei_state.xuat_yn
+                                        && !imei_state.ban_hang_yn
+                                        && !imei_state.tra_ncc_yn
+                                        && !imei_state.dat_hang_yn;
+
+                        //check vật tư được đánh dấu cho phép xuất bán liên kết
+                        if (request.ma_ct == "BHD")
+                            model.success = model.success && imei_state.ban_lk_yn;
+
+                        if (!imei_state.exists_yn)
+                            model.message = "exists_yn_no";
+                        else if (!imei_state.in_store_yn)
+                            model.message = "in_store_yn_no";
+                        else if (imei_state.bao_hanh_yn)
+                            model.message = "imei_in_warranty_state";
+                        else if (imei_state.dat_hang_yn)
+                            model.message = "dat_hang_yn_yes";
+                        else if (imei_state.dieu_chuyen_yn)
+                            model.message = "dieu_chuyen_yn_yes";
+                        else if (imei_state.xuat_yn)
+                            model.message = "xuat_yn_yes";
+                        else if (imei_state.ban_hang_yn)
+                            model.message = "ban_hang_yn_yes";
+                        else if (imei_state.tra_ncc_yn)
+                            model.message = "tra_ncc_yn_yes";
+                        else if (request.ma_ct == "BHD" && !imei_state.ban_lk_yn)
+                            model.message = "ban_lk_yn_fail";
+
+                        if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                        {
+                            List<Dictionary<string, object>> item_info = Converter.TableToDictionary(ds.Tables[1]);
+
+                            //Hàng khuyến mại tặng kèm
+                            List<Dictionary<string, object>> promotion = _service.GetPromotionByImei(request.ma_cuahang, request.ma_imei);
+                            item_info[0].Add("promotions", promotion);
+
+                            //add danh sách phí sàn đối với chứng từ bán hàng TMĐT (BHC)
+                            if ((request.ma_ct == "BHC" || request.ma_ct == "bhc")
+                                && ds.Tables.Count >= 3 && ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            {
+                                IList<ECommFee> list_fee = ds.Tables[2].ToList<ECommFee>();
+                                item_info[0].Add("ecomm_fee", list_fee);
+                            }
+
+                            model.result = item_info;
+                        }
+                    }
+                }
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Insert(Startup.Unit, $"POST -- ImeiController/GetImeiInStore2", ex);
+                return BadRequest(new { message = ApiReponseMessage.Error_Runtime });
+            }
+        }
+        #endregion
+
 
         /// <summary>
         /// Lấy thông tin imei theo cửa hàng (version 2: copy từ GetImeiInStore thay sang sử dụng phương thức POST)
