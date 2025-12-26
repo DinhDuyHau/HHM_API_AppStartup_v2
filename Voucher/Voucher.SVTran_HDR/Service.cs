@@ -636,6 +636,20 @@ SELECT is_success, message FROM @check";
                 return result_model;
             }
 
+            var details = (vc_item.details[0].Data as List<DetailEntity>)
+                  ?.Cast<SVDetail>()
+                  .ToList();
+            if (details != null && details.Count > 0)
+            {
+                string hd_so = details[0].hd_so?.Replace("'", "''");
+                BaseModel resBHC = (BaseModel)this.GetByIdBHC(hd_so).result;
+                result_model = checkVoucher(vc_item, resBHC);
+                if (!result_model.success)
+                {
+                    return result_model;
+                }
+            }
+
             //return voucher object
             result_model.result = vc_item;
             return result_model;
@@ -1006,6 +1020,66 @@ END";
             }
             return model;
         }
+        //Lấy thông tin phiếu bán TMĐT
+        public CommonObjectModel GetByIdBHC(string voucherId)
+        {
+            CommonObjectModel model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            CoreService core_service = new CoreService();
+
+            //check sql injection
+            if (!core_service.IsSQLInjectionValid(voucherId))
+                throw new Exception(ApiReponseMessage.Error_InputData);
+
+            //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
+            string sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @so_ct CHAR(12), @exp CHAR(6)
+SET @so_ct = @vc_id
+IF EXISTS(SELECT 1 FROM c593$000000 WHERE so_ct = @so_ct) BEGIN
+	SELECT @stt_rec = stt_rec, @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM c593$000000 WHERE so_ct = @so_ct
+	SELECT @q = 'select * from m593$' + @exp + ' where stt_rec = @stt_rec '
+	SELECT @q = @q + CHAR(13) + 'select * from d593$' + @exp + ' where stt_rec = @stt_rec'
+	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
+END";
+            //sql = string.Format(sql);
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@vc_id",
+                SqlDbType = SqlDbType.Char,
+                Value = voucherId.Replace("'", "''")
+            });
+            DataSet ds = core_service.ExecSql2DataSet(sql, paras);
+
+            //convert dataset to model
+            if (ds != null && ds.Tables.Count >= 2)
+            {
+                VoucherItem vc_item = ds.Tables[0].ToList<VoucherItem>().FirstOrDefault();
+                IList<SVDetail> pr_detail = ds.Tables[1].ToList<SVDetail>();
+
+
+
+                //xử lý mã hóa stt_rec_hd trước khi response
+                vc_item.stt_rec_hd = APIService.EncryptForWebApp(vc_item.stt_rec_hd, this.aes_key, this.aes_iv);
+
+                BaseModel invoice_model = new BaseModel();
+                invoice_model.masterInfo = vc_item;
+                invoice_model.details = new List<DetailItemModel>();
+                invoice_model.details.AddRange(new List<DetailItemModel>() { new DetailItemModel()
+                {
+                    Id = 1,
+                    Name = _DETAIL_PARA,
+                    Data = pr_detail
+                },new DetailItemModel()
+                });
+
+                model.result = invoice_model;
+            }
+            return model;
+        }
 
         public CommonObjectModel Finding(List<Dictionary<string, object>> data)
         {
@@ -1124,7 +1198,7 @@ END";
             return result_model;
         }
 
-        CommonObjectModel checkImeiInsert(VoucherItem vc_item)
+            CommonObjectModel checkImeiInsert(VoucherItem vc_item)
         {
             var listImei = new List<string>();
             var ma_cuahang = "";
@@ -1297,6 +1371,73 @@ END";
             }
             return result_model;
         }
+        CommonObjectModel checkVoucher(VoucherItem vc_item, BaseModel vc_item_old)
+        {
+            var result_model = new CommonObjectModel
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+
+            // Kiểm tra null
+            if (vc_item == null || vc_item_old == null)
+            {
+                result_model.success = false;
+                result_model.message = "Voucher không hợp lệ (thiếu dữ liệu).";
+                return result_model;
+            }
+
+            // Lấy t_tt từ masterInfo của voucher cũ
+            decimal? old_t_tt = null;
+            if (vc_item_old?.masterInfo is VoucherItem oldVoucher)
+            {
+                old_t_tt = oldVoucher.t_tt;
+            }
+
+            // So sánh t_tt
+            if (old_t_tt.HasValue && vc_item.t_tt != old_t_tt.Value)
+            {
+                result_model.success = false;
+                result_model.message = "Tổng tiền thanh toán không khớp với phiếu bán.";
+                return result_model;
+            }
+
+            // So sánh tất cả ma_imei trong details[0].Data
+            var newItems = (vc_item.details[0].Data as List<DetailEntity>)
+                  ?.Cast<SVDetail>()
+                  .ToList();
+            var oldItems = vc_item_old.details[0].Data as List<SVDetail>;
+
+            if (newItems == null || oldItems == null)
+            {
+                result_model.success = false;
+                result_model.message = "Không có dữ liệu chi tiết để so sánh IMEI.";
+                return result_model;
+            }
+
+            if (newItems.Count != oldItems.Count)
+            {
+                result_model.success = false;
+                result_model.message = "Số lượng IMEI trong voucher mới và cũ không khớp.";
+                return result_model;
+            }
+
+            for (int i = 0; i < newItems.Count; i++)
+            {
+                var newImei = newItems[i].ma_imei?.Trim();
+                var oldImei = oldItems[i].ma_imei?.Trim();
+                if (!string.Equals(newImei, oldImei, StringComparison.OrdinalIgnoreCase))
+                {
+                    result_model.success = false;
+                    result_model.message = $"IMEI: {newImei} không khớp với IMEI trong phiếu bán.";
+                    return result_model;
+                }
+            }
+
+            return result_model;
+        }
+
 
     }
 }
