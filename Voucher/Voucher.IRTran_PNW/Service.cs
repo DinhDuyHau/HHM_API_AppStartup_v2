@@ -188,13 +188,45 @@ namespace Voucher.IRTran_PNW
                     if (detail_list != null && detail_list.Count > 0)
                     {
                         //cập nhật ngày chứng từ
-                        detail_list.ForEach(x => {
-                            x.ngay_ct = vc_item.ngay_ct;
-                            x.ma_cuahang = vc_item.ma_cuahang;
-                            x.ma_ca = vc_item.ma_ca;
-                            x.stt_rec_px = APIService.DecryptForWebApp(x.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
-                        });
+                        //detail_list.ForEach(x => {
+                        foreach (var item in detail_list)
+                        {
+                            if (item.ma_imei != null && item.ma_imei != "")
+                            {
+                                if (item.doi_bh_yn)
+                                {
+                                    // kiểm tra ký tự đầu/cuối không phải ký tự đặc biệt
+                                    char firstChar = item.ma_imei.First();
+                                    char lastChar = item.ma_imei.Last();
 
+                                    bool IsValidChar(char c) => char.IsLetterOrDigit(c);
+
+                                    if (!IsValidChar(firstChar) || !IsValidChar(lastChar))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = $"Imei nhập: {item.ma_imei} có chứa ký tự đặc biệt";
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.ma_imei != item.ma_imei_x)
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = $"Imei nhập: {item.ma_imei} không trùng khớp với imei xuất";
+                                        break;
+                                    }
+                                }
+                            }
+                            item.ngay_ct = vc_item.ngay_ct;
+                            item.ma_cuahang = vc_item.ma_cuahang;
+                            item.ma_ca = vc_item.ma_ca;
+                            item.stt_rec_px = APIService.DecryptForWebApp(item.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
+                        };
+                        if (!result_model.success)
+                        {
+                            return result_model;
+                        }
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
                     }
@@ -398,15 +430,44 @@ namespace Voucher.IRTran_PNW
                     List<PNWDetail>? detail_list = JsonSerializer.Deserialize<List<PNWDetail>>((JsonElement)item_model.Data);
                     if (detail_list != null && detail_list.Count > 0)
                     {
-                        detail_list.ForEach((item) =>
+                        //detail_list.ForEach((item) =>
+                        foreach (var item in detail_list)
                         {
                             item.tien = item.tien_nt;
                             if (item.ma_imei != null && item.ma_imei != "")
                             {
+                                if (item.doi_bh_yn)
+                                {
+                                    // kiểm tra ký tự đầu/cuối không phải ký tự đặc biệt
+                                    char firstChar = item.ma_imei.First();
+                                    char lastChar = item.ma_imei.Last();
+
+                                    bool IsValidChar(char c) => char.IsLetterOrDigit(c);
+
+                                    if (!IsValidChar(firstChar) || !IsValidChar(lastChar))
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = $"Imei nhập: {item.ma_imei} có chứa ký tự đặc biệt";
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.ma_imei != item.ma_imei_x)
+                                    {
+                                        result_model.success = false;
+                                        result_model.message = $"Imei nhập: {item.ma_imei} không trùng khớp với imei xuất";
+                                        break;
+                                    }
+                                }
                                 imeis.AddRange(item.ma_imei.Split(",").ToList().Select(x => x.Trim()));
                             }
                             item.stt_rec_px = APIService.DecryptForWebApp(item.stt_rec_px, _configuration["Security:KeyAES"], _configuration["Security:IVAES"]);
-                        });
+                        }   ;
+                        if (!result_model.success)
+                        {
+                            return result_model;
+                        }
                         item_detail.Data = new List<DetailEntity>();
                         item_detail.Data.AddRange(detail_list);
 
