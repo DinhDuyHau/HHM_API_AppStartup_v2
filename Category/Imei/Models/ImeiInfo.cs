@@ -11,5 +11,7 @@ namespace Imei.Models
         public string ma_vt { get; set; }
         public string ten_vt { get; set; }
         public string dvt { get; set; }
+        public string ma_thue { get; set; }
+        public decimal thue_suat { get; set; }
     }
 }
