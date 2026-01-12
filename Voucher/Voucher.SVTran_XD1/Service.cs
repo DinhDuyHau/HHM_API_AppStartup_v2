@@ -1245,7 +1245,7 @@ END";
                 result_model.message = "dat_hang_yn_yes";
                 result_model.result = list_result_error;
             }
-            if (xuat != null && xuat.Count > 0)
+            if ( vc_item.status != "0" && xuat != null && xuat.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
                 list_result_error.Add(new ResultMessageError
