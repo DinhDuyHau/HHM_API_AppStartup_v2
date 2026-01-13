@@ -1060,8 +1060,8 @@ END";
             var imeiService = new Imei.Service();
             List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(listImei);
             List<string> exists = state_imei.Where(x => x.exists_yn == false).Select(x => x.ma_imei).ToList();
-            List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == true).Select(x => x.ma_imei).ToList();
-            List<string> xuat = state_imei.Where(x => x.xuat_yn == false).Select(x => x.ma_imei).ToList();
+            List<string> dat_hang = state_imei.Where(x => x.dat_hang_yn == false).Select(x => x.ma_imei).ToList();
+            List<string> xuat = state_imei.Where(x => x.xuat_yn == true).Select(x => x.ma_imei).ToList();
 
             if (exists != null && exists.Count > 0)
             {
@@ -1089,7 +1089,7 @@ END";
                     value = string.Join(", ", dat_hang)
                 });
                 result_model.success = false;
-                result_model.message = "dat_hang_yn_yes";
+                result_model.message = "dat_hang_yn_no";
                 result_model.result = list_result_error;
             }
             if (xuat != null && xuat.Count > 0)
@@ -1101,7 +1101,7 @@ END";
                     value = string.Join(", ", xuat)
                 });
                 result_model.success = false;
-                result_model.message = "xuat_yn_no";
+                result_model.message = "xuat_yn_yes";
                 result_model.result = list_result_error;
             }
             return result_model;
