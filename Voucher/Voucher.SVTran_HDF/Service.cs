@@ -13,6 +13,7 @@ using Genbyte.Component.Voucher.Model;
 using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using System;
+using Voucher.SVTran_HDF.Models;
 
 namespace Voucher.SVTran_HDF
 {
@@ -240,6 +241,18 @@ namespace Voucher.SVTran_HDF
                 }
                 index_value++;
             }
+
+            // 2025-12-02: trường hợp giao dịch trả lại đơn COD, kiểm tra hàng hóa + dịch vụ trả lại phải bằng full phiếu bán ra
+            if (vc_item.tra_lai_cod)
+            {
+                result_model = CheckTraLaiCOD(vc_item);
+                if (!result_model.success)
+                {
+                    return result_model;
+                }
+            }
+            // 2025-12-02: end
+
             CommonService.checkPaid(vc_item, _PAID_PARA);
             if (!result_model.success)
             {
@@ -705,6 +718,18 @@ SELECT is_success, message FROM @check";
                     });
                 }
             }
+
+            // 2025-12-02: trường hợp giao dịch trả lại đơn COD, kiểm tra hàng hóa + dịch vụ trả lại phải bằng full phiếu bán ra
+            if (vc_item.tra_lai_cod)
+            {
+                result_model = CheckTraLaiCOD(vc_item);
+                if (!result_model.success)
+                {
+                    return result_model;
+                }
+            }
+            // 2025-12-02: end
+
             result_model = CommonService.checkPaid(vc_item, _PAID_PARA);
             if (!result_model.success)
             {
@@ -1473,5 +1498,104 @@ END";
 
             return result_model;
         }
+
+        #region CheckTraLaiCOD
+        private CommonObjectModel CheckTraLaiCOD(VoucherItem vc_item)
+        {
+            CommonObjectModel model = new CommonObjectModel()
+            {
+                success = true,
+                message = "",
+                result = null
+            };
+            CoreService service = new CoreService();
+
+            string sql = $"exec Genbyte$HDF$GetSalesInvoiceById @stt_rec";
+            List<SqlParameter> paras = new List<SqlParameter>();
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@stt_rec",
+                SqlDbType = SqlDbType.Char,
+                Value = vc_item.stt_rec_hd.Replace("'", "''")
+            });
+            DataSet ds = service.ExecSql2DataSet(sql, paras);
+
+            if(ds != null && ds.Tables.Count == 3)
+            {
+                string so_ct_ban = vc_item.fcode2.Trim();
+
+                // hàng hóa trên phiếu bán ra
+                IList<SoldProductDetail>? sold_product_detail = ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0 ? 
+                                ds.Tables[1].ToList<SoldProductDetail>() : null;
+
+                // so sánh hàng hóa trên phiếu bán ra vs phiếu trả lại
+                if (sold_product_detail != null && sold_product_detail.Count > 0 
+                    && vc_item.details.Any(x => x.Detail_Type == typeof(SVDetail).Name))
+                {
+                    List<SVDetail> vc_detail_list = new List<SVDetail>();
+                    foreach (DetailEntity item in vc_item.details.FirstOrDefault(x => x.Detail_Type == typeof(SVDetail).Name)!.Data)
+                    {
+                        vc_detail_list.Add((SVDetail)item);
+                    }
+
+                    // check số lượng
+                    if (sold_product_detail.Count != vc_detail_list.Count)
+                    {
+                        model.success = false;
+                        model.message = $"Giao dịch trả lại đơn COD, phải nhập trả lại toàn bộ hàng hóa + dịch vụ của phiếu bán: {so_ct_ban}";
+                        return model;
+                    }
+
+                    // check imei: kiểm tra từng imei bán ra không tồn tại trên phiếu nhập trả lại
+                    foreach(SoldProductDetail item in sold_product_detail)
+                    {
+                        if(!vc_detail_list.Any(x => x.ma_imei.Trim().ToLower() == item.ma_imei.Trim().ToLower()))
+                        {
+                            model.success = false;
+                            model.message = $"Giao dịch trả lại đơn COD, phải nhập trả lại toàn bộ hàng hóa + dịch vụ của phiếu bán: {so_ct_ban}";
+                            return model;
+                        }
+                    }
+                }
+
+                // dịch vụ trên phiếu bán ra
+                IList<SoldServiceDetail>? sold_service_detail = ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0 ? ds.Tables[2].ToList<SoldServiceDetail>() : null;
+
+                // so sánh dịch vụ trên phiếu bán ra vs phiếu trả lại
+                if (sold_service_detail != null && sold_service_detail.Count > 0
+                    && vc_item.details.Any(x => x.Name == _SERVICE_PARA))
+                {
+                    List<SVServiceModel> vc_service_list = new List<SVServiceModel>();
+                    foreach (DetailEntity item in vc_item.details.FirstOrDefault(x => x.Detail_Type == typeof(SVServiceModel).Name)!.Data)
+                    {
+                        vc_service_list.Add((SVServiceModel)item);
+                    }
+
+                    // check số lượng
+                    if (sold_service_detail.Count != vc_service_list.Count)
+                    {
+                        model.success = false;
+                        model.message = $"Giao dịch trả lại đơn COD, phải nhập trả lại toàn bộ hàng hóa + dịch vụ của phiếu bán: {so_ct_ban}";
+                        return model;
+                    }
+
+                    // check mã dịch vụ + imei: kiểm tra từng mã dv + imei bán ra không tồn tại trên phiếu nhập trả lại
+                    foreach (SoldServiceDetail item in sold_service_detail)
+                    {
+                        if (!vc_service_list.Any(x => x.ma_dv.Trim().ToLower() == item.ma_dv.Trim().ToLower()
+                            && x.ma_imei.Trim().ToLower() == item.ma_imei.Trim().ToLower()))
+                        {
+                            model.success = false;
+                            model.message = $"Giao dịch trả lại đơn COD, phải nhập trả lại toàn bộ hàng hóa + dịch vụ của phiếu bán: {so_ct_ban}";
+                            return model;
+                        }
+                    }
+                }
+
+            }
+            return model;
+        }
+        #endregion
+
     }
 }
