@@ -1090,7 +1090,7 @@ END";
                 list_imei_delete.Add(new ImeiItem { ma_imei = x });
             });
             dat_hang = dat_hang.Except(listImei_old).ToList();
-            if (dat_hang != null && dat_hang.Count > 0)
+            if (vc_item.status != "0" && dat_hang != null && dat_hang.Count > 0)
             {
                 var list_result_error = new List<ResultMessageError>();
                 list_result_error.Add(new ResultMessageError
