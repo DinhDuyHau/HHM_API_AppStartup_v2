@@ -49,5 +49,13 @@ namespace Voucher.KKTran
         public DateTime? s8 { get; set; }
         public DateTime? s9 { get; set; }
         public string ma_imei { get; set; }
+        public string nguon_kk { get; set; }
+        public string ten_nguon_kk { get; set; }
+        public string ma_imei_tt { get; set; }
+        public decimal so_luong_tt { get; set; }
+        public string kq_kk { get; set; }
+        public string ten_kq_kk { get; set; }
+        public string ghi_chu { get; set; }
+        public string ten_vt { get; set; }
     }
 }

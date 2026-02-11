@@ -267,7 +267,7 @@ namespace Voucher.KKTran
                 query += "\n";
                 query += $"update @{_DETAIL_PARA} set line_nbr = row_id$, stt_rec0 = right(row_id$ + 1000, 3), stt_rec = @stt_rec, ma_ct = @ma_ct, ngay_ct = @ngay_ct, so_ct = @so_ct, ma_cuahang = @ma_cuahang, ma_ca = @ma_ca where 1=1";
                 query += "\n\n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,nguon_kk,ma_imei_tt,so_luong_tt,kq_kk,ghi_chu) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,nguon_kk,ma_imei_tt,so_luong_tt,kq_kk,ghi_chu from @{_DETAIL_PARA}";
             }
 
             query += "\n\n";
@@ -591,7 +591,7 @@ SELECT is_success, message FROM @check";
 
                 //xóa dữ liệu cũ (bảng detail) và insert dữ liệu mới
                 query += $"delete from {detail_table} where stt_rec = @stt_rec \n";
-                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei, ma_imei_x, so_ct_px, doi_bh_yn from @{_DETAIL_PARA}";
+                query += $"insert into {detail_table} (stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia,tien_nt,tien, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,nguon_kk,ma_imei_tt,so_luong_tt,kq_kk,ghi_chu) select stt_rec,stt_rec0,ma_ct,ngay_ct,so_ct,ma_vt,ma_sp,ma_bp,so_lsx,dvt,he_so,ma_kho,ma_vi_tri,ma_lo,ma_vv, ma_nx, tk_du, tk_vt,so_luong,gia_nt,gia_nt,tien_nt,tien_nt, pn_gia_tb, stt_rec_px, stt_rec0px, line_nbr,ma_hd,ma_ku,ma_phi,so_dh_i,ma_td1,ma_td2,ma_td3,sl_td1,sl_td2,sl_td3,ngay_td1,ngay_td2,ngay_td3,gc_td1,gc_td2,gc_td3,s1,ma_ca,ma_cuahang,s4,s5,s6,s7,s8,s9,ma_imei,nguon_kk,ma_imei_tt,so_luong_tt,kq_kk,ghi_chu from @{_DETAIL_PARA}";
             }
             query += "\n\n";
             query += "select @stt_rec as stt_rec";
@@ -670,6 +670,7 @@ SELECT is_success, message FROM @check";
             if (vc_item.status == "2")
             {
                 query = $"EXEC Genbyte$IMEI$PNW$Update '{stt_rec}'";
+                query += $" EXEC Genbyte$Voucher$KK1$CreateXD1 '{stt_rec}'";
                 service.ExecuteNonQuery(query);
             }
 
@@ -836,12 +837,28 @@ SELECT is_success, message FROM @check";
                 throw new Exception(ApiReponseMessage.Error_InputData);
 
             //Lấy dữ liệu từ bảng prime và detail theo id truyền vào
-            string sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6)
+            string sql = @"DECLARE @q NVARCHAR(4000), @stt_rec CHAR(13), @exp CHAR(6), @acc_db NCHAR(50)
 SET @stt_rec = @vc_id
 IF EXISTS(SELECT 1 FROM {0} WHERE stt_rec = @stt_rec) BEGIN
+    SELECT @acc_db = acc_db FROM syssyncdatainfo
 	SELECT @exp = CONVERT(CHAR(6), ngay_ct, 112) FROM {0} WHERE stt_rec = @stt_rec
-	SELECT @q = 'select a.*, b.ten_kh, b.dia_chi, c.ten_kh as ten_ongba from {1}' + @exp + ' a left join dmkh b on a.ma_kh = b.ma_kh left join dmkh c on a.ong_ba = c.ma_kh  where stt_rec = @stt_rec '
-	SELECT @q = @q + CHAR(13) + 'select a1.*, a2.ten_vt from {2}' + @exp + ' a1 inner join dmvt a2 on a1.ma_vt = a2.ma_vt where stt_rec = @stt_rec'
+	SELECT @q = 'select a.*, b.ten_kh as ten_nvkk01, c.ten_kh as ten_nvkk02, d.ten_kh as ten_nvkk03, e.ten_gd
+    FROM {1}' + @exp + ' a 
+        left join dmkh b on a.ma_nvkk01 = b.ma_kh 
+        left join dmkh c on a.ma_nvkk02 = c.ma_kh
+        left join dmkh d on a.ma_nvkk03 = d.ma_kh
+        left join '+@acc_db+'.dbo.dmloaigdkk e on a.ma_gd = e.ma_gd
+    WHERE stt_rec = @stt_rec '
+	SELECT @q = @q + CHAR(13) + N'select a1.*, a2.ten_vt ,
+    CASE WHEN a1.nguon_kk = 0 THEN N''Đổ tồn'' ELSE N''Nhập trong lúc kiểm kê'' END AS ten_nguon_kk,
+    CASE 
+        WHEN a1.kq_kk = 0 THEN N''Đủ''
+        WHEN a1.kq_kk = 1 THEN N''Thiếu''
+        WHEN a1.kq_kk = 2 THEN N''Thừa''
+    END AS ten_kq_kk
+    FROM {2}' + @exp + ' a1 
+        inner join dmvt a2 on a1.ma_vt = a2.ma_vt 
+    WHERE stt_rec = @stt_rec'
 	EXEC sp_executesql @q, N'@stt_rec CHAR(13)', @stt_rec = @stt_rec
 END";
             sql = string.Format(sql, this.MasterTable, this.PrimeTable, this.DetailTable);

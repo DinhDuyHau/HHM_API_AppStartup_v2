@@ -12,6 +12,5 @@ namespace Voucher.KKTran
         public string ma_vt { get; set; }
         public string ghi_chu { get; set; }
         public string ma_kho { get; set; }
-
     }
 }
