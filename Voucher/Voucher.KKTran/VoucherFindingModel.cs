@@ -39,5 +39,7 @@ namespace Voucher.KKTran
         public string comment { get; set; }
 
         public string dien_giai { get; set; }
+
+        public string ma_gd { get; set; }
     }
 }
