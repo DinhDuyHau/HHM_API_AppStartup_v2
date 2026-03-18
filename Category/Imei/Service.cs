@@ -1278,5 +1278,80 @@ namespace Imei
         }
         #endregion
 
+        #region GetImeiFromImportTicket
+        public List<ImportTicketImei> GetImeiFromImportTicket(ImportTicketImeiRequest request)
+        {
+            string sql = "exec Genbyte$IMEI$GetFromImportTicket " +
+                         "@ma_ct, @so_ct, @ma_cuahang, @ma_gd, " +
+                         "@nh_vt1,@nh_vt2, @nh_vt3, @nh_vt4, @ma_vt";
+
+            List<SqlParameter> paras = new List<SqlParameter>();
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_ct",
+                SqlDbType = SqlDbType.Char,
+                Value = request.ma_ct
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@so_ct",
+                SqlDbType = SqlDbType.Char,
+                Value = request.so_ct
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_cuahang",
+                SqlDbType = SqlDbType.Char,
+                Value = request.ma_cuahang
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_gd",
+                SqlDbType = SqlDbType.Char,
+                Value = request.ma_gd
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@nh_vt1",
+                SqlDbType = SqlDbType.VarChar,
+                Value = string.IsNullOrEmpty(request.nh_vt1) ? DBNull.Value : request.nh_vt1
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@nh_vt2",
+                SqlDbType = SqlDbType.VarChar,
+                Value = string.IsNullOrEmpty(request.nh_vt2) ? DBNull.Value : request.nh_vt2
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@nh_vt3",
+                SqlDbType = SqlDbType.VarChar,
+                Value = string.IsNullOrEmpty(request.nh_vt3) ? DBNull.Value : request.nh_vt3
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@nh_vt4",
+                SqlDbType = SqlDbType.VarChar,
+                Value = string.IsNullOrEmpty(request.nh_vt4) ? DBNull.Value : request.nh_vt4
+            });
+
+            paras.Add(new SqlParameter()
+            {
+                ParameterName = "@ma_vt",
+                SqlDbType = SqlDbType.VarChar,
+                Value = string.IsNullOrEmpty(request.ma_vt) ? DBNull.Value : request.ma_vt
+            });
+
+            return base.ExecSql2List<ImportTicketImei>(sql, paras);
+        }
+        #endregion
     }
 }

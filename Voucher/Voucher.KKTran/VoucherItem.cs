@@ -12,6 +12,8 @@ namespace Voucher.KKTran
         public decimal ty_gia { get; set; }
         public string loai_ct { get; set; }
         public decimal t_so_luong { get; set; }
+        public decimal t_sl_thuc_te { get; set; }
+        public decimal t_chenh_lech { get; set; }
         public DateTime? ngay_lct { get; set; }
         public string ma_vt { get; set; }
         public string nh_vt1 { get; set; }

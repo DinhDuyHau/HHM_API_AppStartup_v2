@@ -1039,5 +1039,31 @@ namespace Imei
             }
         }
         #endregion
+
+        [HttpPost]
+        [Route("get_imei_import_voucher")]
+        public IActionResult GetImeiFromImportTicket([FromBody] ImportTicketImeiRequest request)
+        {
+            if (string.IsNullOrEmpty(request.so_ct) || request.so_ct.Length != 12)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Số phiếu nhập phải đủ 12 ký tự"
+                });
+            }
+
+            request.ma_cuahang = Startup.Shop;
+
+            Service service = new Service(_configuration);
+
+            var result = service.GetImeiFromImportTicket(request);
+
+            return Ok(new
+            {
+                success = true,
+                data = result
+            });
+        }
     }
 }
