@@ -328,18 +328,7 @@ namespace Voucher.KKTran
                     }
                 }
             }
-            if (vc_item.status == "0")
-            {
-                string json = JsonSerializer.Serialize(list_imei);
-                //create query insert IMEI
-                query = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
-                service.ExecuteNonQuery(query);
-            }
-            if (vc_item.status == "2")
-            {
-                query = $"EXEC Genbyte$IMEI$PNW$Update '{stt_rec}'";
-                service.ExecuteNonQuery(query);
-            }
+            
             model.success = true;
             model.message = "create_voucher_success";
             model.result = vc_item;
@@ -464,18 +453,7 @@ SELECT is_success, message FROM @check";
                 result_model.message = check_result.message;
                 return result_model;
             }
-            if (vc_item.status == "2")
-            {
-                var imeiService = new Imei.Service();
-                List<Imei.ImeiState> state_imei = imeiService.GetStateOfImeis(imeis);
-                Imei.ImeiState? exists = state_imei.FirstOrDefault(x => x.exists_yn == false);
-                if (exists != null)
-                {
-                    result_model.success = false;
-                    result_model.message = "imei_not_exists";
-                    return result_model;
-                }
-            }
+          
 
             /**
              * Lấy thông tin chứng từ cũ trước khi thực hiện update
@@ -660,20 +638,7 @@ SELECT is_success, message FROM @check";
                     }
                 }
             }
-            if (vc_item.status == "0")
-            {
-                string json = JsonSerializer.Serialize(list_imei);
-                //create query insert IMEI
-                queryIMEI = $"exec Genbyte$IMEI$UpdateState$Inventory '{user_id}', '{vc_item.ma_cuahang}', '{stt_rec}', '{vc_item.ngay_ct?.ToString("yyyy-MM-dd")}', 1, '{json}'";
-                service.ExecuteNonQuery(queryIMEI);
-            }
-            if (vc_item.status == "2")
-            {
-                query = $"EXEC Genbyte$IMEI$PNW$Update '{stt_rec}'";
-                query += $" EXEC Genbyte$Voucher$KK1$CreateXD1 '{stt_rec}'";
-                service.ExecuteNonQuery(query);
-            }
-
+            
             model.success = true;
             model.message = "edit_voucher_success";
             model.result = vc_item;
